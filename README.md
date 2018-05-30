@@ -13,9 +13,10 @@ http://www.shikadi.net/moddingwiki/EPF_Format
 **Current EPF Archive UI functionality:**
 - Opening EPF archives in read-only mode and extracting selected entries
 
-**EPF Archive class functionality to add:**
-- Creating new archive entries
-- Adding hidden data to archive
+**EPF Archive class functionality to add/improve:**
+- [Feature] Creating new archive entries
+- [Feature] Adding hidden data to archive
+- [Improvement] LZW compression algorithm used for storing entries is slooooooooow. This has to improve.
 
-**EPF Archive UI functionality to add:**
-- Opening EPF archive in read/write mode. This implies adding new entries, modifying/removing existing entries 
+**EPF Archive UI functionality to add/improve:**
+- [Feature]Opening EPF archive in read/write mode. This implies adding new entries, modifying/removing existing entries 
