@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -43,5 +44,34 @@ namespace EPF.UI.WinForms.Controls
                 return this._dataBindings;
             }
         }
+
+        public new string Text
+        {
+            get
+            {
+                return base.Text;
+            }
+
+            set
+            {
+                if (Parent != null)
+                    Parent.InvokeIfRequired(() => { base.Text = value; });
+            }
+        }
+
+        public new Color ForeColor
+        {
+            get
+            {
+                return base.ForeColor;
+            }
+
+            set
+            {
+                if (Parent != null)
+                    Parent.InvokeIfRequired(() => { base.ForeColor = value; });
+            }
+        }
+
     }
 }

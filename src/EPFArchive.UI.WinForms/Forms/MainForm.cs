@@ -86,7 +86,10 @@ namespace EPF.UI.WinForms.Forms
             DataBindings.Add("Text", _viewModel, nameof(_viewModel.AppLabel), false, DataSourceUpdateMode.OnPropertyChanged);
             StatusStripTotalItemsNo.DataBindings.Add("Text", _viewModel, nameof(_viewModel.TotalItems), true, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged, "0", "0 items");
             StatusStripSelectedItemsNo.DataBindings.Add("Text", _viewModel, nameof(_viewModel.ItemsSelected), true, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged, "0", "0 items selected");
-            StatusStripMessage.DataBindings.Add("Text", _viewModel, nameof(_viewModel.Message), false, DataSourceUpdateMode.OnPropertyChanged);
+
+            StatusStripMessage.DataBindings.Add("Text", _viewModel.Log, nameof(_viewModel.Log.Message), false, DataSourceUpdateMode.OnPropertyChanged);
+            StatusStripMessage.DataBindings.Add("ForeColor", _viewModel.Log, nameof(_viewModel.Log.Color), false, DataSourceUpdateMode.OnPropertyChanged);
+
             StatusStripProgressBar.DataBindings.Add("Value", _viewModel.Progress, nameof(_viewModel.Progress.Value), false, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged);
             StatusStripProgressBar.DataBindings.Add("Visible", _viewModel.Progress, nameof(_viewModel.Progress.Visible), false, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged);
 
