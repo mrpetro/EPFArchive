@@ -45,15 +45,15 @@
             this.MenuItemDeselectAll = new EPF.UI.WinForms.Controls.ToolStripMenuItemEx();
             this.MenuItemInvertSelection = new EPF.UI.WinForms.Controls.ToolStripMenuItemEx();
             this.DGV = new System.Windows.Forms.DataGridView();
+            this.DGVColumnName = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.DGVColumnSize = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.DGVColumnPackedSize = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.DGVColumnIsCompressed = new System.Windows.Forms.DataGridViewCheckBoxColumn();
             this.StatusStrip = new System.Windows.Forms.StatusStrip();
             this.StatusStripTotalItemsNo = new EPF.UI.WinForms.Controls.ToolStripStatusLabelEx();
             this.StatusStripSelectedItemsNo = new EPF.UI.WinForms.Controls.ToolStripStatusLabelEx();
             this.StatusStripMessage = new EPF.UI.WinForms.Controls.ToolStripStatusLabelEx();
             this.StatusStripProgressBar = new EPF.UI.WinForms.Controls.ToolStripProgressBarEx();
-            this.DGVColumnName = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.DGVColumnSize = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.DGVColumnPackedSize = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.DGVColumnIsCompressed = new System.Windows.Forms.DataGridViewCheckBoxColumn();
             this.MenuMain.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.DGV)).BeginInit();
             this.StatusStrip.SuspendLayout();
@@ -164,7 +164,7 @@
             // MenuItemSelectAll
             // 
             this.MenuItemSelectAll.Name = "MenuItemSelectAll";
-            this.MenuItemSelectAll.Size = new System.Drawing.Size(180, 22);
+            this.MenuItemSelectAll.Size = new System.Drawing.Size(155, 22);
             this.MenuItemSelectAll.Text = "Select All";
             this.MenuItemSelectAll.Click += new System.EventHandler(this.MenuItemSelectAll_Click);
             // 
@@ -201,47 +201,6 @@
             this.DGV.TabIndex = 1;
             this.DGV.SelectionChanged += new System.EventHandler(this.DGV_SelectionChanged);
             // 
-            // StatusStrip
-            // 
-            this.StatusStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.StatusStripTotalItemsNo,
-            this.StatusStripSelectedItemsNo,
-            this.StatusStripMessage,
-            this.StatusStripProgressBar});
-            this.StatusStrip.Location = new System.Drawing.Point(0, 419);
-            this.StatusStrip.Name = "StatusStrip";
-            this.StatusStrip.Size = new System.Drawing.Size(624, 22);
-            this.StatusStrip.TabIndex = 2;
-            this.StatusStrip.Text = "statusStrip1";
-            // 
-            // StatusStripTotalItemsNo
-            // 
-            this.StatusStripTotalItemsNo.AutoSize = false;
-            this.StatusStripTotalItemsNo.Name = "StatusStripTotalItemsNo";
-            this.StatusStripTotalItemsNo.Size = new System.Drawing.Size(80, 17);
-            this.StatusStripTotalItemsNo.Text = "0 items";
-            // 
-            // StatusStripSelectedItemsNo
-            // 
-            this.StatusStripSelectedItemsNo.AutoSize = false;
-            this.StatusStripSelectedItemsNo.Name = "StatusStripSelectedItemsNo";
-            this.StatusStripSelectedItemsNo.Size = new System.Drawing.Size(140, 17);
-            this.StatusStripSelectedItemsNo.Text = "0 items selected";
-            // 
-            // StatusStripMessage
-            // 
-            this.StatusStripMessage.Name = "StatusStripMessage";
-            this.StatusStripMessage.Size = new System.Drawing.Size(287, 17);
-            this.StatusStripMessage.Spring = true;
-            this.StatusStripMessage.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            // 
-            // StatusStripProgressBar
-            // 
-            this.StatusStripProgressBar.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
-            this.StatusStripProgressBar.AutoSize = false;
-            this.StatusStripProgressBar.Name = "StatusStripProgressBar";
-            this.StatusStripProgressBar.Size = new System.Drawing.Size(100, 16);
-            // 
             // DGVColumnName
             // 
             this.DGVColumnName.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
@@ -265,6 +224,45 @@
             // 
             this.DGVColumnIsCompressed.HeaderText = "Is Compressed";
             this.DGVColumnIsCompressed.Name = "DGVColumnIsCompressed";
+            // 
+            // StatusStrip
+            // 
+            this.StatusStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.StatusStripTotalItemsNo,
+            this.StatusStripSelectedItemsNo,
+            this.StatusStripMessage,
+            this.StatusStripProgressBar});
+            this.StatusStrip.Location = new System.Drawing.Point(0, 419);
+            this.StatusStrip.Name = "StatusStrip";
+            this.StatusStrip.Size = new System.Drawing.Size(624, 22);
+            this.StatusStrip.TabIndex = 2;
+            this.StatusStrip.Text = "statusStrip1";
+            // 
+            // StatusStripTotalItemsNo
+            // 
+            this.StatusStripTotalItemsNo.AutoSize = false;
+            this.StatusStripTotalItemsNo.Name = "StatusStripTotalItemsNo";
+            this.StatusStripTotalItemsNo.Size = new System.Drawing.Size(80, 17);
+            // 
+            // StatusStripSelectedItemsNo
+            // 
+            this.StatusStripSelectedItemsNo.AutoSize = false;
+            this.StatusStripSelectedItemsNo.Name = "StatusStripSelectedItemsNo";
+            this.StatusStripSelectedItemsNo.Size = new System.Drawing.Size(140, 17);
+            // 
+            // StatusStripMessage
+            // 
+            this.StatusStripMessage.Name = "StatusStripMessage";
+            this.StatusStripMessage.Size = new System.Drawing.Size(256, 17);
+            this.StatusStripMessage.Spring = true;
+            this.StatusStripMessage.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // StatusStripProgressBar
+            // 
+            this.StatusStripProgressBar.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
+            this.StatusStripProgressBar.AutoSize = false;
+            this.StatusStripProgressBar.Name = "StatusStripProgressBar";
+            this.StatusStripProgressBar.Size = new System.Drawing.Size(100, 16);
             // 
             // MainForm
             // 

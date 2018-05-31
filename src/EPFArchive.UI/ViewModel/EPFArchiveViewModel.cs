@@ -18,7 +18,6 @@ namespace EPF.UI.ViewModel
         private bool _isArchiveOpened;
         private bool _isArchiveSaveAllowed;
         private int _itemsSelected;
-        private string _message;
         private int _totalItems;
 
         #endregion Private Fields
@@ -29,6 +28,7 @@ namespace EPF.UI.ViewModel
         {
             Entries = new BindingList<EPFArchiveItemViewModel>();
             Progress = new ProgressViewModel();
+            Log = new LogViewModel();
             Locked = true;
             IsArchiveOpened = false;
             IsArchiveSaveAllowed = false;
@@ -150,23 +150,7 @@ namespace EPF.UI.ViewModel
             }
         }
 
-        public string Message
-        {
-            get
-            {
-                return _message;
-            }
-
-            internal set
-            {
-                if (_message == value)
-                    return;
-
-                _message = value;
-                OnPropertyChanged(nameof(Message));
-            }
-        }
-
+        public LogViewModel Log { get; private set; }
         public ProgressViewModel Progress { get; private set; }
 
         public int TotalItems
@@ -200,7 +184,7 @@ namespace EPF.UI.ViewModel
 
             Entries.Clear();
 
-            Message = $"Archive '{ Path.GetFileName(ArchiveFilePath)}' closed.";
+            Log.Success($"Archive '{ Path.GetFileName(ArchiveFilePath)}' closed.");
             ArchiveFilePath = null;
             AppLabel = $"{APP_NAME}";
 
@@ -232,11 +216,11 @@ namespace EPF.UI.ViewModel
                 AppLabel = $"{APP_NAME} - {ArchiveFilePath}";
                 IsArchiveOpened = true;
                 IsArchiveSaveAllowed = false;
-                Message = $"Archive '{ Path.GetFileName(ArchiveFilePath)}' opened.";
+                Log.Success($"Archive '{ Path.GetFileName(ArchiveFilePath)}' opened.");
             }
             catch (Exception ex)
             {
-                Message = $"Unable to open archive. Reason: {ex.Message}";
+                Log.Error($"Unable to open archive. Reason: {ex.Message}");
             }
         }
 
@@ -269,14 +253,19 @@ namespace EPF.UI.ViewModel
                 int count = 0;
                 foreach (var entry in Entries)
                 {
-                    Message = $"Extracting [{count} of {Entries.Count}] {entry.Name}...";
+                    Log.Info($"Extracting [{count} of {Entries.Count}] {entry.Name}...");
                     entry.ExtractTo(folderPath);
                     count++;
                     Progress.Value = (int)(((double)count / (double)Entries.Count) * 100.0);
                 }
 
-                Message = $"Extraction finished.";
+                Log.Success($"Extraction finished.");
+
                 Progress.Visible = false;
+            }
+            catch (Exception ex)
+            {
+                Log.Error($"Unable to extract entries. Reason: {ex.Message}");
             }
             finally
             {
@@ -295,14 +284,20 @@ namespace EPF.UI.ViewModel
                 int count = 0;
                 foreach (var entry in Entries.Where(item => item.IsSelected))
                 {
-                    Message = $"Extracting [{count} of {Entries.Count}] {entry.Name}...";
+                    Log.Info($"Extracting [{count} of {Entries.Count}] {entry.Name}...");
+
                     entry.ExtractTo(folderPath);
                     count++;
                     Progress.Value = (int)(((double)count / (double)Entries.Count) * 100.0);
                 }
 
-                Message = $"Extraction finished.";
+                Log.Success($"Extraction finished.");
+
                 Progress.Visible = false;
+            }
+            catch (Exception ex)
+            {
+                Log.Error($"Unable to extract entries. Reason: {ex.Message}");
             }
             finally
             {
