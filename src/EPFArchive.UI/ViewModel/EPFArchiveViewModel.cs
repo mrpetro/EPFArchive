@@ -322,13 +322,16 @@ namespace EPF.UI.ViewModel
                 Status.Progress.Value = 0;
                 Status.Progress.Visible = true;
                 int count = 0;
-                foreach (var entry in Entries.Where(item => item.IsSelected))
+
+                var selectedEntries = Entries.Where(item => item.IsSelected).ToList();
+
+                foreach (var entry in selectedEntries)
                 {
-                    Status.Log.Info($"Extracting [{count} of {Entries.Count}] {entry.Name}...");
+                    Status.Log.Info($"Extracting [{count} of {selectedEntries.Count}] {entry.Name}...");
 
                     entry.ExtractTo(folderPath);
                     count++;
-                    Status.Progress.Value = (int)(((double)count / (double)Entries.Count) * 100.0);
+                    Status.Progress.Value = (int)(((double)count / (double)selectedEntries.Count) * 100.0);
                 }
 
                 Status.Log.Success($"Extraction finished.");
