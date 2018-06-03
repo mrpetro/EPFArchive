@@ -45,15 +45,16 @@
             this.MenuItemDeselectAll = new EPF.UI.WinForms.Controls.ToolStripMenuItemEx();
             this.MenuItemInvertSelection = new EPF.UI.WinForms.Controls.ToolStripMenuItemEx();
             this.DGV = new System.Windows.Forms.DataGridView();
-            this.DGVColumnName = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.DGVColumnSize = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.DGVColumnPackedSize = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.DGVColumnIsCompressed = new System.Windows.Forms.DataGridViewCheckBoxColumn();
             this.StatusStrip = new System.Windows.Forms.StatusStrip();
             this.StatusStripTotalItemsNo = new EPF.UI.WinForms.Controls.ToolStripStatusLabelEx();
             this.StatusStripSelectedItemsNo = new EPF.UI.WinForms.Controls.ToolStripStatusLabelEx();
             this.StatusStripMessage = new EPF.UI.WinForms.Controls.ToolStripStatusLabelEx();
             this.StatusStripProgressBar = new EPF.UI.WinForms.Controls.ToolStripProgressBarEx();
+            this.DGVColumnName = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.DGVColumnStatus = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.DGVColumnSize = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.DGVColumnPackedSize = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.DGVColumnIsCompressed = new System.Windows.Forms.DataGridViewCheckBoxColumn();
             this.MenuMain.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.DGV)).BeginInit();
             this.StatusStrip.SuspendLayout();
@@ -185,14 +186,19 @@
             // DGV
             // 
             this.DGV.AllowUserToAddRows = false;
+            this.DGV.AllowUserToDeleteRows = false;
+            this.DGV.AllowUserToOrderColumns = true;
             this.DGV.AllowUserToResizeRows = false;
+            this.DGV.CellBorderStyle = System.Windows.Forms.DataGridViewCellBorderStyle.None;
             this.DGV.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.DGV.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.DGVColumnName,
+            this.DGVColumnStatus,
             this.DGVColumnSize,
             this.DGVColumnPackedSize,
             this.DGVColumnIsCompressed});
             this.DGV.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.DGV.EditMode = System.Windows.Forms.DataGridViewEditMode.EditProgrammatically;
             this.DGV.Location = new System.Drawing.Point(0, 24);
             this.DGV.Name = "DGV";
             this.DGV.RowHeadersVisible = false;
@@ -200,30 +206,6 @@
             this.DGV.Size = new System.Drawing.Size(624, 417);
             this.DGV.TabIndex = 1;
             this.DGV.SelectionChanged += new System.EventHandler(this.DGV_SelectionChanged);
-            // 
-            // DGVColumnName
-            // 
-            this.DGVColumnName.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.DGVColumnName.HeaderText = "Name";
-            this.DGVColumnName.Name = "DGVColumnName";
-            this.DGVColumnName.ReadOnly = true;
-            // 
-            // DGVColumnSize
-            // 
-            this.DGVColumnSize.HeaderText = "Size";
-            this.DGVColumnSize.Name = "DGVColumnSize";
-            this.DGVColumnSize.ReadOnly = true;
-            // 
-            // DGVColumnPackedSize
-            // 
-            this.DGVColumnPackedSize.HeaderText = "Packed Size";
-            this.DGVColumnPackedSize.Name = "DGVColumnPackedSize";
-            this.DGVColumnPackedSize.ReadOnly = true;
-            // 
-            // DGVColumnIsCompressed
-            // 
-            this.DGVColumnIsCompressed.HeaderText = "Is Compressed";
-            this.DGVColumnIsCompressed.Name = "DGVColumnIsCompressed";
             // 
             // StatusStrip
             // 
@@ -253,7 +235,7 @@
             // StatusStripMessage
             // 
             this.StatusStripMessage.Name = "StatusStripMessage";
-            this.StatusStripMessage.Size = new System.Drawing.Size(256, 17);
+            this.StatusStripMessage.Size = new System.Drawing.Size(287, 17);
             this.StatusStripMessage.Spring = true;
             this.StatusStripMessage.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
@@ -263,6 +245,38 @@
             this.StatusStripProgressBar.AutoSize = false;
             this.StatusStripProgressBar.Name = "StatusStripProgressBar";
             this.StatusStripProgressBar.Size = new System.Drawing.Size(100, 16);
+            // 
+            // DGVColumnName
+            // 
+            this.DGVColumnName.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.DGVColumnName.HeaderText = "Name";
+            this.DGVColumnName.Name = "DGVColumnName";
+            this.DGVColumnName.ReadOnly = true;
+            // 
+            // DGVColumnStatus
+            // 
+            this.DGVColumnStatus.HeaderText = "Status";
+            this.DGVColumnStatus.Name = "DGVColumnStatus";
+            this.DGVColumnStatus.ReadOnly = true;
+            this.DGVColumnStatus.Resizable = System.Windows.Forms.DataGridViewTriState.False;
+            // 
+            // DGVColumnSize
+            // 
+            this.DGVColumnSize.HeaderText = "Size";
+            this.DGVColumnSize.Name = "DGVColumnSize";
+            this.DGVColumnSize.ReadOnly = true;
+            // 
+            // DGVColumnPackedSize
+            // 
+            this.DGVColumnPackedSize.HeaderText = "Packed Size";
+            this.DGVColumnPackedSize.Name = "DGVColumnPackedSize";
+            this.DGVColumnPackedSize.ReadOnly = true;
+            // 
+            // DGVColumnIsCompressed
+            // 
+            this.DGVColumnIsCompressed.HeaderText = "Is Compressed";
+            this.DGVColumnIsCompressed.Name = "DGVColumnIsCompressed";
+            this.DGVColumnIsCompressed.Resizable = System.Windows.Forms.DataGridViewTriState.False;
             // 
             // MainForm
             // 
@@ -312,6 +326,7 @@
         private Controls.ToolStripStatusLabelEx StatusStripMessage;
         private System.Windows.Forms.ToolStripMenuItem MenuItemFileOpenReadOnly;
         private System.Windows.Forms.DataGridViewTextBoxColumn DGVColumnName;
+        private System.Windows.Forms.DataGridViewTextBoxColumn DGVColumnStatus;
         private System.Windows.Forms.DataGridViewTextBoxColumn DGVColumnSize;
         private System.Windows.Forms.DataGridViewTextBoxColumn DGVColumnPackedSize;
         private System.Windows.Forms.DataGridViewCheckBoxColumn DGVColumnIsCompressed;

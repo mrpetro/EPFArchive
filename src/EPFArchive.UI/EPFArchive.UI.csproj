@@ -41,6 +41,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="IDialogProvider.cs" />
     <Compile Include="ViewModel\BaseViewModel.cs" />
     <Compile Include="ViewModel\EPFArchiveItemViewModel.cs" />
     <Compile Include="ViewModel\EPFArchiveViewModel.cs" />
@@ -48,6 +49,7 @@
     <Compile Include="ViewModel\LogViewModel.cs" />
     <Compile Include="ViewModel\ProgressViewModel.cs" />
     <Compile Include="ViewModel\PropertyHelper.cs" />
+    <Compile Include="ViewModel\StatusViewModel.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\EPFArchive\EPFArchive.csproj">

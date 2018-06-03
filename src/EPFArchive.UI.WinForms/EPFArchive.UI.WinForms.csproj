@@ -54,6 +54,7 @@
     <Compile Include="Controls\ToolStripStatusLabelEx.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="DialogProvider.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="Forms\MainForm.cs">
       <SubType>Form</SubType>

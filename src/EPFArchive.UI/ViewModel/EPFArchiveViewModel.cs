@@ -13,27 +13,28 @@ namespace EPF.UI.ViewModel
         private const string APP_NAME = "EPF Archive";
         private string _appLabel = APP_NAME;
         private string _archiveFilePath;
-        private bool _locked;
         private EPFArchive _epfArchive;
+        private bool _isArchiveModified;
         private bool _isArchiveOpened;
         private bool _isArchiveSaveAllowed;
-        private int _itemsSelected;
-        private int _totalItems;
+        private bool _locked;
 
         #endregion Private Fields
 
         #region Public Constructors
 
-        public EPFArchiveViewModel()
+        public EPFArchiveViewModel(IDialogProvider dialogProvider)
         {
+            if (dialogProvider == null)
+                throw new ArgumentNullException(nameof(dialogProvider));
+
+            DialogProvider = dialogProvider;
+
+            Status = new StatusViewModel();
             Entries = new BindingList<EPFArchiveItemViewModel>();
-            Progress = new ProgressViewModel();
-            Log = new LogViewModel();
             Locked = true;
             IsArchiveOpened = false;
             IsArchiveSaveAllowed = false;
-
-            Progress.Visible = false;
         }
 
         #endregion Public Constructors
@@ -74,27 +75,41 @@ namespace EPF.UI.ViewModel
             }
         }
 
-        /// <summary>
-        /// This flag is used for locking UI functionality when performing time consuming tasks
-        /// </summary>
-        public bool Locked
+        public BindingList<EPFArchiveItemViewModel> Entries { get; private set; }
+
+        public bool IsArchiveModified
         {
             get
             {
-                return _locked;
+                return _isArchiveModified;
             }
 
             internal set
             {
-                if (_locked == value)
+                if (_isArchiveModified == value)
                     return;
 
-                _locked = value;
-                OnPropertyChanged(nameof(Locked));
+                _isArchiveModified = value;
+                OnPropertyChanged(nameof(IsArchiveModified));
             }
         }
 
-        public BindingList<EPFArchiveItemViewModel> Entries { get; private set; }
+        public bool IsArchiveOpened
+        {
+            get
+            {
+                return _isArchiveOpened;
+            }
+
+            internal set
+            {
+                if (_isArchiveOpened == value)
+                    return;
+
+                _isArchiveOpened = value;
+                OnPropertyChanged(nameof(IsArchiveOpened));
+            }
+        }
 
         /// <summary>
         /// This flag determines if archive is opene in Read-Only mode or Read/Write mode
@@ -116,82 +131,37 @@ namespace EPF.UI.ViewModel
             }
         }
 
-        public bool IsArchiveOpened
+        /// <summary>
+        /// This flag is used for locking UI functionality when performing time consuming tasks
+        /// </summary>
+        public bool Locked
         {
             get
             {
-                return _isArchiveOpened;
+                return _locked;
             }
 
             internal set
             {
-                if (_isArchiveOpened == value)
+                if (_locked == value)
                     return;
 
-                _isArchiveOpened = value;
-                OnPropertyChanged(nameof(IsArchiveOpened));
+                _locked = value;
+                OnPropertyChanged(nameof(Locked));
             }
         }
 
-        public int ItemsSelected
-        {
-            get
-            {
-                return _itemsSelected;
-            }
-
-            set
-            {
-                if (_itemsSelected == value)
-                    return;
-
-                _itemsSelected = value;
-                OnPropertyChanged(nameof(ItemsSelected));
-            }
-        }
-
-        public LogViewModel Log { get; private set; }
-        public ProgressViewModel Progress { get; private set; }
-
-        public int TotalItems
-        {
-            get
-            {
-                return _totalItems;
-            }
-
-            internal set
-            {
-                if (_totalItems == value)
-                    return;
-
-                _totalItems = value;
-                OnPropertyChanged(nameof(TotalItems));
-            }
-        }
+        public StatusViewModel Status { get; private set; }
 
         #endregion Public Properties
 
+        #region Internal Properties
+
+        internal IDialogProvider DialogProvider { get; private set; }
+
+        #endregion Internal Properties
+
         #region Public Methods
-
-        public void Close()
-        {
-            if (_epfArchive == null)
-                throw new InvalidOperationException("EPF Archive not opened!");
-
-            _epfArchive.Dispose();
-            _epfArchive = null;
-
-            Entries.Clear();
-
-            Log.Success($"Archive '{ Path.GetFileName(ArchiveFilePath)}' closed.");
-            ArchiveFilePath = null;
-            AppLabel = $"{APP_NAME}";
-
-            IsArchiveOpened = false;
-            TotalItems = 0;
-            ItemsSelected = 0;
-        }
 
         public void ExtractAll(string folderPath)
         {
@@ -203,29 +173,14 @@ namespace EPF.UI.ViewModel
             StartWork(InternalExtractSelected, folderPath);
         }
 
-        public void OpenReadOnly(string archiveFilePath)
-        {
-            try
-            {
-                var fileStream = File.Open(archiveFilePath, FileMode.Open, FileAccess.Read);
-                _epfArchive = new EPFArchive(fileStream, EPFArchiveMode.Read);
-
-                ReadEntries();
-
-                ArchiveFilePath = archiveFilePath;
-                AppLabel = $"{APP_NAME} - {ArchiveFilePath}";
-                IsArchiveOpened = true;
-                IsArchiveSaveAllowed = false;
-                Log.Success($"Archive '{ Path.GetFileName(ArchiveFilePath)}' opened.");
-            }
-            catch (Exception ex)
-            {
-                Log.Error($"Unable to open archive. Reason: {ex.Message}");
-            }
-        }
-
         public void Save()
         {
+            if (_epfArchive == null)
+                throw new InvalidOperationException("EPF Archive not opened!");
+
+            if (IsArchiveSaveAllowed == false)
+                throw new InvalidOperationException("EPF Archive save not allowed!");
+
             throw new NotImplementedException("Save");
         }
 
@@ -234,9 +189,94 @@ namespace EPF.UI.ViewModel
             throw new NotImplementedException("SaveAs");
         }
 
+        public bool TryClose()
+        {
+            if (!IsArchiveOpened)
+                return true;
+
+            if (IsArchiveModified)
+            {
+                var answer = DialogProvider.ShowMessageWithQuestion("Archive have been modified. Do you want to save it before closing?", "Save modified archive before closing?", QuestionDialogButtons.YesNoCancel);
+
+                if (answer == DialogAnswer.Cancel)
+                {
+                    Status.Log.Info("Archive closing canceled.");
+                    return false;
+                }
+                else if (answer == DialogAnswer.Yes)
+                {
+                    if (!TrySave())
+                        return false;
+                }
+            }
+
+            Close();
+            return true;
+        }
+
+        public bool TryOpenArchive()
+        {
+            var fileDialog = DialogProvider.ShowOpenFileDialog("Select EPF Archive to Open...",
+                                                               "East Point Software File (*.EPF)|*.EPF|All Files (*.*)|*.*",
+                                                               false);
+
+            //Cancel opening archive
+            if (fileDialog.Answer != DialogAnswer.OK)
+                return false;
+
+            //Try close any archive that is already opened
+            if (!TryClose())
+                return false;
+
+            OpenArchive(fileDialog.FileName);
+            return true;
+        }
+
+        public bool TryOpenArchiveReadOnly()
+        {
+            var fileDialog = DialogProvider.ShowOpenFileDialog("Select EPF Archive to Open in Read-Only mode...",
+                                                               "East Point Software File (*.EPF)|*.EPF|All Files (*.*)|*.*",
+                                                               false);
+
+            //Cancel opening archive
+            if (fileDialog.Answer != DialogAnswer.OK)
+                return false;
+
+            //Try close any archive that is already opened
+            if (!TryClose())
+                return false;
+
+            OpenArchiveReadOnly(fileDialog.FileName);
+            return true;
+        }
+
+        public bool TrySave()
+        {
+            throw new NotImplementedException("TrySave");
+        }
+
         #endregion Public Methods
 
         #region Private Methods
+
+        private void Close()
+        {
+            if (_epfArchive == null)
+                throw new InvalidOperationException("EPF Archive not opened!");
+
+            _epfArchive.Dispose();
+            _epfArchive = null;
+
+            Entries.Clear();
+
+            Status.Log.Success($"Archive '{ Path.GetFileName(ArchiveFilePath)}' closed.");
+            ArchiveFilePath = null;
+            AppLabel = $"{APP_NAME}";
+
+            IsArchiveOpened = false;
+            Status.TotalItems = 0;
+            Status.ItemsSelected = 0;
+        }
 
         private void InternalExtractAll(object argument)
         {
@@ -248,24 +288,24 @@ namespace EPF.UI.ViewModel
                 if (!Directory.Exists(folderPath))
                     throw new Exception("Directory doesn't exist.");
 
-                Progress.Value = 0;
-                Progress.Visible = true;
+                Status.Progress.Value = 0;
+                Status.Progress.Visible = true;
                 int count = 0;
                 foreach (var entry in Entries)
                 {
-                    Log.Info($"Extracting [{count} of {Entries.Count}] {entry.Name}...");
+                    Status.Log.Info($"Extracting [{count} of {Entries.Count}] {entry.Name}...");
                     entry.ExtractTo(folderPath);
                     count++;
-                    Progress.Value = (int)(((double)count / (double)Entries.Count) * 100.0);
+                    Status.Progress.Value = (int)(((double)count / (double)Entries.Count) * 100.0);
                 }
 
-                Log.Success($"Extraction finished.");
+                Status.Log.Success($"Extraction finished.");
 
-                Progress.Visible = false;
+                Status.Progress.Visible = false;
             }
             catch (Exception ex)
             {
-                Log.Error($"Unable to extract entries. Reason: {ex.Message}");
+                Status.Log.Error($"Unable to extract entries. Reason: {ex.Message}");
             }
             finally
             {
@@ -279,29 +319,71 @@ namespace EPF.UI.ViewModel
             {
                 Locked = false;
                 var folderPath = argument as string;
-                Progress.Value = 0;
-                Progress.Visible = true;
+                Status.Progress.Value = 0;
+                Status.Progress.Visible = true;
                 int count = 0;
                 foreach (var entry in Entries.Where(item => item.IsSelected))
                 {
-                    Log.Info($"Extracting [{count} of {Entries.Count}] {entry.Name}...");
+                    Status.Log.Info($"Extracting [{count} of {Entries.Count}] {entry.Name}...");
 
                     entry.ExtractTo(folderPath);
                     count++;
-                    Progress.Value = (int)(((double)count / (double)Entries.Count) * 100.0);
+                    Status.Progress.Value = (int)(((double)count / (double)Entries.Count) * 100.0);
                 }
 
-                Log.Success($"Extraction finished.");
+                Status.Log.Success($"Extraction finished.");
 
-                Progress.Visible = false;
+                Status.Progress.Visible = false;
             }
             catch (Exception ex)
             {
-                Log.Error($"Unable to extract entries. Reason: {ex.Message}");
+                Status.Log.Error($"Unable to extract entries. Reason: {ex.Message}");
             }
             finally
             {
                 Locked = true;
+            }
+        }
+
+        private void OpenArchive(string archiveFilePath)
+        {
+            try
+            {
+                var fileStream = File.Open(archiveFilePath, FileMode.Open, FileAccess.ReadWrite);
+                _epfArchive = new EPFArchive(fileStream, EPFArchiveMode.Update);
+
+                ReadEntries();
+
+                ArchiveFilePath = archiveFilePath;
+                AppLabel = $"{APP_NAME} - {ArchiveFilePath}";
+                IsArchiveOpened = true;
+                IsArchiveSaveAllowed = true;
+                Status.Log.Success($"Archive '{ Path.GetFileName(ArchiveFilePath)}' opened.");
+            }
+            catch (Exception ex)
+            {
+                Status.Log.Error($"Unable to open archive. Reason: {ex.Message}");
+            }
+        }
+
+        private void OpenArchiveReadOnly(string archiveFilePath)
+        {
+            try
+            {
+                var fileStream = File.Open(archiveFilePath, FileMode.Open, FileAccess.Read);
+                _epfArchive = new EPFArchive(fileStream, EPFArchiveMode.Read);
+
+                ReadEntries();
+
+                ArchiveFilePath = archiveFilePath;
+                AppLabel = $"{APP_NAME} - {ArchiveFilePath}";
+                IsArchiveOpened = true;
+                IsArchiveSaveAllowed = false;
+                Status.Log.Success($"Archive '{ Path.GetFileName(ArchiveFilePath)}' opened in read-only mode.");
+            }
+            catch (Exception ex)
+            {
+                Status.Log.Error($"Unable to open archive in read-only mode. Reason: {ex.Message}");
             }
         }
 
@@ -317,7 +399,7 @@ namespace EPF.UI.ViewModel
                 Entries.Add(new EPFArchiveItemViewModel(entry));
             }
 
-            TotalItems = _epfArchive.Entries.Count;
+            Status.TotalItems = _epfArchive.Entries.Count;
         }
 
         private void StartWork(WaitCallback function, object argument)
