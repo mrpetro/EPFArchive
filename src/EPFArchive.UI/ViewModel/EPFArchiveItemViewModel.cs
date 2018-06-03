@@ -34,7 +34,7 @@ namespace EPF.UI.ViewModel
             Name = entry.Name;
             Status = EPFArchiveItemStatus.Unchanged;
             IsCompressed = entry.IsCompressed;
-            Length = entry.Lenght;
+            Length = entry.Length;
             CompressedLength = entry.CompressedLength;
         }
 

@@ -8,14 +8,14 @@ namespace EPF
 {
     public class EPFArchiveEntryForRead : EPFArchiveEntry
     {
-        private readonly long m_ArchiveDataPos;
+        private readonly long _ArchiveDataPos;
 
-        internal long ArchiveDataPos { get { return m_ArchiveDataPos; } }
+        internal long ArchiveDataPos { get { return _ArchiveDataPos; } }
 
         internal EPFArchiveEntryForRead(EPFArchive archive, long dataPos) :
             base(archive)
         {
-            m_ArchiveDataPos = dataPos;
+            _ArchiveDataPos = dataPos;
         }
 
         public override Stream Open()
@@ -28,12 +28,12 @@ namespace EPF
 
             using (FileStream fs = new FileStream(tempFilePath, FileMode.Open, FileAccess.Write, FileShare.None, 4096, FileOptions.None))
             {
-                fs.SetLength(Lenght);
+                fs.SetLength(Length);
 
                 if (IsCompressed)
                     Archive.Decompressor.Decompress(Archive.ArchiveReader.BaseStream, fs);
                 else
-                    fs.Write(Archive.ArchiveReader.ReadBytes(Lenght), 0, Lenght);
+                    fs.Write(Archive.ArchiveReader.ReadBytes(Length), 0, Length);
             }
 
             return new FileStream(tempFilePath, FileMode.Open, FileAccess.Read, FileShare.None, 4096, FileOptions.DeleteOnClose);

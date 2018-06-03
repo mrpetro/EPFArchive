@@ -8,14 +8,14 @@ namespace EPF
 {
     class EPFArchiveEntryForUpdate : EPFArchiveEntry
     {
-        private long m_ArchiveDataPos;
+        private long _ArchiveDataPos;
 
-        internal long ArchiveDataPos { get { return m_ArchiveDataPos; } }
+        internal long ArchiveDataPos { get { return _ArchiveDataPos; } }
 
         internal EPFArchiveEntryForUpdate(EPFArchive archive, long dataPos) :
             base(archive)
         {
-            m_ArchiveDataPos = dataPos;
+            _ArchiveDataPos = dataPos;
         }
 
         public override Stream Open()
@@ -28,12 +28,12 @@ namespace EPF
 
             using (FileStream fs = new FileStream(tempFilePath, FileMode.Open, FileAccess.Write, FileShare.None, 4096, FileOptions.None))
             {
-                fs.SetLength(Lenght);
+                fs.SetLength(Length);
 
                 if (IsCompressed)
                     Archive.Decompressor.Decompress(Archive.ArchiveReader.BaseStream, fs);
                 else
-                    fs.Write(Archive.ArchiveReader.ReadBytes(Lenght), 0, Lenght);
+                    fs.Write(Archive.ArchiveReader.ReadBytes(Length), 0, Length);
             }
 
             OpenedStream = new FileStream(tempFilePath, FileMode.Open, FileAccess.ReadWrite, FileShare.None, 4096, FileOptions.DeleteOnClose);
@@ -44,9 +44,9 @@ namespace EPF
 
         internal override void WriteData()
         {
-            Archive.ArchiveReader.BaseStream.Position = m_ArchiveDataPos;
+            Archive.ArchiveReader.BaseStream.Position = _ArchiveDataPos;
 
-            m_ArchiveDataPos = Archive.ArchiveWriter.BinWriter.BaseStream.Position;
+            _ArchiveDataPos = Archive.ArchiveWriter.BinWriter.BaseStream.Position;
 
             //Entry was never opened so it will be copied from original
             if (OpenedStream == null)
@@ -60,17 +60,18 @@ namespace EPF
                     //Compress entry data while storing it in to archive
                     Archive.Compressor.Compress(OpenedStream, Archive.ArchiveWriter.BinWriter.BaseStream);
                     //Update entry normal and compressed data lengths
-                    m_Length = (int)OpenedStream.Length;
-                    m_CompressedLength = (int)Archive.ArchiveWriter.BinWriter.BaseStream.Position - (int)m_ArchiveDataPos;
+                    Length = (int)OpenedStream.Length;
+                    CompressedLength = (int)Archive.ArchiveWriter.BinWriter.BaseStream.Position - (int)_ArchiveDataPos;
                 }
                 else
                 {
-                    //Don't dispose reader because it will also close the stream.
-                    BinaryReader reader = new BinaryReader(OpenedStream);
                     int newLength = (int)OpenedStream.Length;
-                    Archive.ArchiveWriter.BinWriter.Write(reader.ReadBytes(newLength), 0, newLength);
-                    m_Length = newLength;
-                    m_CompressedLength = m_Length;
+
+                    using (var reader = new BinaryReader(OpenedStream, Encoding.UTF8, true))
+                        Archive.ArchiveWriter.BinWriter.Write(reader.ReadBytes(newLength), 0, newLength);
+
+                    Length = newLength;
+                    CompressedLength = Length;
                 }
             }
 

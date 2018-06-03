@@ -9,45 +9,41 @@ namespace EPF
 {
     public abstract class EPFArchiveEntry
     {
-        private EPFArchive m_Archive;
-        private string m_Name;
-        protected bool m_IsCompressed = true;
-        protected int m_CompressedLength = 0;
-        protected int m_Length = 0;
         internal Stream OpenedStream;
 
-        public EPFArchive Archive { get { return m_Archive; } }
-        public bool IsCompressed { get { return m_IsCompressed; } }
-        public int CompressedLength { get { return m_CompressedLength; } }
-        public int Lenght { get { return m_Length; } }
-        public string Name { get { return m_Name; } }
+        public EPFArchive Archive { get; private set; }
+        public bool IsCompressed { get; protected set; }
+        public int CompressedLength { get; protected set; }
+        public int Length { get; protected set; }
+        public string Name { get; protected set; }
 
         protected EPFArchiveEntry(EPFArchive archive)
         {
-            m_Archive = archive;
+            Archive = archive;
+            IsCompressed = true;
         }
 
         internal void ReadInfo(BinaryReader reader)
         {
-            m_Name = Encoding.ASCII.GetString(reader.ReadBytes(13)).Split(new char[] { '\0' })[0];
-            m_IsCompressed = reader.ReadBoolean();
-            m_CompressedLength = reader.ReadInt32();
-            m_Length= reader.ReadInt32();
+            Name = Encoding.ASCII.GetString(reader.ReadBytes(13)).Split(new char[] { '\0' })[0];
+            IsCompressed = reader.ReadBoolean();
+            CompressedLength = reader.ReadInt32();
+            Length = reader.ReadInt32();
         }
 
         internal void WriteInfo(BinaryWriter writer)
         {
-            writer.Write(Encoding.ASCII.GetBytes(m_Name.PadRight(13,'\0')));
-            writer.Write(m_IsCompressed);
-            writer.Write(m_CompressedLength);
-            writer.Write(m_Length);
+            writer.Write(Encoding.ASCII.GetBytes(Name.PadRight(13,'\0')));
+            writer.Write(IsCompressed);
+            writer.Write(CompressedLength);
+            writer.Write(Length);
         }
 
         protected void ThrowIfInvalidArchive()
         {
-            if (m_Archive == null)
+            if (Archive == null)
                 throw new InvalidOperationException("Entry has been deleted");
-            m_Archive.ThrowIfDisposed();
+            Archive.ThrowIfDisposed();
         }
 
         public abstract Stream Open();
