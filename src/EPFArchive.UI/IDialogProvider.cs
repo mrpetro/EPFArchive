@@ -47,5 +47,6 @@ namespace EPF.UI
         void ShowMessage(string text, string caption);
         DialogAnswer ShowMessageWithQuestion(string text, string caption, QuestionDialogButtons buttons);
         FileDialogResult ShowOpenFileDialog(string title, string filter, bool mutliSelect);
+        FileDialogResult ShowSaveFileDialog(string title, string filter, string initialDirectory, string fileName = null);
     }
 }

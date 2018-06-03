@@ -175,6 +175,11 @@ namespace EPF.UI.ViewModel
 
         public void Save()
         {
+            SaveAs(ArchiveFilePath);
+        }
+
+        public void SaveAs(string filePath)
+        {
             if (_epfArchive == null)
                 throw new InvalidOperationException("EPF Archive not opened!");
 
@@ -182,11 +187,6 @@ namespace EPF.UI.ViewModel
                 throw new InvalidOperationException("EPF Archive save not allowed!");
 
             throw new NotImplementedException("Save");
-        }
-
-        public void SaveAs(string filePath)
-        {
-            throw new NotImplementedException("SaveAs");
         }
 
         public bool TryClose()
@@ -252,7 +252,29 @@ namespace EPF.UI.ViewModel
 
         public bool TrySave()
         {
-            throw new NotImplementedException("TrySave");
+            SaveAs(ArchiveFilePath);
+            return true;
+        }
+
+        public bool TrySaveAs()
+        {
+            var initialDirectory = Path.GetDirectoryName(ArchiveFilePath);
+            var initialFileName = Path.GetFileName(ArchiveFilePath);
+
+
+            var fileDialog = DialogProvider.ShowSaveFileDialog("Choose file name to save EPF archive...",
+                                                               "East Point Software File (*.EPF)|*.EPF|All Files (*.*)|*.*",
+                                                               initialDirectory,
+                                                               initialFileName);
+            //Cancel saving archive
+            if (fileDialog.Answer != DialogAnswer.OK)
+                return false;
+
+            var newFilePath = fileDialog.FileName;
+
+            SaveAs(newFilePath);
+
+            return true;
         }
 
         #endregion Public Methods
@@ -310,6 +332,21 @@ namespace EPF.UI.ViewModel
             finally
             {
                 Locked = true;
+            }
+        }
+
+        public void MarkSelectedEntriesToRemove()
+        {
+            if (!IsArchiveSaveAllowed)
+            {
+                Status.Log.Warning($"Unable to remove any entries. Archive opened in read-only mode.");
+                return;
+            }
+
+            foreach (var item in Entries.Where(item => item.IsSelected))
+            {
+                if(item.Status == EPFArchiveItemStatus.Unchanged || item.Status == EPFArchiveItemStatus.Modifying)
+                    item.Status = EPFArchiveItemStatus.Removing;
             }
         }
 

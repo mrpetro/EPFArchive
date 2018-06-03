@@ -35,12 +35,9 @@ namespace EPF.UI.WinForms.Forms
 
             set
             {
-                var invokeParent = Tools.GetInvokable(this);
-                invokeParent.InvokeIfRequired(() => { base.Enabled = value; });
+                this.InvokeIfRequired(() => { base.Enabled = value; });
             }
         }
-
-        #endregion Public Properties
 
         public bool Locked
         {
@@ -64,6 +61,7 @@ namespace EPF.UI.WinForms.Forms
             }
         }
 
+        #endregion Public Properties
 
         #region Public Methods
 
@@ -186,6 +184,17 @@ namespace EPF.UI.WinForms.Forms
             _viewModel.TryClose();
         }
 
+        private void MenuItemFileOpen_Click(object sender, EventArgs e)
+        {
+            //MessageBox.Show("Open EPF archives in Read/Write mode is not implemented yet.");
+            _viewModel.TryOpenArchive();
+        }
+
+        private void MenuItemFileOpenReadOnly_Click(object sender, EventArgs e)
+        {
+            _viewModel.TryOpenArchiveReadOnly();
+        }
+
         private void MenuItemInvertSelection_Click(object sender, EventArgs e)
         {
             foreach (DataGridViewRow row in DGV.Rows)
@@ -203,17 +212,20 @@ namespace EPF.UI.WinForms.Forms
 
         #endregion Private Methods
 
-        private void MenuItemFileOpen_Click(object sender, EventArgs e)
+        private void DGV_PreviewKeyDown(object sender, PreviewKeyDownEventArgs e)
         {
-            //MessageBox.Show("Open EPF archives in Read/Write mode is not implemented yet.");
-            _viewModel.TryOpenArchive();
+            if(e.KeyCode == Keys.Delete)
+                _viewModel.MarkSelectedEntriesToRemove();
         }
 
-
-
-        private void MenuItemFileOpenReadOnly_Click(object sender, EventArgs e)
+        private void MenuItemFileSave_Click(object sender, EventArgs e)
         {
-            _viewModel.TryOpenArchiveReadOnly();
+            _viewModel.TrySave();
+        }
+
+        private void MenuItemFileSaveAs_Click(object sender, EventArgs e)
+        {
+            _viewModel.TrySaveAs();
         }
     }
 }

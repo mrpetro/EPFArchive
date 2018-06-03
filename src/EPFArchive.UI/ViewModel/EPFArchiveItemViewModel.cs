@@ -6,9 +6,9 @@ namespace EPF.UI.ViewModel
     public enum EPFArchiveItemStatus
     {
         Unchanged,
-        Modified,
-        Deleted,
-        Added
+        Modifying,
+        Adding,
+        Removing
     }
 
     public class EPFArchiveItemViewModel : BaseViewModel

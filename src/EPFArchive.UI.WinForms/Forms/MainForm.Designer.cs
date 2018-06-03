@@ -45,16 +45,16 @@
             this.MenuItemDeselectAll = new EPF.UI.WinForms.Controls.ToolStripMenuItemEx();
             this.MenuItemInvertSelection = new EPF.UI.WinForms.Controls.ToolStripMenuItemEx();
             this.DGV = new System.Windows.Forms.DataGridView();
-            this.StatusStrip = new System.Windows.Forms.StatusStrip();
-            this.StatusStripTotalItemsNo = new EPF.UI.WinForms.Controls.ToolStripStatusLabelEx();
-            this.StatusStripSelectedItemsNo = new EPF.UI.WinForms.Controls.ToolStripStatusLabelEx();
-            this.StatusStripMessage = new EPF.UI.WinForms.Controls.ToolStripStatusLabelEx();
-            this.StatusStripProgressBar = new EPF.UI.WinForms.Controls.ToolStripProgressBarEx();
             this.DGVColumnName = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.DGVColumnStatus = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.DGVColumnSize = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.DGVColumnPackedSize = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.DGVColumnIsCompressed = new System.Windows.Forms.DataGridViewCheckBoxColumn();
+            this.StatusStrip = new System.Windows.Forms.StatusStrip();
+            this.StatusStripTotalItemsNo = new EPF.UI.WinForms.Controls.ToolStripStatusLabelEx();
+            this.StatusStripSelectedItemsNo = new EPF.UI.WinForms.Controls.ToolStripStatusLabelEx();
+            this.StatusStripMessage = new EPF.UI.WinForms.Controls.ToolStripStatusLabelEx();
+            this.StatusStripProgressBar = new EPF.UI.WinForms.Controls.ToolStripProgressBarEx();
             this.MenuMain.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.DGV)).BeginInit();
             this.StatusStrip.SuspendLayout();
@@ -91,64 +91,66 @@
             // MenuItemFileOpenReadOnly
             // 
             this.MenuItemFileOpenReadOnly.Name = "MenuItemFileOpenReadOnly";
-            this.MenuItemFileOpenReadOnly.Size = new System.Drawing.Size(171, 22);
+            this.MenuItemFileOpenReadOnly.Size = new System.Drawing.Size(180, 22);
             this.MenuItemFileOpenReadOnly.Text = "Open Read-Only...";
             this.MenuItemFileOpenReadOnly.Click += new System.EventHandler(this.MenuItemFileOpenReadOnly_Click);
             // 
             // MenuItemFileOpen
             // 
             this.MenuItemFileOpen.Name = "MenuItemFileOpen";
-            this.MenuItemFileOpen.Size = new System.Drawing.Size(171, 22);
+            this.MenuItemFileOpen.Size = new System.Drawing.Size(180, 22);
             this.MenuItemFileOpen.Text = "Open...";
             this.MenuItemFileOpen.Click += new System.EventHandler(this.MenuItemFileOpen_Click);
             // 
             // MenuItemFileSave
             // 
             this.MenuItemFileSave.Name = "MenuItemFileSave";
-            this.MenuItemFileSave.Size = new System.Drawing.Size(171, 22);
+            this.MenuItemFileSave.Size = new System.Drawing.Size(180, 22);
             this.MenuItemFileSave.Text = "Save";
+            this.MenuItemFileSave.Click += new System.EventHandler(this.MenuItemFileSave_Click);
             // 
             // MenuItemFileSaveAs
             // 
             this.MenuItemFileSaveAs.Name = "MenuItemFileSaveAs";
-            this.MenuItemFileSaveAs.Size = new System.Drawing.Size(171, 22);
+            this.MenuItemFileSaveAs.Size = new System.Drawing.Size(180, 22);
             this.MenuItemFileSaveAs.Text = "Save As...";
+            this.MenuItemFileSaveAs.Click += new System.EventHandler(this.MenuItemFileSaveAs_Click);
             // 
             // MenuItemFileClose
             // 
             this.MenuItemFileClose.Name = "MenuItemFileClose";
-            this.MenuItemFileClose.Size = new System.Drawing.Size(171, 22);
+            this.MenuItemFileClose.Size = new System.Drawing.Size(180, 22);
             this.MenuItemFileClose.Text = "Close";
             this.MenuItemFileClose.Click += new System.EventHandler(this.MenuItemFileClose_Click);
             // 
             // toolStripSeparator1
             // 
             this.toolStripSeparator1.Name = "toolStripSeparator1";
-            this.toolStripSeparator1.Size = new System.Drawing.Size(168, 6);
+            this.toolStripSeparator1.Size = new System.Drawing.Size(177, 6);
             // 
             // MenuItemExtractAll
             // 
             this.MenuItemExtractAll.Name = "MenuItemExtractAll";
-            this.MenuItemExtractAll.Size = new System.Drawing.Size(171, 22);
+            this.MenuItemExtractAll.Size = new System.Drawing.Size(180, 22);
             this.MenuItemExtractAll.Text = "Extract All...";
             this.MenuItemExtractAll.Click += new System.EventHandler(this.MenuItemExtractAll_Click);
             // 
             // MenuItemExtractSelection
             // 
             this.MenuItemExtractSelection.Name = "MenuItemExtractSelection";
-            this.MenuItemExtractSelection.Size = new System.Drawing.Size(171, 22);
+            this.MenuItemExtractSelection.Size = new System.Drawing.Size(180, 22);
             this.MenuItemExtractSelection.Text = "Extract Selected...";
             this.MenuItemExtractSelection.Click += new System.EventHandler(this.MenuItemExtractSelection_Click);
             // 
             // toolStripSeparator2
             // 
             this.toolStripSeparator2.Name = "toolStripSeparator2";
-            this.toolStripSeparator2.Size = new System.Drawing.Size(168, 6);
+            this.toolStripSeparator2.Size = new System.Drawing.Size(177, 6);
             // 
             // MenuItemExit
             // 
             this.MenuItemExit.Name = "MenuItemExit";
-            this.MenuItemExit.Size = new System.Drawing.Size(171, 22);
+            this.MenuItemExit.Size = new System.Drawing.Size(180, 22);
             this.MenuItemExit.Text = "Exit";
             this.MenuItemExit.Click += new System.EventHandler(this.MenuItemExit_Click);
             // 
@@ -206,6 +208,39 @@
             this.DGV.Size = new System.Drawing.Size(624, 417);
             this.DGV.TabIndex = 1;
             this.DGV.SelectionChanged += new System.EventHandler(this.DGV_SelectionChanged);
+            this.DGV.PreviewKeyDown += new System.Windows.Forms.PreviewKeyDownEventHandler(this.DGV_PreviewKeyDown);
+            // 
+            // DGVColumnName
+            // 
+            this.DGVColumnName.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.DGVColumnName.HeaderText = "Name";
+            this.DGVColumnName.Name = "DGVColumnName";
+            this.DGVColumnName.ReadOnly = true;
+            // 
+            // DGVColumnStatus
+            // 
+            this.DGVColumnStatus.HeaderText = "Status";
+            this.DGVColumnStatus.Name = "DGVColumnStatus";
+            this.DGVColumnStatus.ReadOnly = true;
+            this.DGVColumnStatus.Resizable = System.Windows.Forms.DataGridViewTriState.False;
+            // 
+            // DGVColumnSize
+            // 
+            this.DGVColumnSize.HeaderText = "Size";
+            this.DGVColumnSize.Name = "DGVColumnSize";
+            this.DGVColumnSize.ReadOnly = true;
+            // 
+            // DGVColumnPackedSize
+            // 
+            this.DGVColumnPackedSize.HeaderText = "Packed Size";
+            this.DGVColumnPackedSize.Name = "DGVColumnPackedSize";
+            this.DGVColumnPackedSize.ReadOnly = true;
+            // 
+            // DGVColumnIsCompressed
+            // 
+            this.DGVColumnIsCompressed.HeaderText = "Is Compressed";
+            this.DGVColumnIsCompressed.Name = "DGVColumnIsCompressed";
+            this.DGVColumnIsCompressed.Resizable = System.Windows.Forms.DataGridViewTriState.False;
             // 
             // StatusStrip
             // 
@@ -245,38 +280,6 @@
             this.StatusStripProgressBar.AutoSize = false;
             this.StatusStripProgressBar.Name = "StatusStripProgressBar";
             this.StatusStripProgressBar.Size = new System.Drawing.Size(100, 16);
-            // 
-            // DGVColumnName
-            // 
-            this.DGVColumnName.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.DGVColumnName.HeaderText = "Name";
-            this.DGVColumnName.Name = "DGVColumnName";
-            this.DGVColumnName.ReadOnly = true;
-            // 
-            // DGVColumnStatus
-            // 
-            this.DGVColumnStatus.HeaderText = "Status";
-            this.DGVColumnStatus.Name = "DGVColumnStatus";
-            this.DGVColumnStatus.ReadOnly = true;
-            this.DGVColumnStatus.Resizable = System.Windows.Forms.DataGridViewTriState.False;
-            // 
-            // DGVColumnSize
-            // 
-            this.DGVColumnSize.HeaderText = "Size";
-            this.DGVColumnSize.Name = "DGVColumnSize";
-            this.DGVColumnSize.ReadOnly = true;
-            // 
-            // DGVColumnPackedSize
-            // 
-            this.DGVColumnPackedSize.HeaderText = "Packed Size";
-            this.DGVColumnPackedSize.Name = "DGVColumnPackedSize";
-            this.DGVColumnPackedSize.ReadOnly = true;
-            // 
-            // DGVColumnIsCompressed
-            // 
-            this.DGVColumnIsCompressed.HeaderText = "Is Compressed";
-            this.DGVColumnIsCompressed.Name = "DGVColumnIsCompressed";
-            this.DGVColumnIsCompressed.Resizable = System.Windows.Forms.DataGridViewTriState.False;
             // 
             // MainForm
             // 
