@@ -77,21 +77,20 @@ namespace EPF.UI.WinForms.Forms
             DGV.AutoGenerateColumns = false;
             DGV.DataSource = _viewModel.Entries;
             DGVColumnName.DataPropertyName = "Name";
+            DGVColumnStatus.DataPropertyName = "Status";
             DGVColumnSize.DataPropertyName = "Length";
             DGVColumnPackedSize.DataPropertyName = "CompressedLength";
             DGVColumnIsCompressed.DataPropertyName = "IsCompressed";
 
-            //DataBindings.Add("Enabled", _viewModel, nameof(_viewModel.Locked), false, DataSourceUpdateMode.OnPropertyChanged);
             DataBindings.Add("Locked", _viewModel, nameof(_viewModel.Locked), false, DataSourceUpdateMode.OnPropertyChanged);
             DataBindings.Add("Text", _viewModel, nameof(_viewModel.AppLabel), false, DataSourceUpdateMode.OnPropertyChanged);
-            StatusStripTotalItemsNo.DataBindings.Add("Text", _viewModel, nameof(_viewModel.TotalItems), true, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged, "0", "0 items");
-            StatusStripSelectedItemsNo.DataBindings.Add("Text", _viewModel, nameof(_viewModel.ItemsSelected), true, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged, "0", "0 items selected");
 
-            StatusStripMessage.DataBindings.Add("Text", _viewModel.Log, nameof(_viewModel.Log.Message), false, DataSourceUpdateMode.OnPropertyChanged);
-            StatusStripMessage.DataBindings.Add("ForeColor", _viewModel.Log, nameof(_viewModel.Log.Color), false, DataSourceUpdateMode.OnPropertyChanged);
-
-            StatusStripProgressBar.DataBindings.Add("Value", _viewModel.Progress, nameof(_viewModel.Progress.Value), false, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged);
-            StatusStripProgressBar.DataBindings.Add("Visible", _viewModel.Progress, nameof(_viewModel.Progress.Visible), false, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged);
+            StatusStripTotalItemsNo.DataBindings.Add("Text", _viewModel.Status, nameof(_viewModel.Status.TotalItems), true, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged, "0", "0 items");
+            StatusStripSelectedItemsNo.DataBindings.Add("Text", _viewModel.Status, nameof(_viewModel.Status.ItemsSelected), true, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged, "0", "0 items selected");
+            StatusStripMessage.DataBindings.Add("Text", _viewModel.Status.Log, nameof(_viewModel.Status.Log.Message), false, DataSourceUpdateMode.OnPropertyChanged);
+            StatusStripMessage.DataBindings.Add("ForeColor", _viewModel.Status.Log, nameof(_viewModel.Status.Log.Color), false, DataSourceUpdateMode.OnPropertyChanged);
+            StatusStripProgressBar.DataBindings.Add("Value", _viewModel.Status.Progress, nameof(_viewModel.Status.Progress.Value), false, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged);
+            StatusStripProgressBar.DataBindings.Add("Visible", _viewModel.Status.Progress, nameof(_viewModel.Status.Progress.Visible), false, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged);
 
             MenuItemDeselectAll.DataBindings.Add("Enabled", _viewModel, nameof(_viewModel.IsArchiveOpened), false, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged);
             MenuItemSelectAll.DataBindings.Add("Enabled", _viewModel, nameof(_viewModel.IsArchiveOpened), false, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged);
@@ -121,19 +120,12 @@ namespace EPF.UI.WinForms.Forms
                     itemsSelected++;
             }
 
-            _viewModel.ItemsSelected = itemsSelected;
+            _viewModel.Status.ItemsSelected = itemsSelected;
         }
 
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
-            if (_viewModel.IsArchiveOpened)
-            {
-                if (!_viewModel.IsArchiveSaveAllowed)
-                {
-                    _viewModel.Close();
-                    return;
-                }
-            }
+            _viewModel.TryClose();
         }
 
         private void MenuItemDeselectAll_Click(object sender, EventArgs e)
@@ -144,7 +136,7 @@ namespace EPF.UI.WinForms.Forms
 
         private void MenuItemExit_Click(object sender, EventArgs e)
         {
-            Close();
+            _viewModel.TryClose();
         }
 
         private void MenuItemExtractAll_Click(object sender, EventArgs e)
@@ -191,7 +183,7 @@ namespace EPF.UI.WinForms.Forms
 
         private void MenuItemFileClose_Click(object sender, EventArgs e)
         {
-            _viewModel.Close();
+            _viewModel.TryClose();
         }
 
         private void MenuItemInvertSelection_Click(object sender, EventArgs e)
@@ -213,23 +205,15 @@ namespace EPF.UI.WinForms.Forms
 
         private void MenuItemFileOpen_Click(object sender, EventArgs e)
         {
-            MessageBox.Show("Open EPF archives in Read/Write mode is not implemented yet.");
+            //MessageBox.Show("Open EPF archives in Read/Write mode is not implemented yet.");
+            _viewModel.TryOpenArchive();
         }
+
+
 
         private void MenuItemFileOpenReadOnly_Click(object sender, EventArgs e)
         {
-            using (var fileDialog = new OpenFileDialog())
-            {
-                fileDialog.Multiselect = false;
-
-                var result = fileDialog.ShowDialog();
-
-                if (result == DialogResult.OK)
-                {
-                    string filePath = fileDialog.FileName;
-                    _viewModel.OpenReadOnly(filePath);
-                }
-            }
+            _viewModel.TryOpenArchiveReadOnly();
         }
     }
 }

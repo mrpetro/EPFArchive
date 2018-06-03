@@ -19,7 +19,7 @@ namespace EPF.UI.WinForms
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
 
-            Application.Run(new MainForm(new EPFArchiveViewModel()));
+            Application.Run(new MainForm(new EPFArchiveViewModel(new DialogProvider())));
         }
     }
 }

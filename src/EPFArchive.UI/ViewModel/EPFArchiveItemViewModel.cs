@@ -3,12 +3,21 @@ using System.IO;
 
 namespace EPF.UI.ViewModel
 {
+    public enum EPFArchiveItemStatus
+    {
+        Unchanged,
+        Modified,
+        Deleted,
+        Added
+    }
+
     public class EPFArchiveItemViewModel : BaseViewModel
     {
         #region Private Fields
 
         private int _compressedLength;
         private EPFArchiveEntry _entry;
+        private EPFArchiveItemStatus _status;
         private bool _isCompressed;
         private bool _isSelected;
         private int _length;
@@ -23,8 +32,9 @@ namespace EPF.UI.ViewModel
             _entry = entry;
 
             Name = entry.Name;
+            Status = EPFArchiveItemStatus.Unchanged;
             IsCompressed = entry.IsCompressed;
-            Length = entry.Lenght;
+            Length = entry.Length;
             CompressedLength = entry.CompressedLength;
         }
 
@@ -63,6 +73,23 @@ namespace EPF.UI.ViewModel
 
                 _isCompressed = value;
                 OnPropertyChanged(nameof(IsCompressed));
+            }
+        }
+
+        public EPFArchiveItemStatus Status
+        {
+            get
+            {
+                return _status;
+            }
+
+            set
+            {
+                if (_status == value)
+                    return;
+
+                _status = value;
+                OnPropertyChanged(nameof(Status));
             }
         }
 
