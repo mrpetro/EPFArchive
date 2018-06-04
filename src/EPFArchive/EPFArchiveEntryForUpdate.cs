@@ -1,21 +1,36 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.IO;
 using System.Text;
-using System.IO;
 
 namespace EPF
 {
-    class EPFArchiveEntryForUpdate : EPFArchiveEntry
+    internal class EPFArchiveEntryForUpdate : EPFArchiveEntry
     {
+        #region Private Fields
+
         private long _ArchiveDataPos;
 
-        internal long ArchiveDataPos { get { return _ArchiveDataPos; } }
+        #endregion Private Fields
+
+        #region Internal Constructors
 
         internal EPFArchiveEntryForUpdate(EPFArchive archive, long dataPos) :
             base(archive)
         {
             _ArchiveDataPos = dataPos;
+        }
+
+        #endregion Internal Constructors
+
+        #region Internal Properties
+
+        internal long ArchiveDataPos { get { return _ArchiveDataPos; } }
+
+        #endregion Internal Properties
+
+        #region Public Methods
+
+        public override void Close()
+        {
         }
 
         public override Stream Open()
@@ -39,18 +54,21 @@ namespace EPF
             OpenedStream = new FileStream(tempFilePath, FileMode.Open, FileAccess.ReadWrite, FileShare.None, 4096, FileOptions.DeleteOnClose);
 
             return OpenedStream;
-
         }
 
-        internal override void WriteData()
+        #endregion Public Methods
+
+        #region Internal Methods
+
+        internal override void WriteData(BinaryWriter writer)
         {
             Archive.ArchiveReader.BaseStream.Position = _ArchiveDataPos;
 
-            _ArchiveDataPos = Archive.ArchiveWriter.BinWriter.BaseStream.Position;
+            _ArchiveDataPos = writer.BaseStream.Position;
 
             //Entry was never opened so it will be copied from original
             if (OpenedStream == null)
-                Archive.ArchiveWriter.BinWriter.Write(Archive.ArchiveReader.ReadBytes(CompressedLength), 0, CompressedLength);
+                writer.Write(Archive.ArchiveReader.ReadBytes(CompressedLength), 0, CompressedLength);
             else
             {
                 OpenedStream.Seek(0, SeekOrigin.Begin);
@@ -58,28 +76,24 @@ namespace EPF
                 if (IsCompressed)
                 {
                     //Compress entry data while storing it in to archive
-                    Archive.Compressor.Compress(OpenedStream, Archive.ArchiveWriter.BinWriter.BaseStream);
+                    Archive.Compressor.Compress(OpenedStream, writer.BaseStream);
                     //Update entry normal and compressed data lengths
                     Length = (int)OpenedStream.Length;
-                    CompressedLength = (int)Archive.ArchiveWriter.BinWriter.BaseStream.Position - (int)_ArchiveDataPos;
+                    CompressedLength = (int)writer.BaseStream.Position - (int)_ArchiveDataPos;
                 }
                 else
                 {
                     int newLength = (int)OpenedStream.Length;
 
                     using (var reader = new BinaryReader(OpenedStream, Encoding.UTF8, true))
-                        Archive.ArchiveWriter.BinWriter.Write(reader.ReadBytes(newLength), 0, newLength);
+                        writer.Write(reader.ReadBytes(newLength), 0, newLength);
 
                     Length = newLength;
                     CompressedLength = Length;
                 }
             }
-
         }
 
-        public override void Close()
-        {
-
-        }
+        #endregion Internal Methods
     }
 }

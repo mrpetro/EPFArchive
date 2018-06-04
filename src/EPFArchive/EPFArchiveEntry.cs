@@ -1,27 +1,46 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.IO;
-using System.Diagnostics;
+using System.Text;
 
 namespace EPF
 {
     public abstract class EPFArchiveEntry
     {
+        #region Internal Fields
+
         internal Stream OpenedStream;
 
-        public EPFArchive Archive { get; private set; }
-        public bool IsCompressed { get; protected set; }
-        public int CompressedLength { get; protected set; }
-        public int Length { get; protected set; }
-        public string Name { get; protected set; }
+        #endregion Internal Fields
+
+        #region Protected Constructors
 
         protected EPFArchiveEntry(EPFArchive archive)
         {
             Archive = archive;
             IsCompressed = true;
         }
+
+        #endregion Protected Constructors
+
+        #region Public Properties
+
+        public EPFArchive Archive { get; private set; }
+        public int CompressedLength { get; protected set; }
+        public bool IsCompressed { get; protected set; }
+        public int Length { get; protected set; }
+        public string Name { get; protected set; }
+
+        #endregion Public Properties
+
+        #region Public Methods
+
+        public abstract void Close();
+
+        public abstract Stream Open();
+
+        #endregion Public Methods
+
+        #region Internal Methods
 
         internal void ReadInfo(BinaryReader reader)
         {
@@ -31,13 +50,19 @@ namespace EPF
             Length = reader.ReadInt32();
         }
 
+        internal abstract void WriteData(BinaryWriter writer);
+
         internal void WriteInfo(BinaryWriter writer)
         {
-            writer.Write(Encoding.ASCII.GetBytes(Name.PadRight(13,'\0')));
+            writer.Write(Encoding.ASCII.GetBytes(Name.PadRight(13, '\0')));
             writer.Write(IsCompressed);
             writer.Write(CompressedLength);
             writer.Write(Length);
         }
+
+        #endregion Internal Methods
+
+        #region Protected Methods
 
         protected void ThrowIfInvalidArchive()
         {
@@ -46,8 +71,6 @@ namespace EPF
             Archive.ThrowIfDisposed();
         }
 
-        public abstract Stream Open();
-        internal abstract void WriteData();
-        public abstract void Close();
+        #endregion Protected Methods
     }
 }
