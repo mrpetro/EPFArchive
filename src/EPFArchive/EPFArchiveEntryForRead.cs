@@ -1,21 +1,36 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.IO;
 
 namespace EPF
 {
     public class EPFArchiveEntryForRead : EPFArchiveEntry
     {
+        #region Private Fields
+
         private readonly long _ArchiveDataPos;
 
-        internal long ArchiveDataPos { get { return _ArchiveDataPos; } }
+        #endregion Private Fields
+
+        #region Internal Constructors
 
         internal EPFArchiveEntryForRead(EPFArchive archive, long dataPos) :
             base(archive)
         {
             _ArchiveDataPos = dataPos;
+        }
+
+        #endregion Internal Constructors
+
+        #region Internal Properties
+
+        internal long ArchiveDataPos { get { return _ArchiveDataPos; } }
+
+        #endregion Internal Properties
+
+        #region Public Methods
+
+        public override void Close()
+        {
         }
 
         public override Stream Open()
@@ -39,13 +54,15 @@ namespace EPF
             return new FileStream(tempFilePath, FileMode.Open, FileAccess.Read, FileShare.None, 4096, FileOptions.DeleteOnClose);
         }
 
-        internal override void WriteData()
+        #endregion Public Methods
+
+        #region Internal Methods
+
+        internal override void WriteData(BinaryWriter writer)
         {
             throw new InvalidOperationException("Unable to write EPFArchiveEntry in Read mode.");
         }
 
-        public override void Close()
-        {
-        }
+        #endregion Internal Methods
     }
 }
