@@ -98,66 +98,66 @@
             // MenuItemFileOpenReadOnly
             // 
             this.MenuItemFileOpenReadOnly.Name = "MenuItemFileOpenReadOnly";
-            this.MenuItemFileOpenReadOnly.Size = new System.Drawing.Size(180, 22);
+            this.MenuItemFileOpenReadOnly.Size = new System.Drawing.Size(171, 22);
             this.MenuItemFileOpenReadOnly.Text = "Open Read-Only...";
-            this.MenuItemFileOpenReadOnly.Click += new System.EventHandler(this.MenuItemFileOpenReadOnly_Click);
+            this.MenuItemFileOpenReadOnly.Click += new System.EventHandler(this.MenuItemArchiveOpenReadOnly_Click);
             // 
             // MenuItemFileOpen
             // 
             this.MenuItemFileOpen.Name = "MenuItemFileOpen";
-            this.MenuItemFileOpen.Size = new System.Drawing.Size(180, 22);
+            this.MenuItemFileOpen.Size = new System.Drawing.Size(171, 22);
             this.MenuItemFileOpen.Text = "Open...";
-            this.MenuItemFileOpen.Click += new System.EventHandler(this.MenuItemFileOpen_Click);
+            this.MenuItemFileOpen.Click += new System.EventHandler(this.MenuItemArchiveOpen_Click);
             // 
             // MenuItemFileSave
             // 
             this.MenuItemFileSave.Name = "MenuItemFileSave";
-            this.MenuItemFileSave.Size = new System.Drawing.Size(180, 22);
+            this.MenuItemFileSave.Size = new System.Drawing.Size(171, 22);
             this.MenuItemFileSave.Text = "Save";
-            this.MenuItemFileSave.Click += new System.EventHandler(this.MenuItemFileSave_Click);
+            this.MenuItemFileSave.Click += new System.EventHandler(this.MenuItemArchiveSave_Click);
             // 
             // MenuItemFileSaveAs
             // 
             this.MenuItemFileSaveAs.Name = "MenuItemFileSaveAs";
-            this.MenuItemFileSaveAs.Size = new System.Drawing.Size(180, 22);
+            this.MenuItemFileSaveAs.Size = new System.Drawing.Size(171, 22);
             this.MenuItemFileSaveAs.Text = "Save As...";
-            this.MenuItemFileSaveAs.Click += new System.EventHandler(this.MenuItemFileSaveAs_Click);
+            this.MenuItemFileSaveAs.Click += new System.EventHandler(this.MenuItemArchiveSaveAs_Click);
             // 
             // MenuItemFileClose
             // 
             this.MenuItemFileClose.Name = "MenuItemFileClose";
-            this.MenuItemFileClose.Size = new System.Drawing.Size(180, 22);
+            this.MenuItemFileClose.Size = new System.Drawing.Size(171, 22);
             this.MenuItemFileClose.Text = "Close";
-            this.MenuItemFileClose.Click += new System.EventHandler(this.MenuItemFileClose_Click);
+            this.MenuItemFileClose.Click += new System.EventHandler(this.MenuItemArchiveClose_Click);
             // 
             // toolStripSeparator1
             // 
             this.toolStripSeparator1.Name = "toolStripSeparator1";
-            this.toolStripSeparator1.Size = new System.Drawing.Size(177, 6);
+            this.toolStripSeparator1.Size = new System.Drawing.Size(168, 6);
             // 
             // MenuItemExtractAll
             // 
             this.MenuItemExtractAll.Name = "MenuItemExtractAll";
-            this.MenuItemExtractAll.Size = new System.Drawing.Size(180, 22);
+            this.MenuItemExtractAll.Size = new System.Drawing.Size(171, 22);
             this.MenuItemExtractAll.Text = "Extract All...";
             this.MenuItemExtractAll.Click += new System.EventHandler(this.MenuItemExtractAll_Click);
             // 
             // MenuItemExtractSelection
             // 
             this.MenuItemExtractSelection.Name = "MenuItemExtractSelection";
-            this.MenuItemExtractSelection.Size = new System.Drawing.Size(180, 22);
+            this.MenuItemExtractSelection.Size = new System.Drawing.Size(171, 22);
             this.MenuItemExtractSelection.Text = "Extract Selected...";
             this.MenuItemExtractSelection.Click += new System.EventHandler(this.MenuItemExtractSelection_Click);
             // 
             // toolStripSeparator2
             // 
             this.toolStripSeparator2.Name = "toolStripSeparator2";
-            this.toolStripSeparator2.Size = new System.Drawing.Size(177, 6);
+            this.toolStripSeparator2.Size = new System.Drawing.Size(168, 6);
             // 
             // MenuItemExit
             // 
             this.MenuItemExit.Name = "MenuItemExit";
-            this.MenuItemExit.Size = new System.Drawing.Size(180, 22);
+            this.MenuItemExit.Size = new System.Drawing.Size(171, 22);
             this.MenuItemExit.Text = "Exit";
             this.MenuItemExit.Click += new System.EventHandler(this.MenuItemExit_Click);
             // 
@@ -320,6 +320,7 @@
             this.ToolStripRemove.Name = "ToolStripRemove";
             this.ToolStripRemove.Size = new System.Drawing.Size(23, 22);
             this.ToolStripRemove.Text = "Remove";
+            this.ToolStripRemove.Click += new System.EventHandler(this.ToolStripRemove_Click);
             // 
             // toolStripSeparator3
             // 
@@ -334,6 +335,7 @@
             this.ToolStripExtractSelection.Name = "ToolStripExtractSelection";
             this.ToolStripExtractSelection.Size = new System.Drawing.Size(23, 22);
             this.ToolStripExtractSelection.Text = "Extract Selection...";
+            this.ToolStripExtractSelection.Click += new System.EventHandler(this.ToolStripExtractSelection_Click);
             // 
             // ToolStripExtractAll
             // 
@@ -343,6 +345,7 @@
             this.ToolStripExtractAll.Name = "ToolStripExtractAll";
             this.ToolStripExtractAll.Size = new System.Drawing.Size(23, 22);
             this.ToolStripExtractAll.Text = "Extract All...";
+            this.ToolStripExtractAll.Click += new System.EventHandler(this.ToolStripExtractAll_Click);
             // 
             // MainForm
             // 

@@ -179,18 +179,18 @@ namespace EPF.UI.WinForms.Forms
             }
         }
 
-        private void MenuItemFileClose_Click(object sender, EventArgs e)
+        private void MenuItemArchiveClose_Click(object sender, EventArgs e)
         {
             _viewModel.TryClose();
         }
 
-        private void MenuItemFileOpen_Click(object sender, EventArgs e)
+        private void MenuItemArchiveOpen_Click(object sender, EventArgs e)
         {
             //MessageBox.Show("Open EPF archives in Read/Write mode is not implemented yet.");
             _viewModel.TryOpenArchive();
         }
 
-        private void MenuItemFileOpenReadOnly_Click(object sender, EventArgs e)
+        private void MenuItemArchiveOpenReadOnly_Click(object sender, EventArgs e)
         {
             _viewModel.TryOpenArchiveReadOnly();
         }
@@ -215,22 +215,37 @@ namespace EPF.UI.WinForms.Forms
         private void DGV_PreviewKeyDown(object sender, PreviewKeyDownEventArgs e)
         {
             if(e.KeyCode == Keys.Delete)
-                _viewModel.MarkSelectedEntriesToRemove();
+                _viewModel.TryMarkSelectedEntriesToRemove();
         }
 
-        private void MenuItemFileSave_Click(object sender, EventArgs e)
+        private void MenuItemArchiveSave_Click(object sender, EventArgs e)
         {
             _viewModel.TrySave();
         }
 
-        private void MenuItemFileSaveAs_Click(object sender, EventArgs e)
+        private void MenuItemArchiveSaveAs_Click(object sender, EventArgs e)
         {
             _viewModel.TrySaveAs();
         }
 
         private void ToolStripAdd_Click(object sender, EventArgs e)
         {
+            _viewModel.TryAddEntries();
+        }
 
+        private void ToolStripRemove_Click(object sender, EventArgs e)
+        {
+            _viewModel.TryMarkSelectedEntriesToRemove();
+        }
+
+        private void ToolStripExtractSelection_Click(object sender, EventArgs e)
+        {
+            _viewModel.TryExtractSelection();
+        }
+
+        private void ToolStripExtractAll_Click(object sender, EventArgs e)
+        {
+            _viewModel.TryExtractAll();
         }
     }
 }

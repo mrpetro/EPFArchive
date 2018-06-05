@@ -336,18 +336,62 @@ namespace EPF.UI.ViewModel
             }
         }
 
-        public void MarkSelectedEntriesToRemove()
+        public void TryExtractAll()
         {
-            if (!IsArchiveSaveAllowed)
-            {
-                Status.Log.Warning($"Unable to remove any entries. Archive opened in read-only mode.");
-                return;
-            }
+            throw new NotImplementedException();
+        }
 
-            foreach (var item in Entries.Where(item => item.IsSelected))
+        public void TryExtractSelection()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void TryAddEntries()
+        {
+            try
             {
-                if(item.Status == EPFArchiveItemStatus.Unchanged || item.Status == EPFArchiveItemStatus.Modifying)
-                    item.Status = EPFArchiveItemStatus.Removing;
+                if (!IsArchiveOpened)
+                    return;
+
+                if (!IsArchiveSaveAllowed)
+                    throw new InvalidOperationException("Archive opened in read-only mode.");
+
+                //TODO: Fill that
+            }
+            catch (InvalidOperationException ex)
+            {
+                Status.Log.Warning($"Unable to add new entries. {ex.Message}");
+            }
+            catch (Exception ex)
+            {
+                Status.Log.Error($"Unhandled exception: {ex}");
+            }
+        }
+
+        public void TryMarkSelectedEntriesToRemove()
+        {
+            try
+            {
+                if (!IsArchiveOpened)
+                    return;
+
+                if (!IsArchiveSaveAllowed)
+                    throw new InvalidOperationException("Archive opened in read-only mode.");
+
+                foreach (var item in Entries.Where(item => item.IsSelected))
+                {
+                    if (item.Status == EPFArchiveItemStatus.Unchanged || item.Status == EPFArchiveItemStatus.Modifying)
+                        item.Status = EPFArchiveItemStatus.Removing;
+                }
+
+            }
+            catch (InvalidOperationException ex)
+            {
+                Status.Log.Warning($"Unable to remove any entries. {ex.Message}");
+            }
+            catch (Exception ex)
+            {
+                Status.Log.Error($"Unhandled exception: {ex}");
             }
         }
 
