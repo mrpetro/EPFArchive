@@ -1,5 +1,5 @@
 # EPFArchive
-EPF Archive (East Point File System developed by East Point Software) Manager, capable of packing/unpacking various couple of DOS games content
+EPF Archive (East Point File System developed by East Point Software) Manager, capable of packing/unpacking various DOS games content.
 
 More information about EPF File format and games it was used in can be found on following site:
 http://www.shikadi.net/moddingwiki/EPF_Format
@@ -19,4 +19,4 @@ http://www.shikadi.net/moddingwiki/EPF_Format
 - [Improvement] LZW compression algorithm used for storing entries is slooooooooow. This has to improve.
 
 **EPF Archive UI functionality to add/improve:**
-- [Feature]Opening EPF archive in read/write mode. This implies adding new entries, modifying/removing existing entries 
+- [Feature][Work in progress]Opening EPF archive in read/write mode. This implies adding new entries, modifying/removing existing entries 
