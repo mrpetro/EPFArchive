@@ -296,6 +296,7 @@ namespace EPF.UI.ViewModel
             AppLabel = $"{APP_NAME}";
 
             IsArchiveOpened = false;
+            IsArchiveSaveAllowed = false;
             Status.TotalItems = 0;
             Status.ItemsSelected = 0;
         }
