@@ -55,9 +55,16 @@
             this.StatusStripSelectedItemsNo = new EPF.UI.WinForms.Controls.ToolStripStatusLabelEx();
             this.StatusStripMessage = new EPF.UI.WinForms.Controls.ToolStripStatusLabelEx();
             this.StatusStripProgressBar = new EPF.UI.WinForms.Controls.ToolStripProgressBarEx();
+            this.ToolStrip = new System.Windows.Forms.ToolStrip();
+            this.ToolStripAdd = new System.Windows.Forms.ToolStripButton();
+            this.ToolStripRemove = new System.Windows.Forms.ToolStripButton();
+            this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
+            this.ToolStripExtractSelection = new System.Windows.Forms.ToolStripButton();
+            this.ToolStripExtractAll = new System.Windows.Forms.ToolStripButton();
             this.MenuMain.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.DGV)).BeginInit();
             this.StatusStrip.SuspendLayout();
+            this.ToolStrip.SuspendLayout();
             this.SuspendLayout();
             // 
             // MenuMain
@@ -201,11 +208,11 @@
             this.DGVColumnIsCompressed});
             this.DGV.Dock = System.Windows.Forms.DockStyle.Fill;
             this.DGV.EditMode = System.Windows.Forms.DataGridViewEditMode.EditProgrammatically;
-            this.DGV.Location = new System.Drawing.Point(0, 24);
+            this.DGV.Location = new System.Drawing.Point(0, 49);
             this.DGV.Name = "DGV";
             this.DGV.RowHeadersVisible = false;
             this.DGV.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this.DGV.Size = new System.Drawing.Size(624, 417);
+            this.DGV.Size = new System.Drawing.Size(624, 370);
             this.DGV.TabIndex = 1;
             this.DGV.SelectionChanged += new System.EventHandler(this.DGV_SelectionChanged);
             this.DGV.PreviewKeyDown += new System.Windows.Forms.PreviewKeyDownEventHandler(this.DGV_PreviewKeyDown);
@@ -281,13 +288,70 @@
             this.StatusStripProgressBar.Name = "StatusStripProgressBar";
             this.StatusStripProgressBar.Size = new System.Drawing.Size(100, 16);
             // 
+            // ToolStrip
+            // 
+            this.ToolStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.ToolStripAdd,
+            this.ToolStripRemove,
+            this.toolStripSeparator3,
+            this.ToolStripExtractSelection,
+            this.ToolStripExtractAll});
+            this.ToolStrip.Location = new System.Drawing.Point(0, 24);
+            this.ToolStrip.Name = "ToolStrip";
+            this.ToolStrip.Size = new System.Drawing.Size(624, 25);
+            this.ToolStrip.TabIndex = 3;
+            this.ToolStrip.Text = "toolStrip1";
+            // 
+            // ToolStripAdd
+            // 
+            this.ToolStripAdd.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.ToolStripAdd.Image = global::EPF.UI.WinForms.Properties.Resources.Add;
+            this.ToolStripAdd.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.ToolStripAdd.Name = "ToolStripAdd";
+            this.ToolStripAdd.Size = new System.Drawing.Size(23, 22);
+            this.ToolStripAdd.Text = "Add...";
+            this.ToolStripAdd.Click += new System.EventHandler(this.ToolStripAdd_Click);
+            // 
+            // ToolStripRemove
+            // 
+            this.ToolStripRemove.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.ToolStripRemove.Image = global::EPF.UI.WinForms.Properties.Resources.Remove;
+            this.ToolStripRemove.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.ToolStripRemove.Name = "ToolStripRemove";
+            this.ToolStripRemove.Size = new System.Drawing.Size(23, 22);
+            this.ToolStripRemove.Text = "Remove";
+            // 
+            // toolStripSeparator3
+            // 
+            this.toolStripSeparator3.Name = "toolStripSeparator3";
+            this.toolStripSeparator3.Size = new System.Drawing.Size(6, 25);
+            // 
+            // ToolStripExtractSelection
+            // 
+            this.ToolStripExtractSelection.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.ToolStripExtractSelection.Image = global::EPF.UI.WinForms.Properties.Resources.ExtractSelection;
+            this.ToolStripExtractSelection.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.ToolStripExtractSelection.Name = "ToolStripExtractSelection";
+            this.ToolStripExtractSelection.Size = new System.Drawing.Size(23, 22);
+            this.ToolStripExtractSelection.Text = "Extract Selection...";
+            // 
+            // ToolStripExtractAll
+            // 
+            this.ToolStripExtractAll.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.ToolStripExtractAll.Image = global::EPF.UI.WinForms.Properties.Resources.ExtractAll;
+            this.ToolStripExtractAll.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.ToolStripExtractAll.Name = "ToolStripExtractAll";
+            this.ToolStripExtractAll.Size = new System.Drawing.Size(23, 22);
+            this.ToolStripExtractAll.Text = "Extract All...";
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(624, 441);
-            this.Controls.Add(this.StatusStrip);
             this.Controls.Add(this.DGV);
+            this.Controls.Add(this.ToolStrip);
+            this.Controls.Add(this.StatusStrip);
             this.Controls.Add(this.MenuMain);
             this.MainMenuStrip = this.MenuMain;
             this.MinimumSize = new System.Drawing.Size(640, 480);
@@ -299,6 +363,8 @@
             ((System.ComponentModel.ISupportInitialize)(this.DGV)).EndInit();
             this.StatusStrip.ResumeLayout(false);
             this.StatusStrip.PerformLayout();
+            this.ToolStrip.ResumeLayout(false);
+            this.ToolStrip.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -333,6 +399,12 @@
         private System.Windows.Forms.DataGridViewTextBoxColumn DGVColumnSize;
         private System.Windows.Forms.DataGridViewTextBoxColumn DGVColumnPackedSize;
         private System.Windows.Forms.DataGridViewCheckBoxColumn DGVColumnIsCompressed;
+        private System.Windows.Forms.ToolStrip ToolStrip;
+        private System.Windows.Forms.ToolStripButton ToolStripAdd;
+        private System.Windows.Forms.ToolStripButton ToolStripRemove;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator3;
+        private System.Windows.Forms.ToolStripButton ToolStripExtractSelection;
+        private System.Windows.Forms.ToolStripButton ToolStripExtractAll;
     }
 }
 

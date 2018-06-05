@@ -227,5 +227,10 @@ namespace EPF.UI.WinForms.Forms
         {
             _viewModel.TrySaveAs();
         }
+
+        private void ToolStripAdd_Click(object sender, EventArgs e)
+        {
+
+        }
     }
 }
