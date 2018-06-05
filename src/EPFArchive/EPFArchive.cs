@@ -20,7 +20,7 @@ namespace EPF
 
         private static readonly char[] SIGNATURE = { 'E', 'P', 'F', 'S' };
 
-        private BinaryReader m_ArchiveReader = null;
+        private BinaryReader _ArchiveReader = null;
         private EPFArchiveWriter _ArchiveWriter = null;
         private Stream _BackStream;
         private LZWCompressor _Compressor = null;
@@ -53,19 +53,7 @@ namespace EPF
 
         #region Internal Properties
 
-        //public Stream ArchiveStream { get { return m_MainStream; } }
-        internal BinaryReader ArchiveReader { get { return m_ArchiveReader; } }
-
-        internal EPFArchiveWriter ArchiveWriter
-        {
-            get
-            {
-                if (_ArchiveWriter == null)
-                    _ArchiveWriter = new EPFArchiveWriter(_MainStream);
-
-                return _ArchiveWriter;
-            }
-        }
+        internal BinaryReader ArchiveReader { get { return _ArchiveReader; } }
 
         internal LZWCompressor Compressor
         {
@@ -91,7 +79,46 @@ namespace EPF
 
         #endregion Internal Properties
 
+        #region Private Properties
+
+        private EPFArchiveWriter ArchiveWriter
+        {
+            get
+            {
+                if (_ArchiveWriter == null)
+                    _ArchiveWriter = new EPFArchiveWriter(_MainStream);
+
+                return _ArchiveWriter;
+            }
+        }
+
+        #endregion Private Properties
+
         #region Public Methods
+
+        public void Close(bool saveChanges)
+        {
+            try
+            {
+                switch (_Mode)
+                {
+                    case EPFArchiveMode.Read:
+                        break;
+
+                    case EPFArchiveMode.Create:
+                    case EPFArchiveMode.Update:
+                    default:
+                        Debug.Assert(_Mode == EPFArchiveMode.Update || _Mode == EPFArchiveMode.Create);
+                        if (saveChanges)
+                            Save();
+                        break;
+                }
+            }
+            finally
+            {
+                CloseStreams();
+            }
+        }
 
         public void Dispose()
         {
@@ -112,14 +139,14 @@ namespace EPF
             return entry;
         }
 
+        public void Save()
+        {
+            WriteEntries(ArchiveWriter.BinWriter);
+        }
+
         #endregion Public Methods
 
         #region Internal Methods
-
-        internal void Close(bool writeChanges)
-        {
-            WriteEntries();
-        }
 
         internal void ThrowIfDisposed()
         {
@@ -137,22 +164,10 @@ namespace EPF
             {
                 try
                 {
-                    switch (_Mode)
-                    {
-                        case EPFArchiveMode.Read:
-                            break;
-
-                        case EPFArchiveMode.Create:
-                        case EPFArchiveMode.Update:
-                        default:
-                            Debug.Assert(_Mode == EPFArchiveMode.Update || _Mode == EPFArchiveMode.Create);
-                            Close(true);
-                            break;
-                    }
+                    Close(true);
                 }
-                finally
+                catch (Exception)
                 {
-                    CloseStreams();
                     _IsDisposed = true;
                 }
             }
@@ -178,8 +193,8 @@ namespace EPF
             if (_ArchiveWriter != null)
                 _ArchiveWriter.Dispose();
 
-            if (m_ArchiveReader != null)
-                m_ArchiveReader.Dispose();
+            if (_ArchiveReader != null)
+                _ArchiveReader.Dispose();
         }
 
         private void Init(Stream stream, EPFArchiveMode mode)
@@ -216,7 +231,7 @@ namespace EPF
             _Mode = EPFArchiveMode.Create;
             _MainStream = stream;
             _BackStream = null;
-            m_ArchiveReader = null;
+            _ArchiveReader = null;
         }
 
         /// <summary>
@@ -234,7 +249,7 @@ namespace EPF
             _MainStream = stream;
             //There is no back stream necesary in read mode
             _BackStream = null;
-            m_ArchiveReader = new BinaryReader(_MainStream);
+            _ArchiveReader = new BinaryReader(_MainStream);
 
             ReadEntries();
         }
@@ -253,7 +268,7 @@ namespace EPF
             _MainStream.Seek(0, SeekOrigin.Begin);
             _BackStream.Seek(0, SeekOrigin.Begin);
             //Reading will be done from BackStream and writing will be done to MainStream
-            m_ArchiveReader = new BinaryReader(_BackStream);
+            _ArchiveReader = new BinaryReader(_BackStream);
             ReadEntries();
         }
 
@@ -294,37 +309,43 @@ namespace EPF
             }
         }
 
-        private void WriteEntries()
+        private void WriteEntries(BinaryWriter writer)
         {
-            ArchiveWriter.BinWriter.BaseStream.SetLength(0);
-            ArchiveWriter.BinWriter.BaseStream.Seek(0, SeekOrigin.Begin);
+            writer.BaseStream.SetLength(0);
+            writer.BaseStream.Seek(0, SeekOrigin.Begin);
 
             UInt32 fatOffset = 0;
             long fatOffsetDataPos = 0;
 
-            ArchiveWriter.BinWriter.Write(SIGNATURE);
-            fatOffsetDataPos = ArchiveWriter.BinWriter.BaseStream.Position;
-            ArchiveWriter.BinWriter.Write(fatOffset);
-            ArchiveWriter.BinWriter.Write((byte)0);
-            ArchiveWriter.BinWriter.Write((UInt16)Entries.Count);
+            //Write archive header
+            writer.Write(SIGNATURE);
+            //Remeber fat offset data position
+            fatOffsetDataPos = writer.BaseStream.Position;
+            //Reserve fat offset data space
+            writer.Write(fatOffset);
+            //Write alignment(unknown purpose) byte
+            writer.Write((byte)0);
+            //Write number of entries
+            writer.Write((UInt16)Entries.Count);
 
+            //Write all entries data
             for (int i = 0; i < Entries.Count; i++)
             {
                 var entry = Entries[i];
-                entry.WriteData();
+                entry.WriteData(writer);
             }
 
-            fatOffset = (UInt32)ArchiveWriter.BinWriter.BaseStream.Position;
+            fatOffset = (UInt32)writer.BaseStream.Position;
             //Get back to fatOffset information and write it
-            ArchiveWriter.BinWriter.BaseStream.Seek(fatOffsetDataPos, SeekOrigin.Begin);
-            ArchiveWriter.BinWriter.Write(fatOffset);
+            writer.BaseStream.Seek(fatOffsetDataPos, SeekOrigin.Begin);
+            writer.Write(fatOffset);
             //Get back to FATOffet
-            ArchiveWriter.BinWriter.BaseStream.Seek((long)fatOffset, SeekOrigin.Begin);
+            writer.BaseStream.Seek((long)fatOffset, SeekOrigin.Begin);
             //Write all entries info
             for (int i = 0; i < Entries.Count; i++)
             {
                 var entry = Entries[i];
-                entry.WriteInfo(_ArchiveWriter.BinWriter);
+                entry.WriteInfo(writer);
             }
         }
 
