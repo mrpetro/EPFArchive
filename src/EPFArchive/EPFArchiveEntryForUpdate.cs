@@ -7,7 +7,7 @@ namespace EPF
     {
         #region Private Fields
 
-        private long _ArchiveDataPos;
+        private long _archiveDataPos;
 
         #endregion Private Fields
 
@@ -16,14 +16,12 @@ namespace EPF
         internal EPFArchiveEntryForUpdate(EPFArchive archive, long dataPos) :
             base(archive)
         {
-            _ArchiveDataPos = dataPos;
+            _archiveDataPos = dataPos;
         }
 
         #endregion Internal Constructors
 
         #region Internal Properties
-
-        internal long ArchiveDataPos { get { return _ArchiveDataPos; } }
 
         #endregion Internal Properties
 
@@ -37,7 +35,7 @@ namespace EPF
         {
             ThrowIfInvalidArchive();
 
-            Archive.ArchiveReader.BaseStream.Position = ArchiveDataPos;
+            Archive.ArchiveReader.BaseStream.Position = _archiveDataPos;
 
             string tempFilePath = Path.GetTempFileName();
 
@@ -62,9 +60,9 @@ namespace EPF
 
         internal override void WriteData(BinaryWriter writer)
         {
-            Archive.ArchiveReader.BaseStream.Position = _ArchiveDataPos;
+            Archive.ArchiveReader.BaseStream.Position = _archiveDataPos;
 
-            _ArchiveDataPos = writer.BaseStream.Position;
+            _archiveDataPos = writer.BaseStream.Position;
 
             //Entry was never opened so it will be copied from original
             if (OpenedStream == null)
@@ -79,7 +77,7 @@ namespace EPF
                     Archive.Compressor.Compress(OpenedStream, writer.BaseStream);
                     //Update entry normal and compressed data lengths
                     Length = (int)OpenedStream.Length;
-                    CompressedLength = (int)writer.BaseStream.Position - (int)_ArchiveDataPos;
+                    CompressedLength = (int)writer.BaseStream.Position - (int)_archiveDataPos;
                 }
                 else
                 {
