@@ -179,13 +179,11 @@ namespace EPF
 
         private void AddEntry(EPFArchiveEntry entry)
         {
-            _Entries.Add(entry);
+            if (_EntryDictionary.ContainsKey(entry.Name))
+                throw new InvalidOperationException($"Entry with name '{entry.Name}' already exist.");
 
-            string entryName = entry.Name;
-            if (!_EntryDictionary.ContainsKey(entryName))
-            {
-                _EntryDictionary.Add(entryName, entry);
-            }
+            _Entries.Add(entry);
+            _EntryDictionary.Add(entry.Name, entry);
         }
 
         private void CloseStreams()
@@ -347,6 +345,13 @@ namespace EPF
                 var entry = Entries[i];
                 entry.WriteInfo(writer);
             }
+        }
+
+        public EPFArchiveEntry CreateEntry(string filePath)
+        {
+            var newEntry = new EPFArchiveEntryForCreate(this, filePath);
+            AddEntry(newEntry);
+            return newEntry;
         }
 
         #endregion Private Methods

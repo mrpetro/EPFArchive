@@ -64,6 +64,7 @@
   <ItemGroup>
     <Compile Include="EPFArchive.cs" />
     <Compile Include="EPFArchiveEntry.cs" />
+    <Compile Include="EPFArchiveEntryForCreate.cs" />
     <Compile Include="EPFArchiveEntryForRead.cs" />
     <Compile Include="EPFArchiveEntryForUpdate.cs" />
     <Compile Include="EPFArchiveReader.cs" />
