@@ -32,7 +32,12 @@ namespace EPF.UI.ViewModel
             _entry = entry;
 
             Name = entry.Name;
-            Status = EPFArchiveItemStatus.Unchanged;
+
+            if (entry is EPFArchiveEntryForCreate)
+                Status = EPFArchiveItemStatus.Adding;
+            else 
+                Status = EPFArchiveItemStatus.Unchanged;
+
             IsCompressed = entry.IsCompressed;
             Length = entry.Length;
             CompressedLength = entry.CompressedLength;
@@ -155,6 +160,13 @@ namespace EPF.UI.ViewModel
                 using (var outFile = File.Create(outFilePath))
                     entryStream.CopyTo(outFile);
             }
+        }
+
+        public static EPFArchiveItemViewModel Create()
+        {
+
+
+            throw new NotImplementedException();
         }
 
         #endregion Public Properties

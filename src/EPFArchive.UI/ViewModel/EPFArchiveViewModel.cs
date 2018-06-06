@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
@@ -346,6 +348,22 @@ namespace EPF.UI.ViewModel
             throw new NotImplementedException();
         }
 
+        private void AddEntries(ICollection<string> filePaths)
+        {
+            foreach (var filePath in filePaths)
+            {
+                try
+                {
+                    var newEntry = _epfArchive.CreateEntry(filePath);
+                    Entries.Add(new EPFArchiveItemViewModel(newEntry));
+                }
+                catch (InvalidOperationException ex)
+                {
+                    Status.Log.Warning($"Unable to add new entry '{filePath}'. {ex.Message}");
+                }
+            }
+        }
+
         public void TryAddEntries()
         {
             try
@@ -356,11 +374,17 @@ namespace EPF.UI.ViewModel
                 if (!IsArchiveSaveAllowed)
                     throw new InvalidOperationException("Archive opened in read-only mode.");
 
-                //TODO: Fill that
-            }
-            catch (InvalidOperationException ex)
-            {
-                Status.Log.Warning($"Unable to add new entries. {ex.Message}");
+                var fileDialog = DialogProvider.ShowOpenFileDialog("Select files to add to archive...",
+                                                                   "All Files (*.*)|*.*",
+                                                                   true);
+                //Cancel adding files
+                if (fileDialog.Answer != DialogAnswer.OK)
+                {
+                    Status.Log.Info($"Adding files canceled...");
+                    return;
+                }
+
+                AddEntries(fileDialog.FileNames);
             }
             catch (Exception ex)
             {
