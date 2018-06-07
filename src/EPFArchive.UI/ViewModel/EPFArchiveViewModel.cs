@@ -33,7 +33,7 @@ namespace EPF.UI.ViewModel
 
             Status = new StatusViewModel();
             Entries = new BindingList<EPFArchiveItemViewModel>();
-            Locked = true;
+            Locked = false;
             IsArchiveOpened = false;
             IsArchiveSaveAllowed = false;
             Entries.ListChanged += Entries_ListChanged;
@@ -245,17 +245,7 @@ namespace EPF.UI.ViewModel
             var folderBrowser = DialogProvider.ShowFolderBrowserDialog("Select folder to extract all entries...", null);
 
             if (folderBrowser.Answer == DialogAnswer.OK)
-            {
-                try
-                {
-                    Locked = true;
-                    StartWork(ExtractAll, folderBrowser.SelectedDirectory);
-                }
-                finally
-                {
-                    Locked = false;
-                }
-            }
+                StartWork(ExtractAll, folderBrowser.SelectedDirectory);
         }
 
         public void TryExtractSelection()
@@ -263,17 +253,7 @@ namespace EPF.UI.ViewModel
             var folderBrowser = DialogProvider.ShowFolderBrowserDialog("Select folder to extract selected entries...", null);
 
             if (folderBrowser.Answer == DialogAnswer.OK)
-            {
-                try
-                {
-                    Locked = true;
-                    StartWork(ExtractSelection, folderBrowser.SelectedDirectory);
-                }
-                finally
-                {
-                    Locked = false;
-                }
-            }
+                StartWork(ExtractSelection, folderBrowser.SelectedDirectory);
         }
 
         public void TryMarkSelectedEntriesToRemove()
@@ -442,7 +422,7 @@ namespace EPF.UI.ViewModel
         {
             try
             {
-                Locked = false;
+                Locked = true;
                 var folderPath = argument as string;
 
                 if (!Directory.Exists(folderPath))
@@ -469,7 +449,7 @@ namespace EPF.UI.ViewModel
             }
             finally
             {
-                Locked = true;
+                Locked = false;
             }
         }
 
@@ -477,7 +457,7 @@ namespace EPF.UI.ViewModel
         {
             try
             {
-                Locked = false;
+                Locked = true;
                 var folderPath = argument as string;
                 Status.Progress.Value = 0;
                 Status.Progress.Visible = true;
@@ -504,7 +484,7 @@ namespace EPF.UI.ViewModel
             }
             finally
             {
-                Locked = true;
+                Locked = false;
             }
         }
 

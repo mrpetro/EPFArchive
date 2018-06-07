@@ -53,8 +53,7 @@ namespace EPF.UI.WinForms.Forms
                     if (_locked == value)
                         return;
 
-                    foreach (Control control in Controls)
-                        control.Enabled = value;
+                    Tools.ChangeEnabled(this, !value);
 
                     _locked = value;
                 });
