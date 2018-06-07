@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
@@ -37,6 +36,7 @@ namespace EPF.UI.ViewModel
             Locked = true;
             IsArchiveOpened = false;
             IsArchiveSaveAllowed = false;
+            Entries.ListChanged += Entries_ListChanged;
         }
 
         #endregion Public Constructors
@@ -165,19 +165,15 @@ namespace EPF.UI.ViewModel
 
         #region Public Methods
 
-        public void ExtractAll(string folderPath)
-        {
-            StartWork(InternalExtractAll, folderPath);
-        }
-
-        public void ExtractSelected(string folderPath)
-        {
-            StartWork(InternalExtractSelected, folderPath);
-        }
-
         public void Save()
         {
-            SaveAs(ArchiveFilePath);
+            if (_epfArchive == null)
+                throw new InvalidOperationException("EPF Archive not opened!");
+
+            if (IsArchiveSaveAllowed == false)
+                throw new InvalidOperationException("EPF Archive save not allowed!");
+
+            _epfArchive.Save();
         }
 
         public void SaveAs(string filePath)
@@ -188,7 +184,35 @@ namespace EPF.UI.ViewModel
             if (IsArchiveSaveAllowed == false)
                 throw new InvalidOperationException("EPF Archive save not allowed!");
 
-            throw new NotImplementedException("Save");
+            throw new NotImplementedException("SaveAs");
+        }
+
+        public void TryAddEntries()
+        {
+            try
+            {
+                if (!IsArchiveOpened)
+                    return;
+
+                if (!IsArchiveSaveAllowed)
+                    throw new InvalidOperationException("Archive opened in read-only mode.");
+
+                var fileDialog = DialogProvider.ShowOpenFileDialog("Select files to add to archive...",
+                                                                   "All Files (*.*)|*.*",
+                                                                   true);
+                //Cancel adding files
+                if (fileDialog.Answer != DialogAnswer.OK)
+                {
+                    Status.Log.Info($"Adding files canceled...");
+                    return;
+                }
+
+                AddEntries(fileDialog.FileNames);
+            }
+            catch (Exception ex)
+            {
+                Status.Log.Error($"Unhandled exception: {ex}");
+            }
         }
 
         public bool TryClose()
@@ -212,8 +236,72 @@ namespace EPF.UI.ViewModel
                 }
             }
 
-            Close();
+            Close(false);
             return true;
+        }
+
+        public void TryExtractAll()
+        {
+            var folderBrowser = DialogProvider.ShowFolderBrowserDialog("Select folder to extract all entries...", null);
+
+            if (folderBrowser.Answer == DialogAnswer.OK)
+            {
+                try
+                {
+                    Locked = true;
+                    StartWork(ExtractAll, folderBrowser.SelectedDirectory);
+                }
+                finally
+                {
+                    Locked = false;
+                }
+            }
+        }
+
+        public void TryExtractSelection()
+        {
+            var folderBrowser = DialogProvider.ShowFolderBrowserDialog("Select folder to extract selected entries...", null);
+
+            if (folderBrowser.Answer == DialogAnswer.OK)
+            {
+                try
+                {
+                    Locked = true;
+                    StartWork(ExtractSelection, folderBrowser.SelectedDirectory);
+                }
+                finally
+                {
+                    Locked = false;
+                }
+            }
+        }
+
+        public void TryMarkSelectedEntriesToRemove()
+        {
+            try
+            {
+                if (!IsArchiveOpened)
+                    return;
+
+                if (!IsArchiveSaveAllowed)
+                    throw new InvalidOperationException("Archive opened in read-only mode.");
+
+                foreach (var item in Entries.Where(item => item.IsSelected))
+                {
+                    if (item.Status == EPFArchiveItemStatus.Unchanged || item.Status == EPFArchiveItemStatus.Modifying)
+                        item.Status = EPFArchiveItemStatus.Removing;
+                }
+
+                CheckIfArchiveModified();
+            }
+            catch (InvalidOperationException ex)
+            {
+                Status.Log.Warning($"Unable to remove any entries. {ex.Message}");
+            }
+            catch (Exception ex)
+            {
+                Status.Log.Error($"Unhandled exception: {ex}");
+            }
         }
 
         public bool TryOpenArchive()
@@ -254,39 +342,82 @@ namespace EPF.UI.ViewModel
 
         public bool TrySave()
         {
-            SaveAs(ArchiveFilePath);
-            return true;
+            try
+            {
+                Save();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Status.Log.Error($"Unable to save archive. Reason: {ex.Message}");
+            }
+
+            return false;
         }
 
         public bool TrySaveAs()
         {
-            var initialDirectory = Path.GetDirectoryName(ArchiveFilePath);
-            var initialFileName = Path.GetFileName(ArchiveFilePath);
+            try
+            {
+                var initialDirectory = Path.GetDirectoryName(ArchiveFilePath);
+                var initialFileName = Path.GetFileName(ArchiveFilePath);
 
+                var fileDialog = DialogProvider.ShowSaveFileDialog("Choose file name to save EPF archive...",
+                                                                   "East Point Software File (*.EPF)|*.EPF|All Files (*.*)|*.*",
+                                                                   initialDirectory,
+                                                                   initialFileName);
+                //Cancel saving archive
+                if (fileDialog.Answer != DialogAnswer.OK)
+                    return false;
 
-            var fileDialog = DialogProvider.ShowSaveFileDialog("Choose file name to save EPF archive...",
-                                                               "East Point Software File (*.EPF)|*.EPF|All Files (*.*)|*.*",
-                                                               initialDirectory,
-                                                               initialFileName);
-            //Cancel saving archive
-            if (fileDialog.Answer != DialogAnswer.OK)
-                return false;
+                var newFilePath = fileDialog.FileName;
 
-            var newFilePath = fileDialog.FileName;
+                SaveAs(newFilePath);
 
-            SaveAs(newFilePath);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Status.Log.Error($"Unable to save archive. Reason: {ex.Message}");
+            }
 
-            return true;
+            return false;
         }
 
         #endregion Public Methods
 
         #region Private Methods
 
-        private void Close()
+        private void AddEntries(ICollection<string> filePaths)
+        {
+            foreach (var filePath in filePaths)
+            {
+                try
+                {
+                    var newEntry = _epfArchive.CreateEntry(filePath);
+                    Entries.Add(new EPFArchiveItemViewModel(newEntry));
+                }
+                catch (InvalidOperationException ex)
+                {
+                    Status.Log.Warning($"Unable to add new entry '{filePath}'. {ex.Message}");
+                }
+            }
+
+            CheckIfArchiveModified();
+        }
+
+        private void CheckIfArchiveModified()
+        {
+            IsArchiveModified = Entries.Any(item => item.Status != EPFArchiveItemStatus.Unchanged);
+        }
+
+        private void Close(bool saveChanges)
         {
             if (_epfArchive == null)
                 throw new InvalidOperationException("EPF Archive not opened!");
+
+            if (saveChanges)
+                _epfArchive.Save();
 
             _epfArchive.Dispose();
             _epfArchive = null;
@@ -303,7 +434,11 @@ namespace EPF.UI.ViewModel
             Status.ItemsSelected = 0;
         }
 
-        private void InternalExtractAll(object argument)
+        private void Entries_ListChanged(object sender, ListChangedEventArgs e)
+        {
+        }
+
+        private void ExtractAll(object argument)
         {
             try
             {
@@ -338,88 +473,7 @@ namespace EPF.UI.ViewModel
             }
         }
 
-        public void TryExtractAll()
-        {
-            throw new NotImplementedException();
-        }
-
-        public void TryExtractSelection()
-        {
-            throw new NotImplementedException();
-        }
-
-        private void AddEntries(ICollection<string> filePaths)
-        {
-            foreach (var filePath in filePaths)
-            {
-                try
-                {
-                    var newEntry = _epfArchive.CreateEntry(filePath);
-                    Entries.Add(new EPFArchiveItemViewModel(newEntry));
-                }
-                catch (InvalidOperationException ex)
-                {
-                    Status.Log.Warning($"Unable to add new entry '{filePath}'. {ex.Message}");
-                }
-            }
-        }
-
-        public void TryAddEntries()
-        {
-            try
-            {
-                if (!IsArchiveOpened)
-                    return;
-
-                if (!IsArchiveSaveAllowed)
-                    throw new InvalidOperationException("Archive opened in read-only mode.");
-
-                var fileDialog = DialogProvider.ShowOpenFileDialog("Select files to add to archive...",
-                                                                   "All Files (*.*)|*.*",
-                                                                   true);
-                //Cancel adding files
-                if (fileDialog.Answer != DialogAnswer.OK)
-                {
-                    Status.Log.Info($"Adding files canceled...");
-                    return;
-                }
-
-                AddEntries(fileDialog.FileNames);
-            }
-            catch (Exception ex)
-            {
-                Status.Log.Error($"Unhandled exception: {ex}");
-            }
-        }
-
-        public void TryMarkSelectedEntriesToRemove()
-        {
-            try
-            {
-                if (!IsArchiveOpened)
-                    return;
-
-                if (!IsArchiveSaveAllowed)
-                    throw new InvalidOperationException("Archive opened in read-only mode.");
-
-                foreach (var item in Entries.Where(item => item.IsSelected))
-                {
-                    if (item.Status == EPFArchiveItemStatus.Unchanged || item.Status == EPFArchiveItemStatus.Modifying)
-                        item.Status = EPFArchiveItemStatus.Removing;
-                }
-
-            }
-            catch (InvalidOperationException ex)
-            {
-                Status.Log.Warning($"Unable to remove any entries. {ex.Message}");
-            }
-            catch (Exception ex)
-            {
-                Status.Log.Error($"Unhandled exception: {ex}");
-            }
-        }
-
-        private void InternalExtractSelected(object argument)
+        private void ExtractSelection(object argument)
         {
             try
             {

@@ -164,7 +164,7 @@ namespace EPF
             {
                 try
                 {
-                    Close(true);
+                    Close(false);
                 }
                 catch (Exception)
                 {

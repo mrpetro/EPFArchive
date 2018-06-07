@@ -139,44 +139,12 @@ namespace EPF.UI.WinForms.Forms
 
         private void MenuItemExtractAll_Click(object sender, EventArgs e)
         {
-            using (var folderBrowser = new FolderBrowserDialog())
-            {
-                var result = folderBrowser.ShowDialog();
-
-                if (result == DialogResult.OK)
-                {
-                    try
-                    {
-                        Tools.ChangeEnabled(this, false);
-                        _viewModel.ExtractAll(folderBrowser.SelectedPath);
-                    }
-                    finally
-                    {
-                        Tools.ChangeEnabled(this, true);
-                    }
-                }
-            }
+            _viewModel.TryExtractAll();
         }
 
         private void MenuItemExtractSelection_Click(object sender, EventArgs e)
         {
-            using (var folderBrowser = new FolderBrowserDialog())
-            {
-                var result = folderBrowser.ShowDialog();
-
-                if (result == DialogResult.OK)
-                {
-                    try
-                    {
-                        Tools.ChangeEnabled(this, false);
-                        _viewModel.ExtractSelected(folderBrowser.SelectedPath);
-                    }
-                    finally
-                    {
-                        Tools.ChangeEnabled(this, true);
-                    }
-                }
-            }
+            _viewModel.TryExtractSelection();
         }
 
         private void MenuItemArchiveClose_Click(object sender, EventArgs e)
@@ -186,7 +154,6 @@ namespace EPF.UI.WinForms.Forms
 
         private void MenuItemArchiveOpen_Click(object sender, EventArgs e)
         {
-            //MessageBox.Show("Open EPF archives in Read/Write mode is not implemented yet.");
             _viewModel.TryOpenArchive();
         }
 
