@@ -92,5 +92,17 @@ namespace EPF.UI.WinForms
                 return new FileDialogResult(answer, fileNames);
             }
         }
+
+        public FolderBrowserResult ShowFolderBrowserDialog(string title, string initialDirectory)
+        {
+            using (var folderBrower = new FolderBrowserDialog())
+            {
+                folderBrower.Description = title;
+                folderBrower.SelectedPath = initialDirectory;
+                var answer = ToDialogAnswer(folderBrower.ShowDialog());
+                var selectedDirectory = folderBrower.SelectedPath;
+                return new FolderBrowserResult(answer, selectedDirectory);
+            }
+        }
     }
 }
