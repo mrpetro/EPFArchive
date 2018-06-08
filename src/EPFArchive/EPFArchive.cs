@@ -25,12 +25,13 @@ namespace EPF
         private Stream _BackStream;
         private LZWCompressor _Compressor = null;
         private LZWDecompressor _Decompressor = null;
-        private List<EPFArchiveEntry> _Entries;
-        private Dictionary<string, EPFArchiveEntry> _EntryDictionary;
+        private List<EPFArchiveEntry> _entries;
+        private Dictionary<string, EPFArchiveEntry> _entryDictionary;
         private bool _IsDisposed;
         private Stream _MainStream;
         private EPFArchiveMode _Mode;
-        private ReadOnlyCollection<EPFArchiveEntry> _ReadOnlyEntries;
+        private ReadOnlyCollection<EPFArchiveEntry> _eeadOnlyEntries;
+        private SaveProgressEventArgs _saveProgressEventArgs;
 
         #endregion Private Fields
 
@@ -43,9 +44,15 @@ namespace EPF
 
         #endregion Public Constructors
 
+        #region Public Events
+
+        public event SaveProgressEventHandler SaveProgress;
+
+        #endregion Public Events
+
         #region Public Properties
 
-        public ReadOnlyCollection<EPFArchiveEntry> Entries { get { return _ReadOnlyEntries; } }
+        public ReadOnlyCollection<EPFArchiveEntry> Entries { get { return _eeadOnlyEntries; } }
 
         public EPFArchiveMode Mode { get { return _Mode; } }
 
@@ -120,6 +127,13 @@ namespace EPF
             }
         }
 
+        public EPFArchiveEntry CreateEntry(string filePath)
+        {
+            var newEntry = new EPFArchiveEntryForCreate(this, filePath);
+            AddEntry(newEntry);
+            return newEntry;
+        }
+
         public void Dispose()
         {
             Dispose(true);
@@ -135,13 +149,34 @@ namespace EPF
                 throw new NotSupportedException("Cannot access entries in Create mode.");
 
             EPFArchiveEntry entry = null;
-            _EntryDictionary.TryGetValue(entryName, out entry);
+            _entryDictionary.TryGetValue(entryName, out entry);
             return entry;
         }
 
         public void Save()
         {
-            WriteEntries(ArchiveWriter.BinWriter);
+            try
+            {
+                _saveProgressEventArgs = new SaveProgressEventArgs();
+
+                _saveProgressEventArgs.EventType = SaveProgressEventType.SavingStarted;
+                OnSaveProgress(_saveProgressEventArgs);
+
+                //Remove entries marked for removing
+                RemoveMarkedEntries();
+
+                _saveProgressEventArgs.EntriesTotal = _entries.Count;
+
+                //Write remaining entries to archive
+                WriteEntries(ArchiveWriter.BinWriter);
+
+                _saveProgressEventArgs.EventType = SaveProgressEventType.SavingCompleted;
+                OnSaveProgress(_saveProgressEventArgs);
+            }
+            finally
+            {
+                _saveProgressEventArgs = null;
+            }
         }
 
         #endregion Public Methods
@@ -173,17 +208,23 @@ namespace EPF
             }
         }
 
+        protected void OnSaveProgress(SaveProgressEventArgs eventArgs)
+        {
+            if (SaveProgress != null)
+                SaveProgress(this, eventArgs);
+        }
+
         #endregion Protected Methods
 
         #region Private Methods
 
         private void AddEntry(EPFArchiveEntry entry)
         {
-            if (_EntryDictionary.ContainsKey(entry.Name))
+            if (_entryDictionary.ContainsKey(entry.Name))
                 throw new InvalidOperationException($"Entry with name '{entry.Name}' already exist.");
 
-            _Entries.Add(entry);
-            _EntryDictionary.Add(entry.Name, entry);
+            _entries.Add(entry);
+            _entryDictionary.Add(entry.Name, entry);
         }
 
         private void CloseStreams()
@@ -197,9 +238,9 @@ namespace EPF
 
         private void Init(Stream stream, EPFArchiveMode mode)
         {
-            _Entries = new List<EPFArchiveEntry>();
-            _ReadOnlyEntries = new ReadOnlyCollection<EPFArchiveEntry>(_Entries);
-            _EntryDictionary = new Dictionary<string, EPFArchiveEntry>();
+            _entries = new List<EPFArchiveEntry>();
+            _eeadOnlyEntries = new ReadOnlyCollection<EPFArchiveEntry>(_entries);
+            _entryDictionary = new Dictionary<string, EPFArchiveEntry>();
 
             // check stream against mode
             switch (mode)
@@ -299,12 +340,18 @@ namespace EPF
                 else if (Mode == EPFArchiveMode.Read)
                     epfArchiveEntry = new EPFArchiveEntryForRead(this, dataPos);
                 else
-                    throw new InvalidOperationException("Read archive entries only possible in Read or Update mode.");
+                    throw new InvalidOperationException("Reading archive entries only possible in Read or Update mode.");
 
                 epfArchiveEntry.ReadInfo(ArchiveReader);
                 AddEntry(epfArchiveEntry);
                 dataPos += epfArchiveEntry.CompressedLength;
             }
+        }
+
+        private void RemoveMarkedEntries()
+        {
+            _entries.ForEach(item => { if (item.ToRemove) item.Close(); });
+            _entries.RemoveAll(item => item.ToRemove);
         }
 
         private void WriteEntries(BinaryWriter writer)
@@ -330,7 +377,16 @@ namespace EPF
             for (int i = 0; i < Entries.Count; i++)
             {
                 var entry = Entries[i];
+
+                _saveProgressEventArgs.EventType = SaveProgressEventType.SavingBeforeWriteEntry;
+                _saveProgressEventArgs.CurrentEntry = entry;
+                OnSaveProgress(_saveProgressEventArgs);
+
                 entry.WriteData(writer);
+
+                _saveProgressEventArgs.EventType = SaveProgressEventType.SavingAfterWriteEntry;
+                _saveProgressEventArgs.EntriesSaved = i + 1;
+                OnSaveProgress(_saveProgressEventArgs);
             }
 
             fatOffset = (UInt32)writer.BaseStream.Position;
@@ -345,13 +401,6 @@ namespace EPF
                 var entry = Entries[i];
                 entry.WriteInfo(writer);
             }
-        }
-
-        public EPFArchiveEntry CreateEntry(string filePath)
-        {
-            var newEntry = new EPFArchiveEntryForCreate(this, filePath);
-            AddEntry(newEntry);
-            return newEntry;
         }
 
         #endregion Private Methods

@@ -162,11 +162,9 @@ namespace EPF.UI.ViewModel
             }
         }
 
-        public static EPFArchiveItemViewModel Create()
+        internal void TryRemove()
         {
-
-
-            throw new NotImplementedException();
+            _entry.ToRemove = true;
         }
 
         #endregion Public Properties

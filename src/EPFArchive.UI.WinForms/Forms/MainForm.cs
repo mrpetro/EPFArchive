@@ -92,13 +92,12 @@ namespace EPF.UI.WinForms.Forms
             MenuItemDeselectAll.DataBindings.Add("Enabled", _viewModel, nameof(_viewModel.IsArchiveOpened), false, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged);
             MenuItemSelectAll.DataBindings.Add("Enabled", _viewModel, nameof(_viewModel.IsArchiveOpened), false, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged);
             MenuItemInvertSelection.DataBindings.Add("Enabled", _viewModel, nameof(_viewModel.IsArchiveOpened), false, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged);
-
             MenuItemFileClose.DataBindings.Add("Enabled", _viewModel, nameof(_viewModel.IsArchiveOpened), false, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged);
             MenuItemExtractAll.DataBindings.Add("Enabled", _viewModel, nameof(_viewModel.IsArchiveOpened), false, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged);
             MenuItemExtractSelection.DataBindings.Add("Enabled", _viewModel, nameof(_viewModel.IsArchiveOpened), false, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged);
 
-            MenuItemFileSave.DataBindings.Add("Enabled", _viewModel, nameof(_viewModel.IsArchiveSaveAllowed), false, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged);
-            MenuItemFileSaveAs.DataBindings.Add("Enabled", _viewModel, nameof(_viewModel.IsArchiveSaveAllowed), false, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged);
+            MenuItemFileSave.DataBindings.Add("Enabled", _viewModel, nameof(_viewModel.IsArchiveModified), false, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged);
+            MenuItemFileSaveAs.DataBindings.Add("Enabled", _viewModel, nameof(_viewModel.IsArchiveModified), false, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged);
         }
 
         #endregion Public Methods
@@ -181,7 +180,7 @@ namespace EPF.UI.WinForms.Forms
         private void DGV_PreviewKeyDown(object sender, PreviewKeyDownEventArgs e)
         {
             if(e.KeyCode == Keys.Delete)
-                _viewModel.TryMarkSelectedEntriesToRemove();
+                _viewModel.TryRemoveSelectedEntries();
         }
 
         private void MenuItemArchiveSave_Click(object sender, EventArgs e)
@@ -201,7 +200,7 @@ namespace EPF.UI.WinForms.Forms
 
         private void ToolStripRemove_Click(object sender, EventArgs e)
         {
-            _viewModel.TryMarkSelectedEntriesToRemove();
+            _viewModel.TryRemoveSelectedEntries();
         }
 
         private void ToolStripExtractSelection_Click(object sender, EventArgs e)

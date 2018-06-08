@@ -6,12 +6,6 @@ namespace EPF
 {
     public abstract class EPFArchiveEntry
     {
-        #region Internal Fields
-
-        internal Stream OpenedStream;
-
-        #endregion Internal Fields
-
         #region Protected Constructors
 
         protected EPFArchiveEntry(EPFArchive archive)
@@ -29,6 +23,7 @@ namespace EPF
         public bool IsCompressed { get; protected set; }
         public int Length { get; protected set; }
         public string Name { get; protected set; }
+        public virtual bool ToRemove { get; set; }
 
         #endregion Public Properties
 

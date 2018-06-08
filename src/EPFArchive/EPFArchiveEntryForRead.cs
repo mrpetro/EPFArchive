@@ -31,6 +31,20 @@ namespace EPF
 
         public override void Close()
         {
+            //TODO: Clean up here if temporary file was created
+        }
+
+        public override bool ToRemove
+        {
+            get
+            {
+                return base.ToRemove;
+            }
+
+            set
+            {
+                throw new InvalidOperationException("Entry for reading cannot be marked to remove");
+            }
         }
 
         public override Stream Open()

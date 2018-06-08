@@ -8,6 +8,7 @@ namespace EPF
         #region Private Fields
 
         private long _archiveDataPos;
+        private Stream _openedStream;
 
         #endregion Private Fields
 
@@ -21,14 +22,15 @@ namespace EPF
 
         #endregion Internal Constructors
 
-        #region Internal Properties
-
-        #endregion Internal Properties
-
         #region Public Methods
 
         public override void Close()
         {
+            if (_openedStream != null)
+            {
+                _openedStream.Dispose();
+                _openedStream = null;
+            }
         }
 
         public override Stream Open()
@@ -49,9 +51,9 @@ namespace EPF
                     fs.Write(Archive.ArchiveReader.ReadBytes(Length), 0, Length);
             }
 
-            OpenedStream = new FileStream(tempFilePath, FileMode.Open, FileAccess.ReadWrite, FileShare.None, 4096, FileOptions.DeleteOnClose);
+            _openedStream = new FileStream(tempFilePath, FileMode.Open, FileAccess.ReadWrite, FileShare.None, 4096, FileOptions.DeleteOnClose);
 
-            return OpenedStream;
+            return _openedStream;
         }
 
         #endregion Public Methods
@@ -65,25 +67,25 @@ namespace EPF
             _archiveDataPos = writer.BaseStream.Position;
 
             //Entry was never opened so it will be copied from original
-            if (OpenedStream == null)
+            if (_openedStream == null)
                 writer.Write(Archive.ArchiveReader.ReadBytes(CompressedLength), 0, CompressedLength);
             else
             {
-                OpenedStream.Seek(0, SeekOrigin.Begin);
+                _openedStream.Seek(0, SeekOrigin.Begin);
 
                 if (IsCompressed)
                 {
                     //Compress entry data while storing it in to archive
-                    Archive.Compressor.Compress(OpenedStream, writer.BaseStream);
+                    Archive.Compressor.Compress(_openedStream, writer.BaseStream);
                     //Update entry normal and compressed data lengths
-                    Length = (int)OpenedStream.Length;
+                    Length = (int)_openedStream.Length;
                     CompressedLength = (int)writer.BaseStream.Position - (int)_archiveDataPos;
                 }
                 else
                 {
-                    int newLength = (int)OpenedStream.Length;
+                    int newLength = (int)_openedStream.Length;
 
-                    using (var reader = new BinaryReader(OpenedStream, Encoding.UTF8, true))
+                    using (var reader = new BinaryReader(_openedStream, Encoding.UTF8, true))
                         writer.Write(reader.ReadBytes(newLength), 0, newLength);
 
                     Length = newLength;

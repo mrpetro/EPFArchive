@@ -72,6 +72,7 @@
     <Compile Include="LZWCompressor.cs" />
     <Compile Include="LZWDecompressor.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SaveProgressEventHandler.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

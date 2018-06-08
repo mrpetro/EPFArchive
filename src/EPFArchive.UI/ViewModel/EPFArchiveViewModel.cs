@@ -37,6 +37,30 @@ namespace EPF.UI.ViewModel
             IsArchiveOpened = false;
             IsArchiveSaveAllowed = false;
             Entries.ListChanged += Entries_ListChanged;
+
+
+        }
+
+        private void _epfArchive_SaveProgress(object sender, SaveProgressEventArgs e)
+        {
+            switch (e.EventType)
+            {
+                case SaveProgressEventType.SavingStarted:
+                    Status.Log.Info("Saving archive started.");
+                    break;
+                case SaveProgressEventType.SavingBeforeWriteEntry:
+                    break;
+                case SaveProgressEventType.SavingAfterWriteEntry:
+                    Status.Log.Info($"Entry {e.CurrentEntry.Name} [{e.EntriesSaved} of {e.EntriesTotal}] saved.");
+                    break;
+                case SaveProgressEventType.SavingCompleted:
+                    Status.Log.Success("Saving archive completed.");
+                    break;
+                case SaveProgressEventType.SavingEntryBytesRead:
+                    break;
+                default:
+                    break;
+            }
         }
 
         #endregion Public Constructors
@@ -173,7 +197,17 @@ namespace EPF.UI.ViewModel
             if (IsArchiveSaveAllowed == false)
                 throw new InvalidOperationException("EPF Archive save not allowed!");
 
+            foreach (var entry in Entries)
+            {
+                if(entry.Status == EPFArchiveItemStatus.Removing)
+                    entry.TryRemove();
+            }
+
             _epfArchive.Save();
+
+
+            foreach (var entry in Entries)
+                entry.Status = EPFArchiveItemStatus.Unchanged;
         }
 
         public void SaveAs(string filePath)
@@ -256,7 +290,7 @@ namespace EPF.UI.ViewModel
                 StartWork(ExtractSelection, folderBrowser.SelectedDirectory);
         }
 
-        public void TryMarkSelectedEntriesToRemove()
+        public void TryRemoveSelectedEntries()
         {
             try
             {
@@ -268,7 +302,7 @@ namespace EPF.UI.ViewModel
 
                 foreach (var item in Entries.Where(item => item.IsSelected))
                 {
-                    if (item.Status == EPFArchiveItemStatus.Unchanged || item.Status == EPFArchiveItemStatus.Modifying)
+                    if (item.Status != EPFArchiveItemStatus.Removing)
                         item.Status = EPFArchiveItemStatus.Removing;
                 }
 
@@ -399,6 +433,7 @@ namespace EPF.UI.ViewModel
             if (saveChanges)
                 _epfArchive.Save();
 
+            _epfArchive.SaveProgress -= _epfArchive_SaveProgress;
             _epfArchive.Dispose();
             _epfArchive = null;
 
@@ -494,6 +529,7 @@ namespace EPF.UI.ViewModel
             {
                 var fileStream = File.Open(archiveFilePath, FileMode.Open, FileAccess.ReadWrite);
                 _epfArchive = new EPFArchive(fileStream, EPFArchiveMode.Update);
+                _epfArchive.SaveProgress += _epfArchive_SaveProgress;
 
                 ReadEntries();
 
