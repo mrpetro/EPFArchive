@@ -197,14 +197,22 @@ namespace EPF.UI.ViewModel
             if (IsArchiveSaveAllowed == false)
                 throw new InvalidOperationException("EPF Archive save not allowed!");
 
+            //TODO: This sucks, change it.
+            var toRemove = new List<EPFArchiveItemViewModel>();
+
             foreach (var entry in Entries)
             {
-                if(entry.Status == EPFArchiveItemStatus.Removing)
+                if (entry.Status == EPFArchiveItemStatus.Removing)
+                {
                     entry.TryRemove();
+                    toRemove.Add(entry);
+                }
             }
 
             _epfArchive.Save();
 
+            foreach (var entry in toRemove)
+                Entries.Remove(entry);
 
             foreach (var entry in Entries)
                 entry.Status = EPFArchiveItemStatus.Unchanged;
@@ -270,7 +278,7 @@ namespace EPF.UI.ViewModel
                 }
             }
 
-            Close(false);
+            Close();
             return true;
         }
 
@@ -358,12 +366,19 @@ namespace EPF.UI.ViewModel
         {
             try
             {
+                _epfArchive.SaveProgress += _epfArchive_SaveProgress;
+
                 Save();
+
                 return true;
             }
             catch (Exception ex)
             {
                 Status.Log.Error($"Unable to save archive. Reason: {ex.Message}");
+            }
+            finally
+            {
+                _epfArchive.SaveProgress -= _epfArchive_SaveProgress;
             }
 
             return false;
@@ -425,15 +440,11 @@ namespace EPF.UI.ViewModel
             IsArchiveModified = Entries.Any(item => item.Status != EPFArchiveItemStatus.Unchanged);
         }
 
-        private void Close(bool saveChanges)
+        private void Close()
         {
             if (_epfArchive == null)
                 throw new InvalidOperationException("EPF Archive not opened!");
 
-            if (saveChanges)
-                _epfArchive.Save();
-
-            _epfArchive.SaveProgress -= _epfArchive_SaveProgress;
             _epfArchive.Dispose();
             _epfArchive = null;
 
@@ -529,7 +540,6 @@ namespace EPF.UI.ViewModel
             {
                 var fileStream = File.Open(archiveFilePath, FileMode.Open, FileAccess.ReadWrite);
                 _epfArchive = new EPFArchive(fileStream, EPFArchiveMode.Update);
-                _epfArchive.SaveProgress += _epfArchive_SaveProgress;
 
                 ReadEntries();
 
