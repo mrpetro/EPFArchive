@@ -265,17 +265,29 @@
             // StatusStripTotalItemsNo
             // 
             this.StatusStripTotalItemsNo.AutoSize = false;
+            this.StatusStripTotalItemsNo.BorderSides = ((System.Windows.Forms.ToolStripStatusLabelBorderSides)((((System.Windows.Forms.ToolStripStatusLabelBorderSides.Left | System.Windows.Forms.ToolStripStatusLabelBorderSides.Top) 
+            | System.Windows.Forms.ToolStripStatusLabelBorderSides.Right) 
+            | System.Windows.Forms.ToolStripStatusLabelBorderSides.Bottom)));
+            this.StatusStripTotalItemsNo.BorderStyle = System.Windows.Forms.Border3DStyle.Etched;
             this.StatusStripTotalItemsNo.Name = "StatusStripTotalItemsNo";
             this.StatusStripTotalItemsNo.Size = new System.Drawing.Size(80, 17);
             // 
             // StatusStripSelectedItemsNo
             // 
             this.StatusStripSelectedItemsNo.AutoSize = false;
+            this.StatusStripSelectedItemsNo.BorderSides = ((System.Windows.Forms.ToolStripStatusLabelBorderSides)((((System.Windows.Forms.ToolStripStatusLabelBorderSides.Left | System.Windows.Forms.ToolStripStatusLabelBorderSides.Top) 
+            | System.Windows.Forms.ToolStripStatusLabelBorderSides.Right) 
+            | System.Windows.Forms.ToolStripStatusLabelBorderSides.Bottom)));
+            this.StatusStripSelectedItemsNo.BorderStyle = System.Windows.Forms.Border3DStyle.Etched;
             this.StatusStripSelectedItemsNo.Name = "StatusStripSelectedItemsNo";
             this.StatusStripSelectedItemsNo.Size = new System.Drawing.Size(140, 17);
             // 
             // StatusStripMessage
             // 
+            this.StatusStripMessage.BorderSides = ((System.Windows.Forms.ToolStripStatusLabelBorderSides)((((System.Windows.Forms.ToolStripStatusLabelBorderSides.Left | System.Windows.Forms.ToolStripStatusLabelBorderSides.Top) 
+            | System.Windows.Forms.ToolStripStatusLabelBorderSides.Right) 
+            | System.Windows.Forms.ToolStripStatusLabelBorderSides.Bottom)));
+            this.StatusStripMessage.BorderStyle = System.Windows.Forms.Border3DStyle.Etched;
             this.StatusStripMessage.Name = "StatusStripMessage";
             this.StatusStripMessage.Size = new System.Drawing.Size(287, 17);
             this.StatusStripMessage.Spring = true;
