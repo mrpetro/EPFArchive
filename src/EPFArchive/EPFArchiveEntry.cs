@@ -37,6 +37,19 @@ namespace EPF
 
         #region Internal Methods
 
+        public void ExtractTo(string folderPath)
+        {
+            if (!Directory.Exists(folderPath))
+                throw new InvalidOperationException($"Directory '{folderPath}' doesn't exist.");
+
+            using (var entryStream = Open())
+            {
+                var outFilePath = Path.Combine(folderPath, Name);
+                using (var outFile = File.Create(outFilePath))
+                    entryStream.CopyTo(outFile);
+            }
+        }
+
         internal void ReadInfo(BinaryReader reader)
         {
             Name = Encoding.ASCII.GetString(reader.ReadBytes(13)).Split(new char[] { '\0' })[0];

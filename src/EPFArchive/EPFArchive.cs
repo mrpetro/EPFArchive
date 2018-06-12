@@ -25,12 +25,13 @@ namespace EPF
         private Stream _BackStream;
         private LZWCompressor _Compressor = null;
         private LZWDecompressor _Decompressor = null;
+        private ReadOnlyCollection<EPFArchiveEntry> _eeadOnlyEntries;
         private List<EPFArchiveEntry> _entries;
         private Dictionary<string, EPFArchiveEntry> _entryDictionary;
+        private ExtractProgressEventArgs _extractProgressEventArgs;
         private bool _IsDisposed;
         private Stream _MainStream;
         private EPFArchiveMode _Mode;
-        private ReadOnlyCollection<EPFArchiveEntry> _eeadOnlyEntries;
         private SaveProgressEventArgs _saveProgressEventArgs;
 
         #endregion Private Fields
@@ -45,6 +46,8 @@ namespace EPF
         #endregion Public Constructors
 
         #region Public Events
+
+        public event ExtractProgressEventHandler ExtractProgress;
 
         public event SaveProgressEventHandler SaveProgress;
 
@@ -140,6 +143,11 @@ namespace EPF
             GC.SuppressFinalize(this);
         }
 
+        public void ExtractAll(string folderPath)
+        {
+            ExtractEntries(folderPath, _entries);
+        }
+
         public EPFArchiveEntry GetEntry(string entryName)
         {
             if (entryName == null)
@@ -208,6 +216,12 @@ namespace EPF
             }
         }
 
+        protected void OnExtractProgress(ExtractProgressEventArgs eventArgs)
+        {
+            if (ExtractProgress != null)
+                ExtractProgress(this, eventArgs);
+        }
+
         protected void OnSaveProgress(SaveProgressEventArgs eventArgs)
         {
             if (SaveProgress != null)
@@ -234,6 +248,54 @@ namespace EPF
 
             if (_ArchiveReader != null)
                 _ArchiveReader.Dispose();
+        }
+
+        public void ExtractEntries(string folderPath, ICollection<string> entryNames)
+        {
+            var entries = _entries.Where(item => entryNames.Contains(item.Name)).ToList();
+
+            ExtractEntries(folderPath, entries);
+        }
+
+        #endregion Private Methods
+
+        private void ExtractEntries(string folderPath, ICollection<EPFArchiveEntry> entries)
+        {
+            try
+            {
+                _extractProgressEventArgs = new ExtractProgressEventArgs();
+
+                _extractProgressEventArgs.EventType = ExtractProgressEventType.ExtractionStarted;
+                _extractProgressEventArgs.EntriesTotal = entries.Count;
+                OnExtractProgress(_extractProgressEventArgs);
+
+                var count = 0;
+
+                foreach (var entry in entries)
+                {
+                    if (entry.Archive != this)
+                        throw new InvalidOperationException("At least one of enties is invalid.");
+
+                    count++;
+
+                    _extractProgressEventArgs.CurrentEntry = entry;
+                    _extractProgressEventArgs.EventType = ExtractProgressEventType.ExtractionBeforeReadEntry;
+                    OnExtractProgress(_extractProgressEventArgs);
+
+                    entry.ExtractTo(folderPath);
+
+                    _extractProgressEventArgs.EventType = ExtractProgressEventType.ExtractionAfterReadEntry;
+                    _extractProgressEventArgs.EntriesExtracted = count;
+                    OnExtractProgress(_extractProgressEventArgs);
+                }
+
+                _extractProgressEventArgs.EventType = ExtractProgressEventType.ExtractionCompleted;
+                OnExtractProgress(_extractProgressEventArgs);
+            }
+            finally
+            {
+                _extractProgressEventArgs = null;
+            }
         }
 
         private void Init(Stream stream, EPFArchiveMode mode)
@@ -402,7 +464,5 @@ namespace EPF
                 entry.WriteInfo(writer);
             }
         }
-
-        #endregion Private Methods
     }
 }

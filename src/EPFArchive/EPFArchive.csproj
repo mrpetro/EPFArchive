@@ -69,6 +69,7 @@
     <Compile Include="EPFArchiveEntryForUpdate.cs" />
     <Compile Include="EPFArchiveReader.cs" />
     <Compile Include="EPFArchiveWriter.cs" />
+    <Compile Include="ExtractProgressEventHandler.cs" />
     <Compile Include="LZWCompressor.cs" />
     <Compile Include="LZWDecompressor.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

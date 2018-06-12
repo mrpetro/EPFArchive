@@ -53,7 +53,10 @@ namespace EPF.UI.WinForms.Forms
                     if (_locked == value)
                         return;
 
-                    Tools.ChangeEnabled(this, !value);
+                    MainMenuStrip.Enabled = !value;
+                    DGV.Enabled = !value;
+
+                    //Tools.ChangeEnabled(this, !value);
 
                     _locked = value;
                 });
