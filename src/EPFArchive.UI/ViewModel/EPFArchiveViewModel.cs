@@ -32,11 +32,13 @@ namespace EPF.UI.ViewModel
             DialogProvider = dialogProvider;
 
             Status = new StatusViewModel();
+            SelectedEntries = new BindingList<EPFArchiveItemViewModel>();
             Entries = new BindingList<EPFArchiveItemViewModel>();
             Locked = false;
             IsArchiveOpened = false;
             IsArchiveSaveAllowed = false;
-            Entries.ListChanged += Entries_ListChanged;
+            SelectedEntries.ListChanged += (s, e) => { Status.ItemsSelected = SelectedEntries.Count; };
+            Entries.ListChanged += (s, e) => { Status.TotalItems = Entries.Count; };
         }
 
         #endregion Public Constructors
@@ -76,6 +78,8 @@ namespace EPF.UI.ViewModel
                 OnPropertyChanged(nameof(ArchiveFilePath));
             }
         }
+
+        public BindingList<EPFArchiveItemViewModel> SelectedEntries { get; private set; }
 
         public BindingList<EPFArchiveItemViewModel> Entries { get; private set; }
 
@@ -233,6 +237,45 @@ namespace EPF.UI.ViewModel
             }
         }
 
+        public void DeselectAll()
+        {
+            SelectedEntries.RaiseListChangedEvents = false;
+            SelectedEntries.Clear();
+            SelectedEntries.RaiseListChangedEvents = true;
+            SelectedEntries.ResetBindings();
+        }
+
+        public void SelectAll()
+        {
+            SelectedEntries.RaiseListChangedEvents = false;
+
+            foreach (var entry in Entries)
+            {
+                if (SelectedEntries.Contains(entry))
+                    continue;
+
+                SelectedEntries.Add(entry);
+            }
+
+            SelectedEntries.RaiseListChangedEvents = true;
+            SelectedEntries.ResetBindings();
+        }
+
+        public void InvertSelection()
+        {
+            var unselectedEntries = Entries.Where(item => !SelectedEntries.Contains(item)).ToList();
+
+            SelectedEntries.RaiseListChangedEvents = false;
+
+            SelectedEntries.Clear();
+
+            foreach (var entry in unselectedEntries)
+                SelectedEntries.Add(entry);
+
+            SelectedEntries.RaiseListChangedEvents = true;
+            SelectedEntries.ResetBindings();
+        }
+
         public bool TryClose()
         {
             if (!IsArchiveOpened)
@@ -320,7 +363,7 @@ namespace EPF.UI.ViewModel
                 if (!IsArchiveSaveAllowed)
                     throw new InvalidOperationException("Archive opened in read-only mode.");
 
-                foreach (var item in Entries.Where(item => item.IsSelected))
+                foreach (var item in SelectedEntries)
                 {
                     if (item.Status != EPFArchiveItemStatus.Removing)
                         item.Status = EPFArchiveItemStatus.Removing;
@@ -407,7 +450,7 @@ namespace EPF.UI.ViewModel
                     Status.Progress.Value = (int)(((double)e.EntriesExtracted / (double)e.EntriesTotal) * 100.0);
                     break;
                 case ExtractProgressEventType.ExtractionCompleted:
-                    Status.Log.Info("Extraction completed.");
+                    Status.Log.Success("Extraction from archive completed.");
                     break;
                 case ExtractProgressEventType.ExtractionEntryBytesWrite:
                     break;
@@ -432,7 +475,7 @@ namespace EPF.UI.ViewModel
                     break;
 
                 case SaveProgressEventType.SavingCompleted:
-                    Status.Log.Success("Saving archive completed.");
+                    Status.Log.Success("Saving to archive completed.");
                     break;
 
                 case SaveProgressEventType.SavingEntryBytesRead:
@@ -482,12 +525,7 @@ namespace EPF.UI.ViewModel
 
             IsArchiveOpened = false;
             IsArchiveSaveAllowed = false;
-            Status.TotalItems = 0;
             Status.ItemsSelected = 0;
-        }
-
-        private void Entries_ListChanged(object sender, ListChangedEventArgs e)
-        {
         }
 
         private void ExtractAll(object argument)
@@ -528,7 +566,7 @@ namespace EPF.UI.ViewModel
                 if (!Directory.Exists(folderPath))
                     throw new Exception("Directory doesn't exist.");
 
-                var selectedEntryNames = Entries.Where(item => item.IsSelected).Select(item => item.Name).ToList();
+                var selectedEntryNames = SelectedEntries.Select(item => item.Name).ToList();
 
                 Status.Progress.Value = 0;
                 _epfArchive.ExtractProgress += _epfArchive_ExtractProgress;
@@ -547,41 +585,6 @@ namespace EPF.UI.ViewModel
                 Locked = false;
             }
         }
-
-        //private void ExtractSelection(object argument)
-        //{
-        //    try
-        //    {
-        //        Locked = true;
-        //        var folderPath = argument as string;
-        //        Status.Progress.Value = 0;
-        //        Status.Progress.Visible = true;
-        //        int count = 0;
-
-        //        var selectedEntries = Entries.Where(item => item.IsSelected).ToList();
-
-        //        foreach (var entry in selectedEntries)
-        //        {
-        //            Status.Log.Info($"Extracting [{count} of {selectedEntries.Count}] {entry.Name}...");
-
-        //            entry.ExtractTo(folderPath);
-        //            count++;
-        //            Status.Progress.Value = (int)(((double)count / (double)selectedEntries.Count) * 100.0);
-        //        }
-
-        //        Status.Log.Success($"Extraction finished.");
-
-        //        Status.Progress.Visible = false;
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        Status.Log.Error($"Unable to extract entries. Reason: {ex.Message}");
-        //    }
-        //    finally
-        //    {
-        //        Locked = false;
-        //    }
-        //}
 
         private void OpenArchive(string archiveFilePath)
         {
@@ -630,6 +633,8 @@ namespace EPF.UI.ViewModel
             if (_epfArchive == null)
                 throw new InvalidOperationException("EPF archive not opened!");
 
+            Entries.RaiseListChangedEvents = false;
+
             Entries.Clear();
 
             foreach (var entry in _epfArchive.Entries)
@@ -637,7 +642,8 @@ namespace EPF.UI.ViewModel
                 Entries.Add(new EPFArchiveItemViewModel(entry));
             }
 
-            Status.TotalItems = _epfArchive.Entries.Count;
+            Entries.RaiseListChangedEvents = true;
+            Entries.ResetBindings();
         }
 
         private void StartWork(WaitCallback function, object argument)

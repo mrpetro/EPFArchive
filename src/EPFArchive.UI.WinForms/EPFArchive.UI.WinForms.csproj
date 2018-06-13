@@ -45,6 +45,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Controls\EPFArchiveEntryListCtrl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Controls\EPFArchiveEntryListCtrl.Designer.cs">
+      <DependentUpon>EPFArchiveEntryListCtrl.cs</DependentUpon>
+    </Compile>
     <Compile Include="Controls\ToolStripMenuItemEx.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -70,6 +76,9 @@
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
     <Compile Include="Tools.cs" />
+    <EmbeddedResource Include="Controls\EPFArchiveEntryListCtrl.resx">
+      <DependentUpon>EPFArchiveEntryListCtrl.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Forms\MainForm.resx">
       <DependentUpon>MainForm.cs</DependentUpon>
     </EmbeddedResource>

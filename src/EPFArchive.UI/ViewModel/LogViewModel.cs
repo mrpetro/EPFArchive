@@ -60,7 +60,7 @@ namespace EPF.UI.ViewModel
 
         public void Success(string message)
         {
-            Color = Color.LightGreen;
+            Color = Color.Green;
             Message = message;
         }
 

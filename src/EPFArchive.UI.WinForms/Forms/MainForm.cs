@@ -54,7 +54,7 @@ namespace EPF.UI.WinForms.Forms
                         return;
 
                     MainMenuStrip.Enabled = !value;
-                    DGV.Enabled = !value;
+                    EntryList.Enabled = !value;
 
                     //Tools.ChangeEnabled(this, !value);
 
@@ -74,13 +74,7 @@ namespace EPF.UI.WinForms.Forms
 
             _viewModel = viewModel;
 
-            DGV.AutoGenerateColumns = false;
-            DGV.DataSource = _viewModel.Entries;
-            DGVColumnName.DataPropertyName = "Name";
-            DGVColumnStatus.DataPropertyName = "Status";
-            DGVColumnSize.DataPropertyName = "Length";
-            DGVColumnPackedSize.DataPropertyName = "CompressedLength";
-            DGVColumnIsCompressed.DataPropertyName = "IsCompressed";
+            EntryList.Initialize(_viewModel);
 
             DataBindings.Add("Locked", _viewModel, nameof(_viewModel.Locked), false, DataSourceUpdateMode.OnPropertyChanged);
             DataBindings.Add("Text", _viewModel, nameof(_viewModel.AppLabel), false, DataSourceUpdateMode.OnPropertyChanged);
@@ -107,21 +101,6 @@ namespace EPF.UI.WinForms.Forms
 
         #region Private Methods
 
-        private void DGV_SelectionChanged(object sender, EventArgs e)
-        {
-            int itemsSelected = 0;
-
-            foreach (DataGridViewRow row in DGV.Rows)
-            {
-                ((EPFArchiveItemViewModel)row.DataBoundItem).IsSelected = row.Selected;
-
-                if (row.Selected)
-                    itemsSelected++;
-            }
-
-            _viewModel.Status.ItemsSelected = itemsSelected;
-        }
-
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
             _viewModel.TryClose();
@@ -129,8 +108,8 @@ namespace EPF.UI.WinForms.Forms
 
         private void MenuItemDeselectAll_Click(object sender, EventArgs e)
         {
-            foreach (DataGridViewRow row in DGV.Rows)
-                ((EPFArchiveItemViewModel)row.DataBoundItem).IsSelected = row.Selected = false;
+            _viewModel.DeselectAll();
+            //EntryList.DeselectAll();
         }
 
         private void MenuItemExit_Click(object sender, EventArgs e)
@@ -165,17 +144,14 @@ namespace EPF.UI.WinForms.Forms
 
         private void MenuItemInvertSelection_Click(object sender, EventArgs e)
         {
-            foreach (DataGridViewRow row in DGV.Rows)
-            {
-                row.Selected = !row.Selected;
-                ((EPFArchiveItemViewModel)row.DataBoundItem).IsSelected = row.Selected;
-            }
+            _viewModel.InvertSelection();
+            //EntryList.InvertSelection();
         }
 
         private void MenuItemSelectAll_Click(object sender, EventArgs e)
         {
-            foreach (DataGridViewRow row in DGV.Rows)
-                ((EPFArchiveItemViewModel)row.DataBoundItem).IsSelected = row.Selected = true;
+            _viewModel.SelectAll();
+            //EntryList.SelectAll();
         }
 
         #endregion Private Methods

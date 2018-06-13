@@ -19,7 +19,6 @@ namespace EPF.UI.ViewModel
         private EPFArchiveEntry _entry;
         private EPFArchiveItemStatus _status;
         private bool _isCompressed;
-        private bool _isSelected;
         private int _length;
         private string _name;
 
@@ -98,23 +97,6 @@ namespace EPF.UI.ViewModel
             }
         }
 
-        public bool IsSelected
-        {
-            get
-            {
-                return _isSelected;
-            }
-
-            set
-            {
-                if (_isSelected == value)
-                    return;
-
-                _isSelected = value;
-                OnPropertyChanged(nameof(IsSelected));
-            }
-        }
-
         public int Length
         {
             get
@@ -146,19 +128,6 @@ namespace EPF.UI.ViewModel
 
                 _name = value;
                 OnPropertyChanged(nameof(Name));
-            }
-        }
-
-        internal void ExtractTo(string folderPath)
-        {
-            if (!Directory.Exists(folderPath))
-                throw new InvalidOperationException($"Directory {folderPath} doesn't exist.");
-
-            using (var entryStream = _entry.Open())
-            {
-                var outFilePath = Path.Combine(folderPath, Name);
-                using (var outFile = File.Create(outFilePath))
-                    entryStream.CopyTo(outFile);
             }
         }
 
