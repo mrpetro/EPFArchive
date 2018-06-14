@@ -13,6 +13,18 @@ namespace EPF
 
         #region Internal Constructors
 
+        public override bool IsCompressed
+        {
+            get
+            {
+                return base.IsCompressed;
+            }
+            set
+            {
+                throw new InvalidOperationException("Entry for reading cannot have compression property changed");
+            }
+        }
+
         internal EPFArchiveEntryForRead(EPFArchive archive, long dataPos) :
             base(archive)
         {

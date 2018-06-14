@@ -62,6 +62,9 @@ namespace EPF
 
         internal override void WriteData(BinaryWriter writer)
         {
+            if (_openedStream == null && Modify)
+                Open();
+
             Archive.ArchiveReader.BaseStream.Position = _archiveDataPos;
 
             _archiveDataPos = writer.BaseStream.Position;

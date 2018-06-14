@@ -53,14 +53,14 @@
             this.DGVColumnIsCompressed});
             this.DGV.Dock = System.Windows.Forms.DockStyle.Fill;
             this.DGV.EditMode = System.Windows.Forms.DataGridViewEditMode.EditProgrammatically;
-            this.DGV.Location = new System.Drawing.Point(0, 49);
+            this.DGV.Location = new System.Drawing.Point(0, 0);
             this.DGV.Name = "DGV";
             this.DGV.RowHeadersVisible = false;
             this.DGV.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this.DGV.Size = new System.Drawing.Size(624, 370);
+            this.DGV.Size = new System.Drawing.Size(676, 300);
             this.DGV.TabIndex = 1;
-            this.DGV.SelectionChanged += new System.EventHandler(this.DGV_SelectionChanged);
-            this.DGV.PreviewKeyDown += new System.Windows.Forms.PreviewKeyDownEventHandler(this.DGV_PreviewKeyDown);
+            this.DGV.CellMouseClick += new System.Windows.Forms.DataGridViewCellMouseEventHandler(this.DGV_CellMouseClick);
+            this.DGV.CellMouseEnter += new System.Windows.Forms.DataGridViewCellEventHandler(this.DGV_CellMouseEnter);
             // 
             // DGVColumnName
             // 

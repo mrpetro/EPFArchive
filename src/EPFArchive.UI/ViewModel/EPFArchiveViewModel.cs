@@ -17,6 +17,7 @@ namespace EPF.UI.ViewModel
         private EPFArchive _epfArchive;
         private bool _isArchiveModified;
         private bool _isArchiveOpened;
+        private bool _isReadOnly;
         private bool _isArchiveSaveAllowed;
         private bool _locked;
 
@@ -36,9 +37,10 @@ namespace EPF.UI.ViewModel
             Entries = new BindingList<EPFArchiveItemViewModel>();
             Locked = false;
             IsArchiveOpened = false;
+            IsReadOnly = true;
             IsArchiveSaveAllowed = false;
             SelectedEntries.ListChanged += (s, e) => { Status.ItemsSelected = SelectedEntries.Count; };
-            Entries.ListChanged += (s, e) => { Status.TotalItems = Entries.Count; };
+            Entries.ListChanged += (s, e) => { Status.TotalItems = Entries.Count; CheckIfArchiveModified(); };
         }
 
         #endregion Public Constructors
@@ -120,6 +122,26 @@ namespace EPF.UI.ViewModel
         /// <summary>
         /// This flag determines if archive is opened in Read-Only mode or Read/Write mode
         /// </summary>
+        public bool IsReadOnly
+        {
+            get
+            {
+                return _isReadOnly;
+            }
+
+            internal set
+            {
+                if (_isReadOnly == value)
+                    return;
+
+                _isReadOnly = value;
+                OnPropertyChanged(nameof(IsReadOnly));
+            }
+        }
+
+        /// <summary>
+        /// This flag determines if archive is opened in Read-Only mode or Read/Write mode
+        /// </summary>
         public bool IsArchiveSaveAllowed
         {
             get
@@ -169,33 +191,57 @@ namespace EPF.UI.ViewModel
 
         #region Public Methods
 
-        public void Save()
+        public void Save(object argument)
         {
-            if (_epfArchive == null)
-                throw new InvalidOperationException("EPF Archive not opened!");
-
-            if (IsArchiveSaveAllowed == false)
-                throw new InvalidOperationException("EPF Archive save not allowed!");
-
-            //TODO: This sucks, change it.
-            var toRemove = new List<EPFArchiveItemViewModel>();
-
-            foreach (var entry in Entries)
+            try
             {
-                if (entry.Status == EPFArchiveItemStatus.Removing)
+                if (_epfArchive == null)
+                    throw new InvalidOperationException("EPF Archive not opened!");
+
+                if (IsArchiveSaveAllowed == false)
+                    throw new InvalidOperationException("EPF Archive save not allowed!");
+
+                Locked = true;
+
+                Status.Progress.Value = 0;
+                _epfArchive.SaveProgress += _epfArchive_SaveProgress;
+                Status.Progress.Visible = true;
+
+
+                //TODO: This sucks, change it.
+                var toRemove = new List<EPFArchiveItemViewModel>();
+
+                foreach (var entry in Entries)
                 {
-                    entry.TryRemove();
-                    toRemove.Add(entry);
+                    if (entry.Status == EPFArchiveItemStatus.Removing)
+                    {
+                        entry.TryRemove();
+                        toRemove.Add(entry);
+                    }
+                    else if (entry.Status == EPFArchiveItemStatus.Modifying)
+                    {
+                        entry.TryModify();
+                    }
                 }
+
+                _epfArchive.Save();
+
+                foreach (var entry in toRemove)
+                    Entries.Remove(entry);
+
+                foreach (var entry in Entries)
+                    entry.Status = EPFArchiveItemStatus.Unchanged;
             }
-
-            _epfArchive.Save();
-
-            foreach (var entry in toRemove)
-                Entries.Remove(entry);
-
-            foreach (var entry in Entries)
-                entry.Status = EPFArchiveItemStatus.Unchanged;
+            catch (Exception ex)
+            {
+                Status.Log.Error($"Unable to save entries. Reason: {ex.Message}");
+            }
+            finally
+            {
+                _epfArchive.SaveProgress -= _epfArchive_SaveProgress;
+                Status.Progress.Visible = false;
+                Locked = false;
+            }
         }
 
         public void SaveAs(string filePath)
@@ -387,7 +433,7 @@ namespace EPF.UI.ViewModel
             {
                 _epfArchive.SaveProgress += _epfArchive_SaveProgress;
 
-                Save();
+                StartWork(Save, null);
 
                 return true;
             }
@@ -468,10 +514,11 @@ namespace EPF.UI.ViewModel
                     break;
 
                 case SaveProgressEventType.SavingBeforeWriteEntry:
+                    Status.Log.Info($"Saving Entry [{e.EntriesSaved} of {e.EntriesTotal}] {e.CurrentEntry.Name}...");
                     break;
 
                 case SaveProgressEventType.SavingAfterWriteEntry:
-                    Status.Log.Info($"Saving Entry [{e.EntriesSaved} of {e.EntriesTotal}] {e.CurrentEntry.Name}...");
+                    Status.Progress.Value = (int)(((double)e.EntriesSaved / (double)e.EntriesTotal) * 100.0);
                     break;
 
                 case SaveProgressEventType.SavingCompleted:
@@ -525,6 +572,7 @@ namespace EPF.UI.ViewModel
 
             IsArchiveOpened = false;
             IsArchiveSaveAllowed = false;
+            IsReadOnly = true;
             Status.ItemsSelected = 0;
         }
 
@@ -597,6 +645,7 @@ namespace EPF.UI.ViewModel
 
                 ArchiveFilePath = archiveFilePath;
                 AppLabel = $"{APP_NAME} - {ArchiveFilePath}";
+                IsReadOnly = false;
                 IsArchiveOpened = true;
                 IsArchiveSaveAllowed = true;
                 Status.Log.Success($"Archive '{ Path.GetFileName(ArchiveFilePath)}' opened.");
@@ -617,8 +666,9 @@ namespace EPF.UI.ViewModel
                 ReadEntries();
 
                 ArchiveFilePath = archiveFilePath;
-                AppLabel = $"{APP_NAME} - {ArchiveFilePath}";
+                AppLabel = $"{APP_NAME} - {ArchiveFilePath} (Read-Only)";
                 IsArchiveOpened = true;
+                IsReadOnly = true;
                 IsArchiveSaveAllowed = false;
                 Status.Log.Success($"Archive '{ Path.GetFileName(ArchiveFilePath)}' opened in read-only mode.");
             }

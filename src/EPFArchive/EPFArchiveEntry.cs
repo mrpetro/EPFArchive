@@ -20,10 +20,12 @@ namespace EPF
 
         public EPFArchive Archive { get; private set; }
         public int CompressedLength { get; protected set; }
-        public bool IsCompressed { get; protected set; }
+        public virtual bool IsCompressed { get; set; }
         public int Length { get; protected set; }
         public string Name { get; protected set; }
         public virtual bool ToRemove { get; set; }
+
+        public bool Modify { get; set; }
 
         #endregion Public Properties
 

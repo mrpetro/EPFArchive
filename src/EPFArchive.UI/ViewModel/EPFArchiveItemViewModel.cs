@@ -40,6 +40,18 @@ namespace EPF.UI.ViewModel
             IsCompressed = entry.IsCompressed;
             Length = entry.Length;
             CompressedLength = entry.CompressedLength;
+
+
+            PropertyChanged += EPFArchiveItemViewModel_PropertyChanged;
+        }
+
+        private void EPFArchiveItemViewModel_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(IsCompressed))
+            {
+                if (Status == EPFArchiveItemStatus.Unchanged || Status == EPFArchiveItemStatus.Modifying)
+                    Status = _entry.IsCompressed == IsCompressed ? EPFArchiveItemStatus.Unchanged : EPFArchiveItemStatus.Modifying;
+            }
         }
 
         #endregion Public Constructors
@@ -134,6 +146,12 @@ namespace EPF.UI.ViewModel
         internal void TryRemove()
         {
             _entry.ToRemove = true;
+        }
+
+        internal void TryModify()
+        {
+            _entry.IsCompressed = IsCompressed;
+            _entry.Modify = true;
         }
 
         #endregion Public Properties
