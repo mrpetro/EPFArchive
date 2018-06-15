@@ -7,10 +7,9 @@ namespace EPF.UI.WinForms.Controls
 {
     public partial class EPFArchiveEntryListCtrl : UserControl
     {
-
-        private CheckBox headerCheckBox;
-
         #region Private Fields
+
+        private DGVMultiSelectCheckBoxFunc _multiSelectCheckBoxFunc;
 
         private EPFArchiveViewModel _viewModel;
 
@@ -22,49 +21,12 @@ namespace EPF.UI.WinForms.Controls
         {
             InitializeComponent();
 
-            headerCheckBox = new CheckBox();
-
-            var rectangle = this.DGV.GetCellDisplayRectangle(DGVColumnIsCompressed.Index, -1, true);
-            //Place the Header CheckBox in the Location of the Header Cell.
-            headerCheckBox.Location = new System.Drawing.Point(rectangle.Right - headerCheckBox.Width, rectangle.Bottom );
-            headerCheckBox.BackColor = System.Drawing.Color.White;
-            headerCheckBox.Size = new System.Drawing.Size(13, 13);
-
-            //Assign Click event to the Header CheckBox.
-            headerCheckBox.Click += new EventHandler(HeaderCheckBox_Clicked);
-            DGV.Controls.Add(headerCheckBox);
+            _multiSelectCheckBoxFunc = new DGVMultiSelectCheckBoxFunc(DGV);
         }
 
         #endregion Public Constructors
 
         #region Public Methods
-
-        private void HeaderCheckBox_Clicked(object sender, EventArgs e)
-        {
-            var cell = headerCheckBox.Tag as DataGridViewCheckBoxCell;
-
-            if (cell == null)
-                return;
-
-            if ((bool)cell.Value == true)
-                cell.Value = false;
-            else
-                cell.Value = true;
-
-            if (DGV.SelectedCells.Contains(cell))
-            {
-                foreach (DataGridViewCell selectedCell in DGV.SelectedCells)
-                {
-                    if (selectedCell.ColumnIndex != cell.ColumnIndex)
-                        continue;
-
-                    if (selectedCell.RowIndex == cell.RowIndex)
-                        continue;
-
-                    selectedCell.Value = cell.Value;
-                }
-            }
-        }
 
         public void Initialize(EPFArchiveViewModel viewModel)
         {
@@ -129,31 +91,5 @@ namespace EPF.UI.WinForms.Controls
         }
 
         #endregion Private Methods
-
-        private void DGV_CellMouseClick(object sender, DataGridViewCellMouseEventArgs e)
-        {
-            if (DGV.SelectedRows.Count > 1)
-            {
-            }
-        }
-
-        private void DGV_CellMouseEnter(object sender, DataGridViewCellEventArgs e)
-        {
-            if (e.RowIndex < 0 || e.ColumnIndex < 0)
-                return;
-
-            var cell = DGV.Rows[e.RowIndex].Cells[e.ColumnIndex] as DataGridViewCheckBoxCell;
-
-            if (cell == null)
-                return;
-
-            if (_viewModel.IsReadOnly)
-                return;
-
-            var rectangle = this.DGV.GetCellDisplayRectangle(e.ColumnIndex, e.RowIndex, true);
-            headerCheckBox.Location = new System.Drawing.Point(rectangle.Left + (rectangle.Width - headerCheckBox.Width) / 2, rectangle.Top + (rectangle.Height - headerCheckBox.Height) / 2);
-            headerCheckBox.Checked = (bool)cell.Value;
-            headerCheckBox.Tag = cell;
-        }
     }
 }
