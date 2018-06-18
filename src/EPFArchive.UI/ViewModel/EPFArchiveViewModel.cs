@@ -7,6 +7,8 @@ using System.Threading;
 
 namespace EPF.UI.ViewModel
 {
+    public delegate void EntriesRefresher();
+
     public class EPFArchiveViewModel : BaseViewModel
     {
         #region Private Fields
@@ -20,6 +22,8 @@ namespace EPF.UI.ViewModel
         private bool _isReadOnly;
         private bool _isArchiveSaveAllowed;
         private bool _locked;
+
+        public EntriesRefresher EntriesRefresher;
 
         #endregion Private Fields
 
@@ -207,30 +211,7 @@ namespace EPF.UI.ViewModel
                 _epfArchive.SaveProgress += _epfArchive_SaveProgress;
                 Status.Progress.Visible = true;
 
-
-                //TODO: This sucks, change it.
-                var toRemove = new List<EPFArchiveItemViewModel>();
-
-                foreach (var entry in Entries)
-                {
-                    if (entry.Status == EPFArchiveItemStatus.Removing)
-                    {
-                        entry.TryRemove();
-                        toRemove.Add(entry);
-                    }
-                    else if (entry.Status == EPFArchiveItemStatus.Modifying)
-                    {
-                        entry.TryModify();
-                    }
-                }
-
                 _epfArchive.Save();
-
-                foreach (var entry in toRemove)
-                    Entries.Remove(entry);
-
-                foreach (var entry in Entries)
-                    entry.Status = EPFArchiveItemStatus.Unchanged;
             }
             catch (Exception ex)
             {
@@ -241,8 +222,14 @@ namespace EPF.UI.ViewModel
                 _epfArchive.SaveProgress -= _epfArchive_SaveProgress;
                 Status.Progress.Visible = false;
                 Locked = false;
+
+                EntriesRefresher();
+                //RefreshEntries();
             }
         }
+
+
+
 
         public void SaveAs(string filePath)
         {
@@ -349,7 +336,7 @@ namespace EPF.UI.ViewModel
 
         public void TryExtractAll()
         {
-            var folderBrowser = DialogProvider.ShowFolderBrowserDialog("Select folder to extract all entries...", null);
+            var folderBrowser = DialogProvider.ShowFolderBrowserDialog("Choose folder to extract all entries...", null);
 
             if (folderBrowser.Answer == DialogAnswer.OK)
                 StartWork(ExtractAll, folderBrowser.SelectedDirectory);
@@ -357,7 +344,7 @@ namespace EPF.UI.ViewModel
 
         public void TryExtractSelection()
         {
-            var folderBrowser = DialogProvider.ShowFolderBrowserDialog("Select folder to extract selected entries...", null);
+            var folderBrowser = DialogProvider.ShowFolderBrowserDialog("Choose folder to extract selected entries...", null);
 
             if (folderBrowser.Answer == DialogAnswer.OK)
                 StartWork(ExtractSelection, folderBrowser.SelectedDirectory);
@@ -409,11 +396,7 @@ namespace EPF.UI.ViewModel
                 if (!IsArchiveSaveAllowed)
                     throw new InvalidOperationException("Archive opened in read-only mode.");
 
-                foreach (var item in SelectedEntries)
-                {
-                    if (item.Status != EPFArchiveItemStatus.Removing)
-                        item.Status = EPFArchiveItemStatus.Removing;
-                }
+                SelectedEntries.All(item => item.ToRemove = true);
 
                 CheckIfArchiveModified();
             }
@@ -431,19 +414,13 @@ namespace EPF.UI.ViewModel
         {
             try
             {
-                _epfArchive.SaveProgress += _epfArchive_SaveProgress;
-
-                StartWork(Save, null);
+                StartWork(Save);
 
                 return true;
             }
             catch (Exception ex)
             {
                 Status.Log.Error($"Unable to save archive. Reason: {ex.Message}");
-            }
-            finally
-            {
-                _epfArchive.SaveProgress -= _epfArchive_SaveProgress;
             }
 
             return false;
@@ -641,7 +618,7 @@ namespace EPF.UI.ViewModel
                 var fileStream = File.Open(archiveFilePath, FileMode.Open, FileAccess.ReadWrite);
                 _epfArchive = new EPFArchive(fileStream, EPFArchiveMode.Update);
 
-                ReadEntries();
+                RefreshEntries();
 
                 ArchiveFilePath = archiveFilePath;
                 AppLabel = $"{APP_NAME} - {ArchiveFilePath}";
@@ -663,7 +640,7 @@ namespace EPF.UI.ViewModel
                 var fileStream = File.Open(archiveFilePath, FileMode.Open, FileAccess.Read);
                 _epfArchive = new EPFArchive(fileStream, EPFArchiveMode.Read);
 
-                ReadEntries();
+                RefreshEntries();
 
                 ArchiveFilePath = archiveFilePath;
                 AppLabel = $"{APP_NAME} - {ArchiveFilePath} (Read-Only)";
@@ -678,7 +655,7 @@ namespace EPF.UI.ViewModel
             }
         }
 
-        private void ReadEntries()
+        public void RefreshEntries()
         {
             if (_epfArchive == null)
                 throw new InvalidOperationException("EPF archive not opened!");
@@ -688,9 +665,7 @@ namespace EPF.UI.ViewModel
             Entries.Clear();
 
             foreach (var entry in _epfArchive.Entries)
-            {
                 Entries.Add(new EPFArchiveItemViewModel(entry));
-            }
 
             Entries.RaiseListChangedEvents = true;
             Entries.ResetBindings();
@@ -698,7 +673,14 @@ namespace EPF.UI.ViewModel
 
         private void StartWork(WaitCallback function, object argument)
         {
+
+
             ThreadPool.QueueUserWorkItem(function, argument);
+        }
+
+        private void StartWork(WaitCallback function)
+        {
+            ThreadPool.QueueUserWorkItem(function);
         }
 
         #endregion Private Methods

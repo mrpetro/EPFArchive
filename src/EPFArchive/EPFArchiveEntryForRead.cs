@@ -13,18 +13,6 @@ namespace EPF
 
         #region Internal Constructors
 
-        public override bool IsCompressed
-        {
-            get
-            {
-                return base.IsCompressed;
-            }
-            set
-            {
-                throw new InvalidOperationException("Entry for reading cannot have compression property changed");
-            }
-        }
-
         internal EPFArchiveEntryForRead(EPFArchive archive, long dataPos) :
             base(archive)
         {
@@ -32,6 +20,23 @@ namespace EPF
         }
 
         #endregion Internal Constructors
+
+        #region Public Properties
+
+        public override bool ToRemove
+        {
+            get
+            {
+                return false;
+            }
+
+            set
+            {
+                throw new InvalidOperationException("Entry for reading cannot be marked to remove");
+            }
+        }
+
+        #endregion Public Properties
 
         #region Internal Properties
 
@@ -46,19 +51,12 @@ namespace EPF
             //TODO: Clean up here if temporary file was created
         }
 
-        public override bool ToRemove
-        {
-            get
-            {
-                return base.ToRemove;
-            }
-
-            set
-            {
-                throw new InvalidOperationException("Entry for reading cannot be marked to remove");
-            }
-        }
-
+        /// <summary>
+        /// This function will open entry stream in read-only mode
+        /// It copies entry data (or decompresses) from EPF archvie to temporary file
+        /// Then opens this file and returns it's stream
+        /// </summary>
+        /// <returns>Stream of entry</returns>
         public override Stream Open()
         {
             ThrowIfInvalidArchive();

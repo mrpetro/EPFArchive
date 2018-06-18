@@ -74,10 +74,23 @@ namespace EPF
 
         private Int32 GetCode(Int32 code)
         {
+            int tries = 100;
+
+            Int32 pc = code;
             Int32 c = code;
             while(m_LZW_Dict[c]!=-1)
             {
+                pc = c;
                 c = m_LZW_Dict[c];
+
+                if (pc == c)
+                {
+                    tries--;
+                    if (tries == 0)
+                        throw new InvalidOperationException("LZW data decompression error");
+                }
+                else
+                    tries = 100;
             }
             return m_LZW_Char[c];
         }

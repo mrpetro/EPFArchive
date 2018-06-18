@@ -26,27 +26,6 @@ namespace EPF
             _filePath = filePath;
         }
 
-        private static bool IsASCII(string value)
-        {
-            return Encoding.UTF8.GetByteCount(value) == value.Length;
-        }
-
-        private static string ValidateName(string name)
-        {
-            if (name == null)
-                throw new Exception("Name is not set");
-
-            if (!IsASCII(name))
-                throw new InvalidOperationException("Name must contain only ASCII characters");
-
-            name = name.Trim();
-
-            if (name.Length > 12)
-                throw new InvalidOperationException("Name length must not exceed 12 characters");
-
-            return name.ToUpper();
-        }
-
         #endregion Internal Constructors
 
         #region Internal Properties
@@ -98,5 +77,30 @@ namespace EPF
         }
 
         #endregion Internal Methods
+
+        #region Private Methods
+
+        private static bool IsASCII(string value)
+        {
+            return Encoding.UTF8.GetByteCount(value) == value.Length;
+        }
+
+        private static string ValidateName(string name)
+        {
+            if (name == null)
+                throw new Exception("Name is not set");
+
+            if (!IsASCII(name))
+                throw new InvalidOperationException("Name must contain only ASCII characters");
+
+            name = name.Trim();
+
+            if (name.Length > 12)
+                throw new InvalidOperationException("Name length must not exceed 12 characters");
+
+            return name.ToUpper();
+        }
+
+        #endregion Private Methods
     }
 }

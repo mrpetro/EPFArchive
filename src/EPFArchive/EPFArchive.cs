@@ -7,6 +7,30 @@ using System.Linq;
 
 namespace EPF
 {
+    internal struct EPFEntryBlock
+    {
+        #region Internal Properties
+
+        internal Int32 CompressedSize { get; set; }
+        internal bool CompressionFlag { get; set; }
+        internal Int32 DecompressedSize { get; set; }
+        internal string Filename { get; set; }
+
+        #endregion Internal Properties
+    };
+
+    internal struct EPFHeaderBlock
+    {
+        #region Internal Properties
+
+        internal UInt32 FATOffset { get; set; }
+        internal UInt16 NumberOfFiles { get; set; }
+        internal char[] Signature { get; set; }
+        internal byte Unknown { get; set; }
+
+        #endregion Internal Properties
+    };
+
     public enum EPFArchiveMode
     {
         Create,
@@ -20,8 +44,7 @@ namespace EPF
 
         private static readonly char[] SIGNATURE = { 'E', 'P', 'F', 'S' };
 
-        private BinaryReader _ArchiveReader = null;
-        private EPFArchiveWriter _ArchiveWriter = null;
+        //private EPFArchiveWriter _ArchiveWriter = null;
         private Stream _BackStream;
         private LZWCompressor _Compressor = null;
         private LZWDecompressor _Decompressor = null;
@@ -31,7 +54,6 @@ namespace EPF
         private ExtractProgressEventArgs _extractProgressEventArgs;
         private bool _IsDisposed;
         private Stream _MainStream;
-        private EPFArchiveMode _Mode;
         private SaveProgressEventArgs _saveProgressEventArgs;
 
         #endregion Private Fields
@@ -57,13 +79,13 @@ namespace EPF
 
         public ReadOnlyCollection<EPFArchiveEntry> Entries { get { return _eeadOnlyEntries; } }
 
-        public EPFArchiveMode Mode { get { return _Mode; } }
+        public EPFArchiveMode Mode { get; private set; }
 
         #endregion Public Properties
 
         #region Internal Properties
 
-        internal BinaryReader ArchiveReader { get { return _ArchiveReader; } }
+        internal BinaryReader ArchiveReader { get; private set; }
 
         internal LZWCompressor Compressor
         {
@@ -91,16 +113,16 @@ namespace EPF
 
         #region Private Properties
 
-        private EPFArchiveWriter ArchiveWriter
-        {
-            get
-            {
-                if (_ArchiveWriter == null)
-                    _ArchiveWriter = new EPFArchiveWriter(_MainStream);
+        //private EPFArchiveWriter ArchiveWriter
+        //{
+        //    get
+        //    {
+        //        if (_ArchiveWriter == null)
+        //            _ArchiveWriter = new EPFArchiveWriter(_MainStream);
 
-                return _ArchiveWriter;
-            }
-        }
+        //        return _ArchiveWriter;
+        //    }
+        //}
 
         #endregion Private Properties
 
@@ -110,7 +132,7 @@ namespace EPF
         {
             try
             {
-                switch (_Mode)
+                switch (Mode)
                 {
                     case EPFArchiveMode.Read:
                         break;
@@ -118,7 +140,7 @@ namespace EPF
                     case EPFArchiveMode.Create:
                     case EPFArchiveMode.Update:
                     default:
-                        Debug.Assert(_Mode == EPFArchiveMode.Update || _Mode == EPFArchiveMode.Create);
+                        Debug.Assert(Mode == EPFArchiveMode.Update || Mode == EPFArchiveMode.Create);
                         if (saveChanges)
                             Save();
                         break;
@@ -165,21 +187,27 @@ namespace EPF
         {
             try
             {
-                _saveProgressEventArgs = new SaveProgressEventArgs();
+                using (var binWriter = new BinaryWriter(_MainStream, System.Text.Encoding.UTF8, true))
+                {
+                    if (Mode == EPFArchiveMode.Read)
+                        throw new InvalidOperationException("Trying to save in read-only mode");
 
-                _saveProgressEventArgs.EventType = SaveProgressEventType.SavingStarted;
-                OnSaveProgress(_saveProgressEventArgs);
+                    _saveProgressEventArgs = new SaveProgressEventArgs();
 
-                //Remove entries marked for removing
-                RemoveMarkedEntries();
+                    _saveProgressEventArgs.EventType = SaveProgressEventType.SavingStarted;
+                    OnSaveProgress(_saveProgressEventArgs);
 
-                _saveProgressEventArgs.EntriesTotal = _entries.Count;
+                    //Remove entries marked for removing
+                    RemoveMarkedEntries();
 
-                //Write remaining entries to archive
-                WriteEntries(ArchiveWriter.BinWriter);
+                    _saveProgressEventArgs.EntriesTotal = _entries.Count;
 
-                _saveProgressEventArgs.EventType = SaveProgressEventType.SavingCompleted;
-                OnSaveProgress(_saveProgressEventArgs);
+                    //Write remaining entries to archive
+                    WriteEntries(binWriter);
+
+                    _saveProgressEventArgs.EventType = SaveProgressEventType.SavingCompleted;
+                    OnSaveProgress(_saveProgressEventArgs);
+                }
             }
             finally
             {
@@ -243,11 +271,24 @@ namespace EPF
 
         private void CloseStreams()
         {
-            if (_ArchiveWriter != null)
-                _ArchiveWriter.Dispose();
+            //if (_ArchiveWriter != null)
+            //{
+            //    _ArchiveWriter.Dispose();
+            //    _ArchiveWriter.Dispose();
+            //}
 
-            if (_ArchiveReader != null)
-                _ArchiveReader.Dispose();
+            if (ArchiveReader != null)
+            {
+                ArchiveReader.Dispose();
+                ArchiveReader = null;
+            }
+
+            if (_MainStream != null)
+            {
+                _MainStream.Dispose();
+                _MainStream = null;
+            }
+
         }
 
         public void ExtractEntries(string folderPath, ICollection<string> entryNames)
@@ -329,10 +370,10 @@ namespace EPF
             if (!stream.CanWrite)
                 throw new ArgumentException("Incorrect input stream capabilities in archive create mode");
 
-            _Mode = EPFArchiveMode.Create;
+            Mode = EPFArchiveMode.Create;
             _MainStream = stream;
             _BackStream = null;
-            _ArchiveReader = null;
+            ArchiveReader = null;
         }
 
         /// <summary>
@@ -345,12 +386,12 @@ namespace EPF
             if (!stream.CanRead)
                 throw new ArgumentException("Can't read from input stream");
 
-            _Mode = EPFArchiveMode.Read;
+            Mode = EPFArchiveMode.Read;
             //This is the main data stream
             _MainStream = stream;
             //There is no back stream necesary in read mode
             _BackStream = null;
-            _ArchiveReader = new BinaryReader(_MainStream);
+            ArchiveReader = new BinaryReader(_MainStream);
 
             ReadEntries();
         }
@@ -360,7 +401,7 @@ namespace EPF
             if (!stream.CanRead || !stream.CanWrite || !stream.CanSeek)
                 throw new ArgumentException("Incorrect input stream capabilities in archive update mode");
 
-            _Mode = EPFArchiveMode.Update;
+            Mode = EPFArchiveMode.Update;
 
             //Backup archive stream (MainStream) to temporary file and open this file for read (as BackStream)
             _MainStream = stream;
@@ -369,7 +410,7 @@ namespace EPF
             _MainStream.Seek(0, SeekOrigin.Begin);
             _BackStream.Seek(0, SeekOrigin.Begin);
             //Reading will be done from BackStream and writing will be done to MainStream
-            _ArchiveReader = new BinaryReader(_BackStream);
+            ArchiveReader = new BinaryReader(_BackStream);
             ReadEntries();
         }
 

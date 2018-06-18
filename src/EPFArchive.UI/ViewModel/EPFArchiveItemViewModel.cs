@@ -18,6 +18,7 @@ namespace EPF.UI.ViewModel
         private int _compressedLength;
         private EPFArchiveEntry _entry;
         private EPFArchiveItemStatus _status;
+        private bool _toRemove;
         private bool _isCompressed;
         private int _length;
         private string _name;
@@ -41,16 +42,23 @@ namespace EPF.UI.ViewModel
             Length = entry.Length;
             CompressedLength = entry.CompressedLength;
 
-
             PropertyChanged += EPFArchiveItemViewModel_PropertyChanged;
         }
 
         private void EPFArchiveItemViewModel_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
-            if (e.PropertyName == nameof(IsCompressed))
+            switch (e.PropertyName)
             {
-                if (Status == EPFArchiveItemStatus.Unchanged || Status == EPFArchiveItemStatus.Modifying)
-                    Status = _entry.IsCompressed == IsCompressed ? EPFArchiveItemStatus.Unchanged : EPFArchiveItemStatus.Modifying;
+                case nameof(IsCompressed):
+                    _entry.IsCompressed = IsCompressed;
+                    Status = _entry.Modify ? EPFArchiveItemStatus.Modifying : EPFArchiveItemStatus.Unchanged;
+                    break;
+                case nameof(ToRemove):
+                    _entry.ToRemove = ToRemove;
+                    Status = EPFArchiveItemStatus.Removing;
+                    break;
+                default:
+                    break;
             }
         }
 
@@ -143,15 +151,21 @@ namespace EPF.UI.ViewModel
             }
         }
 
-        internal void TryRemove()
+        public bool ToRemove
         {
-            _entry.ToRemove = true;
-        }
+            get
+            {
+                return _toRemove;
+            }
 
-        internal void TryModify()
-        {
-            _entry.IsCompressed = IsCompressed;
-            _entry.Modify = true;
+            set
+            {
+                if (_toRemove == value)
+                    return;
+
+                _toRemove = value;
+                OnPropertyChanged(nameof(ToRemove));
+            }
         }
 
         #endregion Public Properties

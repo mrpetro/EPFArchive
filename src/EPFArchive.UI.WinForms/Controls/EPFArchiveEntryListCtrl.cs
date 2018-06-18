@@ -37,6 +37,8 @@ namespace EPF.UI.WinForms.Controls
 
             _viewModel.SelectedEntries.ListChanged += SelectedEntries_ListChanged;
 
+            _viewModel.EntriesRefresher += _viewModel_EntriesRefresher;
+
             DGV.AutoGenerateColumns = false;
             DGV.DataSource = _viewModel.Entries;
             DGVColumnName.DataPropertyName = "Name";
@@ -52,6 +54,15 @@ namespace EPF.UI.WinForms.Controls
         #endregion Public Methods
 
         #region Private Methods
+
+        private void _viewModel_EntriesRefresher()
+        {
+            _viewModel.SelectedEntries.ListChanged -= SelectedEntries_ListChanged;
+
+            this.InvokeIfRequired(() => { _viewModel.RefreshEntries(); });
+
+            _viewModel.SelectedEntries.ListChanged += SelectedEntries_ListChanged;
+        }
 
         private void DGV_PreviewKeyDown(object sender, PreviewKeyDownEventArgs e)
         {

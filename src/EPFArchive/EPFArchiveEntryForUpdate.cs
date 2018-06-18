@@ -33,6 +33,12 @@ namespace EPF
             }
         }
 
+        /// <summary>
+        /// This function will open entry stream in read-write mode
+        /// It copies entry data (or decompresses) from EPF archvie to temporary file
+        /// Then opens this file and returns it's stream
+        /// </summary>
+        /// <returns>Stream of entry</returns>
         public override Stream Open()
         {
             ThrowIfInvalidArchive();
@@ -41,14 +47,26 @@ namespace EPF
 
             string tempFilePath = Path.GetTempFileName();
 
-            using (FileStream fs = new FileStream(tempFilePath, FileMode.Open, FileAccess.Write, FileShare.None, 4096, FileOptions.None))
+            using (var fs = new FileStream(tempFilePath, FileMode.Open, FileAccess.Write, FileShare.None, 4096, FileOptions.None))
             {
                 fs.SetLength(Length);
 
-                if (IsCompressed)
+                if (_isCompressed)
                     Archive.Decompressor.Decompress(Archive.ArchiveReader.BaseStream, fs);
                 else
-                    fs.Write(Archive.ArchiveReader.ReadBytes(Length), 0, Length);
+                {
+                    int times = Length / 4096;
+                    byte[] read = null;
+
+                    for (int i = 0; i < times; i++)
+                    {
+                        read = Archive.ArchiveReader.ReadBytes(4096);
+                        fs.Write(read, 0, 4096);
+                    }
+
+                    read = Archive.ArchiveReader.ReadBytes(Length % 4096);
+                    fs.Write(read, 0, Length % 4096);
+                }
             }
 
             _openedStream = new FileStream(tempFilePath, FileMode.Open, FileAccess.ReadWrite, FileShare.None, 4096, FileOptions.DeleteOnClose);
