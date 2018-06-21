@@ -33,6 +33,7 @@
             this.DGVColumnStatus = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.DGVColumnSize = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.DGVColumnPackedSize = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.DGVColumnRatio = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.DGVColumnIsCompressed = new System.Windows.Forms.DataGridViewCheckBoxColumn();
             ((System.ComponentModel.ISupportInitialize)(this.DGV)).BeginInit();
             this.SuspendLayout();
@@ -50,6 +51,7 @@
             this.DGVColumnStatus,
             this.DGVColumnSize,
             this.DGVColumnPackedSize,
+            this.DGVColumnRatio,
             this.DGVColumnIsCompressed});
             this.DGV.Dock = System.Windows.Forms.DockStyle.Fill;
             this.DGV.EditMode = System.Windows.Forms.DataGridViewEditMode.EditProgrammatically;
@@ -57,7 +59,7 @@
             this.DGV.Name = "DGV";
             this.DGV.RowHeadersVisible = false;
             this.DGV.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this.DGV.Size = new System.Drawing.Size(676, 300);
+            this.DGV.Size = new System.Drawing.Size(547, 301);
             this.DGV.TabIndex = 1;
             // 
             // DGVColumnName
@@ -69,28 +71,44 @@
             // 
             // DGVColumnStatus
             // 
+            this.DGVColumnStatus.FillWeight = 90F;
             this.DGVColumnStatus.HeaderText = "Status";
             this.DGVColumnStatus.Name = "DGVColumnStatus";
             this.DGVColumnStatus.ReadOnly = true;
             this.DGVColumnStatus.Resizable = System.Windows.Forms.DataGridViewTriState.False;
+            this.DGVColumnStatus.Width = 90;
             // 
             // DGVColumnSize
             // 
+            this.DGVColumnSize.FillWeight = 90F;
             this.DGVColumnSize.HeaderText = "Size";
             this.DGVColumnSize.Name = "DGVColumnSize";
             this.DGVColumnSize.ReadOnly = true;
+            this.DGVColumnSize.Width = 90;
             // 
             // DGVColumnPackedSize
             // 
+            this.DGVColumnPackedSize.FillWeight = 90F;
             this.DGVColumnPackedSize.HeaderText = "Packed Size";
             this.DGVColumnPackedSize.Name = "DGVColumnPackedSize";
             this.DGVColumnPackedSize.ReadOnly = true;
+            this.DGVColumnPackedSize.Width = 90;
+            // 
+            // DGVColumnRatio
+            // 
+            this.DGVColumnRatio.FillWeight = 50F;
+            this.DGVColumnRatio.HeaderText = "Ratio";
+            this.DGVColumnRatio.Name = "DGVColumnRatio";
+            this.DGVColumnRatio.ReadOnly = true;
+            this.DGVColumnRatio.Width = 50;
             // 
             // DGVColumnIsCompressed
             // 
+            this.DGVColumnIsCompressed.FillWeight = 90F;
             this.DGVColumnIsCompressed.HeaderText = "Is Compressed";
             this.DGVColumnIsCompressed.Name = "DGVColumnIsCompressed";
             this.DGVColumnIsCompressed.Resizable = System.Windows.Forms.DataGridViewTriState.False;
+            this.DGVColumnIsCompressed.Width = 90;
             // 
             // EPFArchiveEntryListCtrl
             // 
@@ -98,7 +116,7 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.Controls.Add(this.DGV);
             this.Name = "EPFArchiveEntryListCtrl";
-            this.Size = new System.Drawing.Size(676, 300);
+            this.Size = new System.Drawing.Size(547, 301);
             ((System.ComponentModel.ISupportInitialize)(this.DGV)).EndInit();
             this.ResumeLayout(false);
 
@@ -111,6 +129,7 @@
         private System.Windows.Forms.DataGridViewTextBoxColumn DGVColumnStatus;
         private System.Windows.Forms.DataGridViewTextBoxColumn DGVColumnSize;
         private System.Windows.Forms.DataGridViewTextBoxColumn DGVColumnPackedSize;
+        private System.Windows.Forms.DataGridViewTextBoxColumn DGVColumnRatio;
         private System.Windows.Forms.DataGridViewCheckBoxColumn DGVColumnIsCompressed;
     }
 }

@@ -385,7 +385,6 @@ namespace EPF
 
             Mode = EPFArchiveMode.Update;
 
-
             _MainStream = stream;
 
             //Create BackStream from temporary file

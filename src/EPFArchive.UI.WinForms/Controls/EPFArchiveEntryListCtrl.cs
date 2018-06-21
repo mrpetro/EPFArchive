@@ -1,6 +1,7 @@
 ﻿using EPF.UI.ViewModel;
 using System;
 using System.ComponentModel;
+using System.Globalization;
 using System.Windows.Forms;
 
 namespace EPF.UI.WinForms.Controls
@@ -45,10 +46,29 @@ namespace EPF.UI.WinForms.Controls
             DGVColumnStatus.DataPropertyName = "Status";
             DGVColumnSize.DataPropertyName = "Length";
             DGVColumnPackedSize.DataPropertyName = "CompressedLength";
+            DGVColumnRatio.DataPropertyName = "CompressionRatio";
             DGVColumnIsCompressed.DataPropertyName = "IsCompressed";
-
+       
             DGV.SelectionChanged += DGV_SelectionChanged;
             DGV.PreviewKeyDown += DGV_PreviewKeyDown;
+            DGV.CellFormatting += DGV_CellFormatting;
+        }
+
+        private void DGV_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
+        {
+            if (e.RowIndex < 0 || e.ColumnIndex < 0)
+                return;
+
+            if (e.ColumnIndex == DGVColumnRatio.Index)
+            {
+                var value = 100.0f * (float)e.Value;
+
+                if (value > 100.0f)
+                    e.CellStyle.BackColor = System.Drawing.Color.Orange;
+
+                e.Value = string.Format(CultureInfo.InvariantCulture, "{0:F2}", value);
+
+            }
         }
 
         #endregion Public Methods

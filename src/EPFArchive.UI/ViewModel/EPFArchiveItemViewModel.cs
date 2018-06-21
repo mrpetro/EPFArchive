@@ -21,6 +21,7 @@ namespace EPF.UI.ViewModel
         private bool _toRemove;
         private bool _isCompressed;
         private int _length;
+        private float _compressionRatio;
         private string _name;
 
         #endregion Private Fields
@@ -41,6 +42,7 @@ namespace EPF.UI.ViewModel
             IsCompressed = entry.IsCompressed;
             Length = entry.Length;
             CompressedLength = entry.CompressedLength;
+            CompressionRatio = (float)CompressedLength / (float)Length; 
 
             PropertyChanged += EPFArchiveItemViewModel_PropertyChanged;
         }
@@ -133,6 +135,23 @@ namespace EPF.UI.ViewModel
 
                 _length = value;
                 OnPropertyChanged(nameof(Length));
+            }
+        }
+
+        public float CompressionRatio
+        {
+            get
+            {
+                return _compressionRatio;
+            }
+
+            set
+            {
+                if (_compressionRatio == value)
+                    return;
+
+                _compressionRatio = value;
+                OnPropertyChanged(nameof(CompressionRatio));
             }
         }
 
