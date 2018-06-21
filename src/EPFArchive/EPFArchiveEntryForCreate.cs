@@ -10,6 +10,8 @@ namespace EPF
 
         private string _filePath;
 
+        private long _archiveDataPos;
+
         #endregion Private Fields
 
         #region Internal Constructors
@@ -23,6 +25,7 @@ namespace EPF
             CompressedLength = Length;
             Action = EPFEntryAction.Add;
             _filePath = filePath;
+            _archiveDataPos = -1;
         }
 
         #endregion Internal Constructors
@@ -48,6 +51,11 @@ namespace EPF
 
         #region Internal Methods
 
+        internal EPFArchiveEntryForUpdate Promote()
+        {
+            return null;
+        }
+
         internal override void WriteData(BinaryWriter writer)
         {
             if (Action == EPFEntryAction.Remove)
@@ -55,15 +63,16 @@ namespace EPF
 
             using (var openedStream = File.OpenRead(_filePath))
             {
+                //Remember position of entry data start in archive file
+                _archiveDataPos = writer.BaseStream.Position;
+
                 if (Action.HasFlag(EPFEntryAction.Compress))
                 {
-                    //Remember last position before writing compressed data
-                    var lastPosition = writer.BaseStream.Position;
                     //Compress entry data while storing it into archive
                     Archive.Compressor.Compress(openedStream, writer.BaseStream);
                     //Update entry normal and compressed data lengths
                     Length = (int)openedStream.Length;
-                    CompressedLength = (int)writer.BaseStream.Position - (int)lastPosition;
+                    CompressedLength = (int)writer.BaseStream.Position - (int)_archiveDataPos;
                 }
                 else
                 {

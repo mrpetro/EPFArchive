@@ -190,6 +190,9 @@ namespace EPF
                     //Write remaining entries to archive
                     WriteEntries(binWriter);
 
+                    //This will replace all EntriesForCreate with EntriesForUpdate
+                    PromoteEntriesForCreate();
+
                     //Update BackStream with new MainStream content
                     UpdateBackStream();
 
@@ -255,6 +258,12 @@ namespace EPF
 
             _entries.Add(entry);
             _entryDictionary.Add(entry.Name, entry);
+        }
+
+        private void RemoveEntry(EPFArchiveEntry entry)
+        {
+            _entries.Remove(entry);
+            _entryDictionary.Remove(entry.Name);
         }
 
         private void CloseStreams()
@@ -445,10 +454,21 @@ namespace EPF
             }
         }
 
+        private void PromoteEntriesForCreate()
+        {
+            //_entries.ForEach(item => { if (item.Action == EPFEntryAction.Add) item.Close(); });
+            //_entries.RemoveAll(item => item.Action == EPFEntryAction.Remove);
+        }
+
         private void RemoveMarkedEntries()
         {
-            _entries.ForEach(item => { if (item.Action == EPFEntryAction.Remove) item.Close(); });
-            _entries.RemoveAll(item => item.Action == EPFEntryAction.Remove);
+            var entriesToRemove = _entries.Where(item => item.Action == EPFEntryAction.Remove).ToArray();
+
+            foreach (var entry in entriesToRemove)
+            {
+                entry.Close();
+                RemoveEntry(entry);
+            }
         }
 
         private void WriteEntries(BinaryWriter writer)
