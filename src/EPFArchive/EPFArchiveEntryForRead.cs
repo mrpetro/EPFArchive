@@ -23,19 +23,6 @@ namespace EPF
 
         #region Public Properties
 
-        public override bool ToRemove
-        {
-            get
-            {
-                return false;
-            }
-
-            set
-            {
-                throw new InvalidOperationException("Entry for reading cannot be marked to remove");
-            }
-        }
-
         #endregion Public Properties
 
         #region Internal Properties
@@ -84,7 +71,7 @@ namespace EPF
 
         internal override void WriteData(BinaryWriter writer)
         {
-            throw new InvalidOperationException("Unable to write EPFArchiveEntry in Read mode.");
+            throw new InvalidOperationException("Writing EPFArchiveEntry in read-only mode.");
         }
 
         #endregion Internal Methods

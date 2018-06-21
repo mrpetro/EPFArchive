@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Text;
 
 namespace EPF
@@ -51,7 +52,7 @@ namespace EPF
             {
                 fs.SetLength(Length);
 
-                if (_isCompressed)
+                if (IsCompressed)
                     Archive.Decompressor.Decompress(Archive.ArchiveReader.BaseStream, fs);
                 else
                 {
@@ -80,7 +81,10 @@ namespace EPF
 
         internal override void WriteData(BinaryWriter writer)
         {
-            if (_openedStream == null && Modify)
+            if (Action == EPFEntryAction.Remove)
+                throw new InvalidOperationException("Writing entry marked for removing");
+
+            if (_openedStream == null && Action != EPFEntryAction.Nothing)
                 Open();
 
             Archive.ArchiveReader.BaseStream.Position = _archiveDataPos;
@@ -89,12 +93,16 @@ namespace EPF
 
             //Entry was never opened so it will be copied from original
             if (_openedStream == null)
-                writer.Write(Archive.ArchiveReader.ReadBytes(CompressedLength), 0, CompressedLength);
+            {
+                var bytes = Archive.ArchiveReader.ReadBytes(CompressedLength);
+
+                writer.Write(bytes, 0, CompressedLength);
+            }
             else
             {
                 _openedStream.Seek(0, SeekOrigin.Begin);
 
-                if (IsCompressed)
+                if (Action.HasFlag(EPFEntryAction.Compress))
                 {
                     //Compress entry data while storing it in to archive
                     Archive.Compressor.Compress(_openedStream, writer.BaseStream);

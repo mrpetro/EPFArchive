@@ -50,16 +50,18 @@ namespace EPF.UI.ViewModel
             switch (e.PropertyName)
             {
                 case nameof(IsCompressed):
-                    _entry.IsCompressed = IsCompressed;
-                    Status = _entry.Modify ? EPFArchiveItemStatus.Modifying : EPFArchiveItemStatus.Unchanged;
+                    _entry.Action = IsCompressed ? EPFEntryAction.Compress : EPFEntryAction.Decompress;
+                    Status = _entry.Action != EPFEntryAction.Nothing ? EPFArchiveItemStatus.Modifying : EPFArchiveItemStatus.Unchanged;
                     break;
                 case nameof(ToRemove):
-                    _entry.ToRemove = ToRemove;
+                    _entry.Action = EPFEntryAction.Remove;
                     Status = EPFArchiveItemStatus.Removing;
                     break;
                 default:
                     break;
             }
+
+
         }
 
         #endregion Public Constructors

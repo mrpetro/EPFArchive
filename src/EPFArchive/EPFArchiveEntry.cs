@@ -4,15 +4,14 @@ using System.Text;
 
 namespace EPF
 {
-    public struct EPFEntryState
+
+    public enum EPFEntryAction
     {
-        #region Public Properties
-
-        public bool IsCompressed { get; set; }
-        public bool IsRemoved { get; set; }
-        public string Name { get; set; }
-
-        #endregion Public Properties
+        Nothing = 0,
+        Add = 1,
+        Remove = 2,
+        Compress = 4,
+        Decompress = 8
     }
 
     public abstract class EPFArchiveEntry
@@ -32,45 +31,15 @@ namespace EPF
 
         #region Public Properties
 
-        private bool _toRemove;
-        internal bool _isCompressed;
-        private bool _ToCompress;
-
         public EPFArchive Archive { get; private set; }
         public int CompressedLength { get; protected set; }
-        public bool IsCompressed
-        {
-            get
-            {
-                return _ToCompress;
-            }
+        public bool IsCompressed { get; private set; }
 
-            set
-            {
-                _ToCompress = value;
-
-                Modify = (_isCompressed != _ToCompress);
-            }
-        }
         public int Length { get; protected set; }
-        public bool Modify { get; set; }
+
+        public EPFEntryAction Action { get; set; }
+
         public string Name { get; protected set; }
-
-        public virtual bool ToRemove
-        {
-            get
-            {
-                return _toRemove;
-            }
-
-            set
-            {
-                _toRemove = value;
-
-                if(_toRemove)
-                    Modify = true;
-            }
-        }
 
         #endregion Public Properties
 
@@ -100,7 +69,7 @@ namespace EPF
         internal void ReadInfo(BinaryReader reader)
         {
             Name = Encoding.ASCII.GetString(reader.ReadBytes(13)).Split(new char[] { '\0' })[0];
-            _isCompressed = _ToCompress = reader.ReadBoolean();
+            IsCompressed = reader.ReadBoolean();
             CompressedLength = reader.ReadInt32();
             Length = reader.ReadInt32();
         }
@@ -109,13 +78,17 @@ namespace EPF
 
         internal void WriteInfo(BinaryWriter writer)
         {
+            if (Action.HasFlag(EPFEntryAction.Compress))
+                IsCompressed = true;
+            else if (Action.HasFlag(EPFEntryAction.Decompress))
+                IsCompressed = false;
+
             writer.Write(Encoding.ASCII.GetBytes(Name.PadRight(13, '\0')));
             writer.Write(IsCompressed);
             writer.Write(CompressedLength);
             writer.Write(Length);
 
-            _isCompressed = _ToCompress;
-            Modify = false;
+            Action = EPFEntryAction.Nothing;
         }
 
         #endregion Internal Methods

@@ -111,21 +111,6 @@ namespace EPF
 
         #endregion Internal Properties
 
-        #region Private Properties
-
-        //private EPFArchiveWriter ArchiveWriter
-        //{
-        //    get
-        //    {
-        //        if (_ArchiveWriter == null)
-        //            _ArchiveWriter = new EPFArchiveWriter(_MainStream);
-
-        //        return _ArchiveWriter;
-        //    }
-        //}
-
-        #endregion Private Properties
-
         #region Public Methods
 
         public void Close(bool saveChanges)
@@ -205,6 +190,9 @@ namespace EPF
                     //Write remaining entries to archive
                     WriteEntries(binWriter);
 
+                    //Update BackStream with new MainStream content
+                    UpdateBackStream();
+
                     _saveProgressEventArgs.EventType = SaveProgressEventType.SavingCompleted;
                     OnSaveProgress(_saveProgressEventArgs);
                 }
@@ -271,12 +259,6 @@ namespace EPF
 
         private void CloseStreams()
         {
-            //if (_ArchiveWriter != null)
-            //{
-            //    _ArchiveWriter.Dispose();
-            //    _ArchiveWriter.Dispose();
-            //}
-
             if (ArchiveReader != null)
             {
                 ArchiveReader.Dispose();
@@ -403,15 +385,28 @@ namespace EPF
 
             Mode = EPFArchiveMode.Update;
 
-            //Backup archive stream (MainStream) to temporary file and open this file for read (as BackStream)
+
             _MainStream = stream;
+
+            //Create BackStream from temporary file
             _BackStream = File.Open(Path.GetTempFileName(), FileMode.Open);
+
+            //Backup archive stream (MainStream) to BackStream
+            UpdateBackStream();
+
+            //Reading will be done from BackStream and writing will be done to MainStream
+            ArchiveReader = new BinaryReader(_BackStream);
+
+            ReadEntries();
+        }
+
+        private void UpdateBackStream()
+        {
+            _MainStream.Seek(0, SeekOrigin.Begin);
+            _BackStream.Seek(0, SeekOrigin.Begin);
             _MainStream.CopyTo(_BackStream);
             _MainStream.Seek(0, SeekOrigin.Begin);
             _BackStream.Seek(0, SeekOrigin.Begin);
-            //Reading will be done from BackStream and writing will be done to MainStream
-            ArchiveReader = new BinaryReader(_BackStream);
-            ReadEntries();
         }
 
         private void ReadEntries()
@@ -453,8 +448,8 @@ namespace EPF
 
         private void RemoveMarkedEntries()
         {
-            _entries.ForEach(item => { if (item.ToRemove) item.Close(); });
-            _entries.RemoveAll(item => item.ToRemove);
+            _entries.ForEach(item => { if (item.Action == EPFEntryAction.Remove) item.Close(); });
+            _entries.RemoveAll(item => item.Action == EPFEntryAction.Remove);
         }
 
         private void WriteEntries(BinaryWriter writer)

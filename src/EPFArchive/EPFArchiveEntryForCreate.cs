@@ -21,8 +21,7 @@ namespace EPF
             Name = ValidateName(fileInfo.Name);
             Length = (int)fileInfo.Length;
             CompressedLength = Length;
-            IsCompressed = false;
-
+            Action = EPFEntryAction.Add;
             _filePath = filePath;
         }
 
@@ -51,9 +50,12 @@ namespace EPF
 
         internal override void WriteData(BinaryWriter writer)
         {
+            if (Action == EPFEntryAction.Remove)
+                throw new InvalidOperationException("Writing entry marked for removing");
+
             using (var openedStream = File.OpenRead(_filePath))
             {
-                if (IsCompressed)
+                if (Action.HasFlag(EPFEntryAction.Compress))
                 {
                     //Remember last position before writing compressed data
                     var lastPosition = writer.BaseStream.Position;
