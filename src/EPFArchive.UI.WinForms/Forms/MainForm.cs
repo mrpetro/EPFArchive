@@ -35,12 +35,9 @@ namespace EPF.UI.WinForms.Forms
 
             set
             {
-                var invokeParent = Tools.GetInvokable(this);
-                invokeParent.InvokeIfRequired(() => { base.Enabled = value; });
+                this.InvokeIfRequired(() => { base.Enabled = value; });
             }
         }
-
-        #endregion Public Properties
 
         public bool Locked
         {
@@ -56,14 +53,17 @@ namespace EPF.UI.WinForms.Forms
                     if (_locked == value)
                         return;
 
-                    foreach (Control control in Controls)
-                        control.Enabled = value;
+                    MainMenuStrip.Enabled = !value;
+                    EntryList.Enabled = !value;
+
+                    //Tools.ChangeEnabled(this, !value);
 
                     _locked = value;
                 });
             }
         }
 
+        #endregion Public Properties
 
         #region Public Methods
 
@@ -74,13 +74,7 @@ namespace EPF.UI.WinForms.Forms
 
             _viewModel = viewModel;
 
-            DGV.AutoGenerateColumns = false;
-            DGV.DataSource = _viewModel.Entries;
-            DGVColumnName.DataPropertyName = "Name";
-            DGVColumnStatus.DataPropertyName = "Status";
-            DGVColumnSize.DataPropertyName = "Length";
-            DGVColumnPackedSize.DataPropertyName = "CompressedLength";
-            DGVColumnIsCompressed.DataPropertyName = "IsCompressed";
+            EntryList.Initialize(_viewModel);
 
             DataBindings.Add("Locked", _viewModel, nameof(_viewModel.Locked), false, DataSourceUpdateMode.OnPropertyChanged);
             DataBindings.Add("Text", _viewModel, nameof(_viewModel.AppLabel), false, DataSourceUpdateMode.OnPropertyChanged);
@@ -95,33 +89,17 @@ namespace EPF.UI.WinForms.Forms
             MenuItemDeselectAll.DataBindings.Add("Enabled", _viewModel, nameof(_viewModel.IsArchiveOpened), false, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged);
             MenuItemSelectAll.DataBindings.Add("Enabled", _viewModel, nameof(_viewModel.IsArchiveOpened), false, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged);
             MenuItemInvertSelection.DataBindings.Add("Enabled", _viewModel, nameof(_viewModel.IsArchiveOpened), false, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged);
-
             MenuItemFileClose.DataBindings.Add("Enabled", _viewModel, nameof(_viewModel.IsArchiveOpened), false, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged);
             MenuItemExtractAll.DataBindings.Add("Enabled", _viewModel, nameof(_viewModel.IsArchiveOpened), false, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged);
             MenuItemExtractSelection.DataBindings.Add("Enabled", _viewModel, nameof(_viewModel.IsArchiveOpened), false, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged);
 
-            MenuItemFileSave.DataBindings.Add("Enabled", _viewModel, nameof(_viewModel.IsArchiveSaveAllowed), false, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged);
-            MenuItemFileSaveAs.DataBindings.Add("Enabled", _viewModel, nameof(_viewModel.IsArchiveSaveAllowed), false, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged);
+            MenuItemFileSave.DataBindings.Add("Enabled", _viewModel, nameof(_viewModel.IsArchiveModified), false, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged);
+            MenuItemFileSaveAs.DataBindings.Add("Enabled", _viewModel, nameof(_viewModel.IsArchiveModified), false, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged);
         }
 
         #endregion Public Methods
 
         #region Private Methods
-
-        private void DGV_SelectionChanged(object sender, EventArgs e)
-        {
-            int itemsSelected = 0;
-
-            foreach (DataGridViewRow row in DGV.Rows)
-            {
-                ((EPFArchiveItemViewModel)row.DataBoundItem).IsSelected = row.Selected;
-
-                if (row.Selected)
-                    itemsSelected++;
-            }
-
-            _viewModel.Status.ItemsSelected = itemsSelected;
-        }
 
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
@@ -130,8 +108,8 @@ namespace EPF.UI.WinForms.Forms
 
         private void MenuItemDeselectAll_Click(object sender, EventArgs e)
         {
-            foreach (DataGridViewRow row in DGV.Rows)
-                ((EPFArchiveItemViewModel)row.DataBoundItem).IsSelected = row.Selected = false;
+            _viewModel.DeselectAll();
+            //EntryList.DeselectAll();
         }
 
         private void MenuItemExit_Click(object sender, EventArgs e)
@@ -141,79 +119,77 @@ namespace EPF.UI.WinForms.Forms
 
         private void MenuItemExtractAll_Click(object sender, EventArgs e)
         {
-            using (var folderBrowser = new FolderBrowserDialog())
-            {
-                var result = folderBrowser.ShowDialog();
-
-                if (result == DialogResult.OK)
-                {
-                    try
-                    {
-                        Tools.ChangeEnabled(this, false);
-                        _viewModel.ExtractAll(folderBrowser.SelectedPath);
-                    }
-                    finally
-                    {
-                        Tools.ChangeEnabled(this, true);
-                    }
-                }
-            }
+            _viewModel.TryExtractAll();
         }
 
         private void MenuItemExtractSelection_Click(object sender, EventArgs e)
         {
-            using (var folderBrowser = new FolderBrowserDialog())
-            {
-                var result = folderBrowser.ShowDialog();
-
-                if (result == DialogResult.OK)
-                {
-                    try
-                    {
-                        Tools.ChangeEnabled(this, false);
-                        _viewModel.ExtractSelected(folderBrowser.SelectedPath);
-                    }
-                    finally
-                    {
-                        Tools.ChangeEnabled(this, true);
-                    }
-                }
-            }
+            _viewModel.TryExtractSelection();
         }
 
-        private void MenuItemFileClose_Click(object sender, EventArgs e)
+        private void MenuItemArchiveClose_Click(object sender, EventArgs e)
         {
             _viewModel.TryClose();
         }
 
+        private void MenuItemArchiveOpen_Click(object sender, EventArgs e)
+        {
+            _viewModel.TryOpenArchive();
+        }
+
+        private void MenuItemArchiveOpenReadOnly_Click(object sender, EventArgs e)
+        {
+            _viewModel.TryOpenArchiveReadOnly();
+        }
+
         private void MenuItemInvertSelection_Click(object sender, EventArgs e)
         {
-            foreach (DataGridViewRow row in DGV.Rows)
-            {
-                row.Selected = !row.Selected;
-                ((EPFArchiveItemViewModel)row.DataBoundItem).IsSelected = row.Selected;
-            }
+            _viewModel.InvertSelection();
+            //EntryList.InvertSelection();
         }
 
         private void MenuItemSelectAll_Click(object sender, EventArgs e)
         {
-            foreach (DataGridViewRow row in DGV.Rows)
-                ((EPFArchiveItemViewModel)row.DataBoundItem).IsSelected = row.Selected = true;
+            _viewModel.SelectAll();
+            //EntryList.SelectAll();
         }
 
         #endregion Private Methods
 
-        private void MenuItemFileOpen_Click(object sender, EventArgs e)
+        private void DGV_PreviewKeyDown(object sender, PreviewKeyDownEventArgs e)
         {
-            //MessageBox.Show("Open EPF archives in Read/Write mode is not implemented yet.");
-            _viewModel.TryOpenArchive();
+            if(e.KeyCode == Keys.Delete)
+                _viewModel.TryRemoveSelectedEntries();
         }
 
-
-
-        private void MenuItemFileOpenReadOnly_Click(object sender, EventArgs e)
+        private void MenuItemArchiveSave_Click(object sender, EventArgs e)
         {
-            _viewModel.TryOpenArchiveReadOnly();
+            _viewModel.TrySave();
+        }
+
+        private void MenuItemArchiveSaveAs_Click(object sender, EventArgs e)
+        {
+            _viewModel.TrySaveAs();
+        }
+
+        private void ToolStripAdd_Click(object sender, EventArgs e)
+        {
+            _viewModel.TryAddEntries();
+        }
+
+        private void ToolStripRemove_Click(object sender, EventArgs e)
+        {
+            _viewModel.TryRemoveSelectedEntries();
+        }
+
+        private void ToolStripExtractSelection_Click(object sender, EventArgs e)
+        {
+            _viewModel.TryExtractSelection();
+        }
+
+        private void ToolStripExtractAll_Click(object sender, EventArgs e)
+        {
+            _viewModel.TryExtractAll();
         }
     }
 }

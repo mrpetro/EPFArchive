@@ -21,6 +21,10 @@ namespace EPF
 
         #endregion Internal Constructors
 
+        #region Public Properties
+
+        #endregion Public Properties
+
         #region Internal Properties
 
         internal long ArchiveDataPos { get { return _ArchiveDataPos; } }
@@ -31,8 +35,15 @@ namespace EPF
 
         public override void Close()
         {
+            //TODO: Clean up here if temporary file was created
         }
 
+        /// <summary>
+        /// This method will open entry stream in read-only mode
+        /// It copies entry data (or decompresses) from EPF archvie to temporary file
+        /// Then opens this file and returns it's stream
+        /// </summary>
+        /// <returns>Stream of entry</returns>
         public override Stream Open()
         {
             ThrowIfInvalidArchive();
@@ -60,7 +71,7 @@ namespace EPF
 
         internal override void WriteData(BinaryWriter writer)
         {
-            throw new InvalidOperationException("Unable to write EPFArchiveEntry in Read mode.");
+            throw new InvalidOperationException("Writing EPFArchiveEntry in read-only mode.");
         }
 
         #endregion Internal Methods
