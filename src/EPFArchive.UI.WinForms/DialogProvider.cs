@@ -77,5 +77,32 @@ namespace EPF.UI.WinForms
                 return new FileDialogResult(answer, fileNames);
             }
         }
+
+        public FileDialogResult ShowSaveFileDialog(string title, string filter, string initialDirectory, string fileName = null)
+        {
+            using (var fileDialog = new SaveFileDialog())
+            {
+                fileDialog.Title = title;
+                fileDialog.Filter = filter;
+                fileDialog.InitialDirectory = initialDirectory;
+                fileDialog.FileName = fileName;
+
+                var answer = ToDialogAnswer(fileDialog.ShowDialog());
+                var fileNames = fileDialog.FileNames;
+                return new FileDialogResult(answer, fileNames);
+            }
+        }
+
+        public FolderBrowserResult ShowFolderBrowserDialog(string title, string initialDirectory)
+        {
+            using (var folderBrower = new FolderBrowserDialog())
+            {
+                folderBrower.Description = title;
+                folderBrower.SelectedPath = initialDirectory;
+                var answer = ToDialogAnswer(folderBrower.ShowDialog());
+                var selectedDirectory = folderBrower.SelectedPath;
+                return new FolderBrowserResult(answer, selectedDirectory);
+            }
+        }
     }
 }
