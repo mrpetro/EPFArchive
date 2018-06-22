@@ -191,7 +191,7 @@ namespace EPF
                     WriteEntries(binWriter);
 
                     //This will replace all EntriesForCreate with EntriesForUpdate
-                    PromoteEntriesForCreate();
+                    ConvertEntriesForCreate();
 
                     //Update BackStream with new MainStream content
                     UpdateBackStream();
@@ -454,10 +454,19 @@ namespace EPF
             }
         }
 
-        private void PromoteEntriesForCreate()
+        private void ConvertEntriesForCreate()
         {
-            //_entries.ForEach(item => { if (item.Action == EPFEntryAction.Add) item.Close(); });
-            //_entries.RemoveAll(item => item.Action == EPFEntryAction.Remove);
+            var entriesForCreate = _entries.OfType<EPFArchiveEntryForCreate>().ToArray();
+            var entriesForUpdate = new List<EPFArchiveEntryForUpdate>();
+
+            foreach (var entry in entriesForCreate)
+            {
+                entriesForUpdate.Add(entry.Convert());
+                RemoveEntry(entry);
+            }
+
+            foreach (var entry in entriesForUpdate)
+                AddEntry(entry);
         }
 
         private void RemoveMarkedEntries()

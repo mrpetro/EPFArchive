@@ -21,6 +21,15 @@ namespace EPF
             _archiveDataPos = dataPos;
         }
 
+        internal EPFArchiveEntryForUpdate(EPFArchive archive, string name, int length, int compressedLength, long dataPos) :
+            base(archive)
+        {
+            Name = name;
+            Length = length;
+            CompressedLength = compressedLength;
+            _archiveDataPos = dataPos;
+        }
+
         #endregion Internal Constructors
 
         #region Public Methods

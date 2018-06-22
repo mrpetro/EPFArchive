@@ -30,12 +30,6 @@ namespace EPF
 
         #endregion Internal Constructors
 
-        #region Internal Properties
-
-        internal string FilePath { get { return _filePath; } }
-
-        #endregion Internal Properties
-
         #region Public Methods
 
         public override void Close()
@@ -51,11 +45,21 @@ namespace EPF
 
         #region Internal Methods
 
-        internal EPFArchiveEntryForUpdate Promote()
+        /// <summary>
+        /// This method will create equivalent archive entry suitable for updating from current entry.
+        /// It should be used in stage of saving archive, which has new entries created.
+        /// </summary>
+        /// <returns>Archive entry suitable for updating</returns>
+        internal EPFArchiveEntryForUpdate Convert()
         {
-            return null;
+            return new EPFArchiveEntryForUpdate(Archive, Name, Length, CompressedLength, _archiveDataPos);
         }
 
+        /// <summary>
+        /// This method will write file which has been passes by file path in the constructor
+        /// into current Archive. Optionally it will be compressed in the process.
+        /// </summary>
+        /// <param name="writer">Reference to archive binary writer stream</param>
         internal override void WriteData(BinaryWriter writer)
         {
             if (Action == EPFEntryAction.Remove)

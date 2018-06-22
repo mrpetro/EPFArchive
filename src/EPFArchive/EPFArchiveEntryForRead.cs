@@ -39,7 +39,7 @@ namespace EPF
         }
 
         /// <summary>
-        /// This function will open entry stream in read-only mode
+        /// This method will open entry stream in read-only mode
         /// It copies entry data (or decompresses) from EPF archvie to temporary file
         /// Then opens this file and returns it's stream
         /// </summary>
