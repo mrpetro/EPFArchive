@@ -19,9 +19,11 @@ http://www.shikadi.net/moddingwiki/EPF_Format
 
 **EPF Archive class functionality to add/improve:**
 - [Feature] Adding hidden data to archive
+- [Feature] Create new EPF Archive
 - [Feature] Add SaveAs method to EPF Archive
 
 **EPF Archive UI functionality to add/improve:**
-- [Feature] Implement Save As... functionality
+- [Feature] Add and implement 'New archive' functionality
+- [Feature] Implement 'Save As...' functionality
 - [Feature] Add better icons
 - [Feature] Add WPF as a optional UI front-end
