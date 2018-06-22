@@ -6,9 +6,9 @@ namespace EPF.UI.ViewModel
     public enum EPFArchiveItemStatus
     {
         Unchanged,
-        Modified,
-        Deleted,
-        Added
+        Modifying,
+        Adding,
+        Removing
     }
 
     public class EPFArchiveItemViewModel : BaseViewModel
@@ -18,9 +18,10 @@ namespace EPF.UI.ViewModel
         private int _compressedLength;
         private EPFArchiveEntry _entry;
         private EPFArchiveItemStatus _status;
+        private bool _toRemove;
         private bool _isCompressed;
-        private bool _isSelected;
         private int _length;
+        private float _compressionRatio;
         private string _name;
 
         #endregion Private Fields
@@ -32,10 +33,37 @@ namespace EPF.UI.ViewModel
             _entry = entry;
 
             Name = entry.Name;
-            Status = EPFArchiveItemStatus.Unchanged;
+
+            if (entry is EPFArchiveEntryForCreate)
+                Status = EPFArchiveItemStatus.Adding;
+            else 
+                Status = EPFArchiveItemStatus.Unchanged;
+
             IsCompressed = entry.IsCompressed;
             Length = entry.Length;
             CompressedLength = entry.CompressedLength;
+            CompressionRatio = (float)CompressedLength / (float)Length; 
+
+            PropertyChanged += EPFArchiveItemViewModel_PropertyChanged;
+        }
+
+        private void EPFArchiveItemViewModel_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            switch (e.PropertyName)
+            {
+                case nameof(IsCompressed):
+                    _entry.Action = IsCompressed ? EPFEntryAction.Compress : EPFEntryAction.Decompress;
+                    Status = _entry.Action != EPFEntryAction.Nothing ? EPFArchiveItemStatus.Modifying : EPFArchiveItemStatus.Unchanged;
+                    break;
+                case nameof(ToRemove):
+                    _entry.Action = EPFEntryAction.Remove;
+                    Status = EPFArchiveItemStatus.Removing;
+                    break;
+                default:
+                    break;
+            }
+
+
         }
 
         #endregion Public Constructors
@@ -93,23 +121,6 @@ namespace EPF.UI.ViewModel
             }
         }
 
-        public bool IsSelected
-        {
-            get
-            {
-                return _isSelected;
-            }
-
-            set
-            {
-                if (_isSelected == value)
-                    return;
-
-                _isSelected = value;
-                OnPropertyChanged(nameof(IsSelected));
-            }
-        }
-
         public int Length
         {
             get
@@ -124,6 +135,23 @@ namespace EPF.UI.ViewModel
 
                 _length = value;
                 OnPropertyChanged(nameof(Length));
+            }
+        }
+
+        public float CompressionRatio
+        {
+            get
+            {
+                return _compressionRatio;
+            }
+
+            set
+            {
+                if (_compressionRatio == value)
+                    return;
+
+                _compressionRatio = value;
+                OnPropertyChanged(nameof(CompressionRatio));
             }
         }
 
@@ -144,16 +172,20 @@ namespace EPF.UI.ViewModel
             }
         }
 
-        internal void ExtractTo(string folderPath)
+        public bool ToRemove
         {
-            if (!Directory.Exists(folderPath))
-                throw new InvalidOperationException($"Directory {folderPath} doesn't exist.");
-
-            using (var entryStream = _entry.Open())
+            get
             {
-                var outFilePath = Path.Combine(folderPath, Name);
-                using (var outFile = File.Create(outFilePath))
-                    entryStream.CopyTo(outFile);
+                return _toRemove;
+            }
+
+            set
+            {
+                if (_toRemove == value)
+                    return;
+
+                _toRemove = value;
+                OnPropertyChanged(nameof(ToRemove));
             }
         }
 

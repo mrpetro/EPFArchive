@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Linq;
 
 namespace EPF.UI
 {
@@ -28,24 +24,61 @@ namespace EPF.UI
         RetryCancel = 5
     }
 
+    public interface IDialogProvider
+    {
+        #region Public Methods
+
+        FolderBrowserResult ShowFolderBrowserDialog(string title, string initialDirectory);
+
+        void ShowMessage(string text, string caption);
+
+        DialogAnswer ShowMessageWithQuestion(string text, string caption, QuestionDialogButtons buttons);
+
+        FileDialogResult ShowOpenFileDialog(string title, string filter, bool mutliSelect);
+
+        FileDialogResult ShowSaveFileDialog(string title, string filter, string initialDirectory, string fileName = null);
+
+        #endregion Public Methods
+    }
+
     public class FileDialogResult
     {
+        #region Public Constructors
+
         public FileDialogResult(DialogAnswer answer, string[] fileNames)
         {
             Answer = answer;
             FileNames = fileNames;
         }
 
-        public DialogAnswer Answer { get; private set; }
-        public string[] FileNames { get; private set; }
-        public string FileName { get { return FileNames.FirstOrDefault(); } }
+        #endregion Public Constructors
 
+        #region Public Properties
+
+        public DialogAnswer Answer { get; private set; }
+        public string FileName { get { return FileNames.FirstOrDefault(); } }
+        public string[] FileNames { get; private set; }
+
+        #endregion Public Properties
     }
 
-    public interface IDialogProvider
+    public class FolderBrowserResult
     {
-        void ShowMessage(string text, string caption);
-        DialogAnswer ShowMessageWithQuestion(string text, string caption, QuestionDialogButtons buttons);
-        FileDialogResult ShowOpenFileDialog(string title, string filter, bool mutliSelect);
+        #region Public Constructors
+
+        public FolderBrowserResult(DialogAnswer answer, string selectedDirectory)
+        {
+            Answer = answer;
+            SelectedDirectory = selectedDirectory;
+        }
+
+        #endregion Public Constructors
+
+        #region Public Properties
+
+        public DialogAnswer Answer { get; private set; }
+        public string SelectedDirectory { get; private set; }
+
+        #endregion Public Properties
     }
 }

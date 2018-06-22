@@ -64,13 +64,14 @@
   <ItemGroup>
     <Compile Include="EPFArchive.cs" />
     <Compile Include="EPFArchiveEntry.cs" />
+    <Compile Include="EPFArchiveEntryForCreate.cs" />
     <Compile Include="EPFArchiveEntryForRead.cs" />
     <Compile Include="EPFArchiveEntryForUpdate.cs" />
-    <Compile Include="EPFArchiveReader.cs" />
-    <Compile Include="EPFArchiveWriter.cs" />
+    <Compile Include="ExtractProgressEventHandler.cs" />
     <Compile Include="LZWCompressor.cs" />
     <Compile Include="LZWDecompressor.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SaveProgressEventHandler.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

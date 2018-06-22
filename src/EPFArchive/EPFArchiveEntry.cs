@@ -4,20 +4,27 @@ using System.Text;
 
 namespace EPF
 {
+
+    public enum EPFEntryAction
+    {
+        Nothing = 0,
+        Add = 1,
+        Remove = 2,
+        Compress = 4,
+        Decompress = 8
+    }
+
     public abstract class EPFArchiveEntry
     {
-        #region Internal Fields
+        #region Private Fields
 
-        internal Stream OpenedStream;
-
-        #endregion Internal Fields
+        #endregion Private Fields
 
         #region Protected Constructors
 
         protected EPFArchiveEntry(EPFArchive archive)
         {
             Archive = archive;
-            IsCompressed = true;
         }
 
         #endregion Protected Constructors
@@ -26,8 +33,12 @@ namespace EPF
 
         public EPFArchive Archive { get; private set; }
         public int CompressedLength { get; protected set; }
-        public bool IsCompressed { get; protected set; }
+        public bool IsCompressed { get; private set; }
+
         public int Length { get; protected set; }
+
+        public EPFEntryAction Action { get; set; }
+
         public string Name { get; protected set; }
 
         #endregion Public Properties
@@ -35,6 +46,19 @@ namespace EPF
         #region Public Methods
 
         public abstract void Close();
+
+        public void ExtractTo(string folderPath)
+        {
+            if (!Directory.Exists(folderPath))
+                throw new InvalidOperationException($"Directory '{folderPath}' doesn't exist.");
+
+            using (var entryStream = Open())
+            {
+                var outFilePath = Path.Combine(folderPath, Name);
+                using (var outFile = File.Create(outFilePath))
+                    entryStream.CopyTo(outFile);
+            }
+        }
 
         public abstract Stream Open();
 
@@ -54,10 +78,17 @@ namespace EPF
 
         internal void WriteInfo(BinaryWriter writer)
         {
+            if (Action.HasFlag(EPFEntryAction.Compress))
+                IsCompressed = true;
+            else if (Action.HasFlag(EPFEntryAction.Decompress))
+                IsCompressed = false;
+
             writer.Write(Encoding.ASCII.GetBytes(Name.PadRight(13, '\0')));
             writer.Write(IsCompressed);
             writer.Write(CompressedLength);
             writer.Write(Length);
+
+            Action = EPFEntryAction.Nothing;
         }
 
         #endregion Internal Methods
