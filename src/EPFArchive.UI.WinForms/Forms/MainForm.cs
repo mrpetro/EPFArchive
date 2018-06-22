@@ -101,30 +101,15 @@ namespace EPF.UI.WinForms.Forms
 
         #region Private Methods
 
+        private void DGV_PreviewKeyDown(object sender, PreviewKeyDownEventArgs e)
+        {
+            if (e.KeyCode == Keys.Delete)
+                _viewModel.TryRemoveSelectedEntries();
+        }
+
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
             _viewModel.TryClose();
-        }
-
-        private void MenuItemDeselectAll_Click(object sender, EventArgs e)
-        {
-            _viewModel.DeselectAll();
-            //EntryList.DeselectAll();
-        }
-
-        private void MenuItemExit_Click(object sender, EventArgs e)
-        {
-            _viewModel.TryClose();
-        }
-
-        private void MenuItemExtractAll_Click(object sender, EventArgs e)
-        {
-            _viewModel.TryExtractAll();
-        }
-
-        private void MenuItemExtractSelection_Click(object sender, EventArgs e)
-        {
-            _viewModel.TryExtractSelection();
         }
 
         private void MenuItemArchiveClose_Click(object sender, EventArgs e)
@@ -142,24 +127,9 @@ namespace EPF.UI.WinForms.Forms
             _viewModel.TryOpenArchiveReadOnly();
         }
 
-        private void MenuItemInvertSelection_Click(object sender, EventArgs e)
+        private void MenuItemArchiveProperties_Click(object sender, EventArgs e)
         {
-            _viewModel.InvertSelection();
-            //EntryList.InvertSelection();
-        }
-
-        private void MenuItemSelectAll_Click(object sender, EventArgs e)
-        {
-            _viewModel.SelectAll();
-            //EntryList.SelectAll();
-        }
-
-        #endregion Private Methods
-
-        private void DGV_PreviewKeyDown(object sender, PreviewKeyDownEventArgs e)
-        {
-            if(e.KeyCode == Keys.Delete)
-                _viewModel.TryRemoveSelectedEntries();
+            MessageBox.Show("'Properties...' not implemented.");
         }
 
         private void MenuItemArchiveSave_Click(object sender, EventArgs e)
@@ -172,14 +142,49 @@ namespace EPF.UI.WinForms.Forms
             _viewModel.TrySaveAs();
         }
 
+        private void MenuItemDeselectAll_Click(object sender, EventArgs e)
+        {
+            _viewModel.DeselectAll();
+        }
+
+        private void MenuItemExit_Click(object sender, EventArgs e)
+        {
+            _viewModel.TryClose();
+        }
+
+        private void MenuItemExtractAll_Click(object sender, EventArgs e)
+        {
+            _viewModel.TryExtractAll();
+        }
+
+        private void MenuItemExtractSelection_Click(object sender, EventArgs e)
+        {
+            _viewModel.TryExtractSelection();
+        }
+
+        private void MenuItemFileNew_Click(object sender, EventArgs e)
+        {
+            MessageBox.Show("'New' not implemented.");
+        }
+
+        private void MenuItemInvertSelection_Click(object sender, EventArgs e)
+        {
+            _viewModel.InvertSelection();
+        }
+
+        private void MenuItemSelectAll_Click(object sender, EventArgs e)
+        {
+            _viewModel.SelectAll();
+        }
+
         private void ToolStripAdd_Click(object sender, EventArgs e)
         {
             _viewModel.TryAddEntries();
         }
 
-        private void ToolStripRemove_Click(object sender, EventArgs e)
+        private void ToolStripExtractAll_Click(object sender, EventArgs e)
         {
-            _viewModel.TryRemoveSelectedEntries();
+            _viewModel.TryExtractAll();
         }
 
         private void ToolStripExtractSelection_Click(object sender, EventArgs e)
@@ -187,9 +192,11 @@ namespace EPF.UI.WinForms.Forms
             _viewModel.TryExtractSelection();
         }
 
-        private void ToolStripExtractAll_Click(object sender, EventArgs e)
+        private void ToolStripRemove_Click(object sender, EventArgs e)
         {
-            _viewModel.TryExtractAll();
+            _viewModel.TryRemoveSelectedEntries();
         }
+
+        #endregion Private Methods
     }
 }
