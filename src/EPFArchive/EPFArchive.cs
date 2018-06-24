@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Text;
 
 namespace EPF
 {
@@ -44,11 +45,11 @@ namespace EPF
 
         private static readonly char[] SIGNATURE = { 'E', 'P', 'F', 'S' };
 
-        //private EPFArchiveWriter _ArchiveWriter = null;
+        private byte[] _hiddenData;
         private Stream _BackStream;
-        private LZWCompressor _Compressor = null;
-        private LZWDecompressor _Decompressor = null;
-        private ReadOnlyCollection<EPFArchiveEntry> _eeadOnlyEntries;
+        private LZWCompressor _compressor = null;
+        private LZWDecompressor _decompressor = null;
+        private ReadOnlyCollection<EPFArchiveEntry> _readOnlyEntries;
         private List<EPFArchiveEntry> _entries;
         private Dictionary<string, EPFArchiveEntry> _entryDictionary;
         private ExtractProgressEventArgs _extractProgressEventArgs;
@@ -77,7 +78,7 @@ namespace EPF
 
         #region Public Properties
 
-        public ReadOnlyCollection<EPFArchiveEntry> Entries { get { return _eeadOnlyEntries; } }
+        public ReadOnlyCollection<EPFArchiveEntry> Entries { get { return _readOnlyEntries; } }
 
         public EPFArchiveMode Mode { get; private set; }
 
@@ -91,10 +92,10 @@ namespace EPF
         {
             get
             {
-                if (_Compressor == null)
-                    _Compressor = new LZWCompressor(14);
+                if (_compressor == null)
+                    _compressor = new LZWCompressor(14);
 
-                return _Compressor;
+                return _compressor;
             }
         }
 
@@ -102,16 +103,37 @@ namespace EPF
         {
             get
             {
-                if (_Decompressor == null)
-                    _Decompressor = new LZWDecompressor(14);
+                if (_decompressor == null)
+                    _decompressor = new LZWDecompressor(14);
 
-                return _Decompressor;
+                return _decompressor;
             }
         }
 
         #endregion Internal Properties
 
         #region Public Methods
+
+        private static bool IsASCII(string value)
+        {
+            return Encoding.UTF8.GetByteCount(value) == value.Length;
+        }
+
+        public static string ValidateEntryName(string name)
+        {
+            if (name == null)
+                throw new Exception("Name is not set");
+
+            if (!IsASCII(name))
+                throw new InvalidOperationException("Name must contain only ASCII characters");
+
+            name = name.Trim();
+
+            if (name.Length > 12)
+                throw new InvalidOperationException("Name length must not exceed 12 characters");
+
+            return name.ToUpper();
+        }
 
         public void Close(bool saveChanges)
         {
@@ -137,9 +159,9 @@ namespace EPF
             }
         }
 
-        public EPFArchiveEntry CreateEntry(string filePath)
+        public EPFArchiveEntry CreateEntry(string entryName, string filePath)
         {
-            var newEntry = new EPFArchiveEntryForCreate(this, filePath);
+            var newEntry = new EPFArchiveEntryForCreate(this, entryName, filePath);
             AddEntry(newEntry);
             return newEntry;
         }
@@ -189,9 +211,6 @@ namespace EPF
 
                     //Write remaining entries to archive
                     WriteEntries(binWriter);
-
-                    //This will replace all EntriesForCreate with EntriesForUpdate
-                    ConvertEntriesForCreate();
 
                     //Update BackStream with new MainStream content
                     UpdateBackStream();
@@ -258,6 +277,14 @@ namespace EPF
 
             _entries.Add(entry);
             _entryDictionary.Add(entry.Name, entry);
+        }
+
+        private void ReplaceEntry(EPFArchiveEntry oldEntry, EPFArchiveEntryForCreate newEntry)
+        {
+            var entryIndex = _entries.IndexOf(oldEntry);
+
+            _entries[entryIndex] = newEntry;
+            _entryDictionary[newEntry.Name] = newEntry;
         }
 
         private void RemoveEntry(EPFArchiveEntry entry)
@@ -333,7 +360,7 @@ namespace EPF
         private void Init(Stream stream, EPFArchiveMode mode)
         {
             _entries = new List<EPFArchiveEntry>();
-            _eeadOnlyEntries = new ReadOnlyCollection<EPFArchiveEntry>(_entries);
+            _readOnlyEntries = new ReadOnlyCollection<EPFArchiveEntry>(_entries);
             _entryDictionary = new Dictionary<string, EPFArchiveEntry>();
 
             // check stream against mode
@@ -454,21 +481,6 @@ namespace EPF
             }
         }
 
-        private void ConvertEntriesForCreate()
-        {
-            var entriesForCreate = _entries.OfType<EPFArchiveEntryForCreate>().ToArray();
-            var entriesForUpdate = new List<EPFArchiveEntryForUpdate>();
-
-            foreach (var entry in entriesForCreate)
-            {
-                entriesForUpdate.Add(entry.Convert());
-                RemoveEntry(entry);
-            }
-
-            foreach (var entry in entriesForUpdate)
-                AddEntry(entry);
-        }
-
         private void RemoveMarkedEntries()
         {
             var entriesToRemove = _entries.Where(item => item.Action == EPFEntryAction.Remove).ToArray();
@@ -500,15 +512,19 @@ namespace EPF
             writer.Write((UInt16)Entries.Count);
 
             //Write all entries data
-            for (int i = 0; i < Entries.Count; i++)
+            for (int i = 0; i < _entries.Count; i++)
             {
-                var entry = Entries[i];
+                var entry = _entries[i];
 
                 _saveProgressEventArgs.EventType = SaveProgressEventType.SavingBeforeWriteEntry;
                 _saveProgressEventArgs.CurrentEntry = entry;
                 OnSaveProgress(_saveProgressEventArgs);
 
                 entry.WriteData(writer);
+
+                //If entry is EntryForCrate (new or to replace), then convert it to EntryForUpdate
+                if (entry is EPFArchiveEntryForCreate)
+                    _entries[i] = ((EPFArchiveEntryForCreate)entry).Convert();
 
                 _saveProgressEventArgs.EventType = SaveProgressEventType.SavingAfterWriteEntry;
                 _saveProgressEventArgs.EntriesSaved = i + 1;
@@ -527,6 +543,13 @@ namespace EPF
                 var entry = Entries[i];
                 entry.WriteInfo(writer);
             }
+        }
+
+        public EPFArchiveEntry ReplaceEntry(EPFArchiveEntry entry, string filePath)
+        {
+            var newEntry = new EPFArchiveEntryForCreate(this, entry.Name, filePath);
+            ReplaceEntry(entry, newEntry);
+            return newEntry;
         }
     }
 }
