@@ -24,6 +24,9 @@ namespace EPF
 
         protected EPFArchiveEntry(EPFArchive archive)
         {
+            if (archive == null)
+                throw new ArgumentNullException(nameof(archive));
+
             Archive = archive;
         }
 
@@ -100,6 +103,11 @@ namespace EPF
             if (Archive == null)
                 throw new InvalidOperationException("Entry has been deleted");
             Archive.ThrowIfDisposed();
+        }
+
+        public EPFArchiveEntry Replace(string filePath)
+        {
+            return Archive.ReplaceEntry(this, filePath);
         }
 
         #endregion Protected Methods

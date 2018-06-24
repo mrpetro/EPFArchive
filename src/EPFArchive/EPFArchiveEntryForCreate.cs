@@ -16,11 +16,14 @@ namespace EPF
 
         #region Internal Constructors
 
-        internal EPFArchiveEntryForCreate(EPFArchive archive, string filePath) :
+        internal EPFArchiveEntryForCreate(EPFArchive archive, string name, string filePath) :
             base(archive)
         {
+            if (name == null)
+                throw new ArgumentNullException(nameof(name));
+
+            Name = name;
             var fileInfo = new FileInfo(filePath);
-            Name = ValidateName(fileInfo.Name);
             Length = (int)fileInfo.Length;
             CompressedLength = Length;
             Action = EPFEntryAction.Add;
@@ -93,29 +96,5 @@ namespace EPF
 
         #endregion Internal Methods
 
-        #region Private Methods
-
-        private static bool IsASCII(string value)
-        {
-            return Encoding.UTF8.GetByteCount(value) == value.Length;
-        }
-
-        private static string ValidateName(string name)
-        {
-            if (name == null)
-                throw new Exception("Name is not set");
-
-            if (!IsASCII(name))
-                throw new InvalidOperationException("Name must contain only ASCII characters");
-
-            name = name.Trim();
-
-            if (name.Length > 12)
-                throw new InvalidOperationException("Name length must not exceed 12 characters");
-
-            return name.ToUpper();
-        }
-
-        #endregion Private Methods
     }
 }
