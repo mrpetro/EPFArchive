@@ -1,7 +1,4 @@
-﻿using System;
-using System.IO;
-
-namespace EPF.UI.ViewModel
+﻿namespace EPF.UI.ViewModel
 {
     public enum EPFArchiveItemStatus
     {
@@ -16,13 +13,13 @@ namespace EPF.UI.ViewModel
         #region Private Fields
 
         private int _compressedLength;
+        private float _compressionRatio;
         private EPFArchiveEntry _entry;
-        private EPFArchiveItemStatus _status;
-        private bool _toRemove;
         private bool _isCompressed;
         private int _length;
-        private float _compressionRatio;
         private string _name;
+        private EPFArchiveItemStatus _status;
+        private bool _toRemove;
 
         #endregion Private Fields
 
@@ -36,34 +33,15 @@ namespace EPF.UI.ViewModel
 
             if (entry is EPFArchiveEntryForCreate)
                 Status = EPFArchiveItemStatus.Adding;
-            else 
+            else
                 Status = EPFArchiveItemStatus.Unchanged;
 
             IsCompressed = entry.IsCompressed;
             Length = entry.Length;
             CompressedLength = entry.CompressedLength;
-            CompressionRatio = (float)CompressedLength / (float)Length; 
+            CompressionRatio = (float)CompressedLength / (float)Length;
 
             PropertyChanged += EPFArchiveItemViewModel_PropertyChanged;
-        }
-
-        private void EPFArchiveItemViewModel_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
-        {
-            switch (e.PropertyName)
-            {
-                case nameof(IsCompressed):
-                    _entry.Action = IsCompressed ? EPFEntryAction.Compress : EPFEntryAction.Decompress;
-                    Status = _entry.Action != EPFEntryAction.Nothing ? EPFArchiveItemStatus.Modifying : EPFArchiveItemStatus.Unchanged;
-                    break;
-                case nameof(ToRemove):
-                    _entry.Action = EPFEntryAction.Remove;
-                    Status = EPFArchiveItemStatus.Removing;
-                    break;
-                default:
-                    break;
-            }
-
-
         }
 
         #endregion Public Constructors
@@ -87,6 +65,23 @@ namespace EPF.UI.ViewModel
             }
         }
 
+        public float CompressionRatio
+        {
+            get
+            {
+                return _compressionRatio;
+            }
+
+            set
+            {
+                if (_compressionRatio == value)
+                    return;
+
+                _compressionRatio = value;
+                OnPropertyChanged(nameof(CompressionRatio));
+            }
+        }
+
         public bool IsCompressed
         {
             get
@@ -101,23 +96,6 @@ namespace EPF.UI.ViewModel
 
                 _isCompressed = value;
                 OnPropertyChanged(nameof(IsCompressed));
-            }
-        }
-
-        public EPFArchiveItemStatus Status
-        {
-            get
-            {
-                return _status;
-            }
-
-            set
-            {
-                if (_status == value)
-                    return;
-
-                _status = value;
-                OnPropertyChanged(nameof(Status));
             }
         }
 
@@ -138,23 +116,6 @@ namespace EPF.UI.ViewModel
             }
         }
 
-        public float CompressionRatio
-        {
-            get
-            {
-                return _compressionRatio;
-            }
-
-            set
-            {
-                if (_compressionRatio == value)
-                    return;
-
-                _compressionRatio = value;
-                OnPropertyChanged(nameof(CompressionRatio));
-            }
-        }
-
         public string Name
         {
             get
@@ -169,6 +130,23 @@ namespace EPF.UI.ViewModel
 
                 _name = value;
                 OnPropertyChanged(nameof(Name));
+            }
+        }
+
+        public EPFArchiveItemStatus Status
+        {
+            get
+            {
+                return _status;
+            }
+
+            set
+            {
+                if (_status == value)
+                    return;
+
+                _status = value;
+                OnPropertyChanged(nameof(Status));
             }
         }
 
@@ -190,5 +168,38 @@ namespace EPF.UI.ViewModel
         }
 
         #endregion Public Properties
+
+        #region Internal Methods
+
+        internal void ReplaceWith(string filePath)
+        {
+            _entry = _entry.Replace(filePath);
+            Status = EPFArchiveItemStatus.Modifying;
+        }
+
+        #endregion Internal Methods
+
+        #region Private Methods
+
+        private void EPFArchiveItemViewModel_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            switch (e.PropertyName)
+            {
+                case nameof(IsCompressed):
+                    _entry.Action = IsCompressed ? EPFEntryAction.Compress : EPFEntryAction.Decompress;
+                    Status = _entry.Action != EPFEntryAction.Nothing ? EPFArchiveItemStatus.Modifying : EPFArchiveItemStatus.Unchanged;
+                    break;
+
+                case nameof(ToRemove):
+                    _entry.Action = EPFEntryAction.Remove;
+                    Status = EPFArchiveItemStatus.Removing;
+                    break;
+
+                default:
+                    break;
+            }
+        }
+
+        #endregion Private Methods
     }
 }

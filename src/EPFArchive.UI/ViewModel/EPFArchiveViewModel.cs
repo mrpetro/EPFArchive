@@ -512,12 +512,48 @@ namespace EPF.UI.ViewModel
 
         private void AddEntries(ICollection<string> filePaths)
         {
+            bool alwaysReplace = false;
+
             foreach (var filePath in filePaths)
             {
                 try
                 {
-                    var newEntry = _epfArchive.CreateEntry(filePath);
-                    Entries.Add(new EPFArchiveItemViewModel(newEntry));
+                    var entryName = Path.GetFileName(filePath);
+                    entryName = EPFArchive.ValidateEntryName(entryName);
+
+                    var entry = Entries.FirstOrDefault(item => item.Name == entryName);
+
+                    if (entry == null)
+                    {
+                        var epfEntry = _epfArchive.CreateEntry(entryName, filePath);
+                        Entries.Add(new EPFArchiveItemViewModel(epfEntry));
+                    }
+                    else
+                    {
+                        bool replace = false;
+
+                        if (alwaysReplace)
+                            replace = true;
+                        else
+                        {
+                            var replaceAnswer = DialogProvider.ShowReplaceFileQuestion($"Entry '{entryName}' already exist.", "Replace entry");
+
+                            if (replaceAnswer == DialogAnswer.Yes)
+                                replace = true;
+                            else if (replaceAnswer == DialogAnswer.No)
+                                replace = false;
+                            else if (replaceAnswer == DialogAnswer.Cancel)
+                                break;
+                            //else if(replaceAnswer == DialogAnswe.All)
+                            //{
+                            //    replace = true;
+                            //    alwaysReplace = true;
+                            //}
+                        }
+
+                        if (replace)
+                            entry.ReplaceWith(filePath);
+                    }
                 }
                 catch (InvalidOperationException ex)
                 {

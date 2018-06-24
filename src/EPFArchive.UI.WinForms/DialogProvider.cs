@@ -60,6 +60,11 @@ namespace EPF.UI.WinForms
             MessageBox.Show(text, caption);
         }
 
+        public DialogAnswer ShowReplaceFileQuestion(string text, string caption)
+        {
+            return ToDialogAnswer(MessageBox.Show(text, caption, ToMessageBoxButtons(QuestionDialogButtons.YesNoCancel)));
+        }
+
         public DialogAnswer ShowMessageWithQuestion(string text, string caption, QuestionDialogButtons buttons)
         {
             return ToDialogAnswer(MessageBox.Show(text, caption, ToMessageBoxButtons(buttons)));
