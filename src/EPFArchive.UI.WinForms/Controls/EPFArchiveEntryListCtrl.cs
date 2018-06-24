@@ -66,7 +66,7 @@ namespace EPF.UI.WinForms.Controls
                 if (value > 100.0f)
                     e.CellStyle.BackColor = System.Drawing.Color.Orange;
 
-                e.Value = string.Format(CultureInfo.InvariantCulture, "{0:F2}", value);
+                e.Value = string.Format(CultureInfo.InvariantCulture, "{0:F1}%", value);
 
             }
         }
