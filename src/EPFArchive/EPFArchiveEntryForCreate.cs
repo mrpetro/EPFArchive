@@ -26,7 +26,6 @@ namespace EPF
             var fileInfo = new FileInfo(filePath);
             Length = (int)fileInfo.Length;
             CompressedLength = Length;
-            Action = EPFEntryAction.Add;
             _filePath = filePath;
             _archiveDataPos = -1;
         }
@@ -59,21 +58,18 @@ namespace EPF
         }
 
         /// <summary>
-        /// This method will write file which has been passes by file path in the constructor
+        /// This method will write file which has been passed by file path in the constructor
         /// into current Archive. Optionally it will be compressed in the process.
         /// </summary>
         /// <param name="writer">Reference to archive binary writer stream</param>
         internal override void WriteData(BinaryWriter writer)
         {
-            if (Action == EPFEntryAction.Remove)
-                throw new InvalidOperationException("Writing entry marked for removing");
-
             using (var openedStream = File.OpenRead(_filePath))
             {
                 //Remember position of entry data start in archive file
                 _archiveDataPos = writer.BaseStream.Position;
 
-                if (Action.HasFlag(EPFEntryAction.Compress))
+                if (ToCompress)
                 {
                     //Compress entry data while storing it into archive
                     Archive.Compressor.Compress(openedStream, writer.BaseStream);

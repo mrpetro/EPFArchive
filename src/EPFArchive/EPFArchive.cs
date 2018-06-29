@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -8,6 +9,13 @@ using System.Text;
 
 namespace EPF
 {
+    public enum EPFArchiveMode
+    {
+        Create,
+        Read,
+        Update
+    }
+
     internal struct EPFEntryBlock
     {
         #region Internal Properties
@@ -32,29 +40,26 @@ namespace EPF
         #endregion Internal Properties
     };
 
-    public enum EPFArchiveMode
-    {
-        Create,
-        Read,
-        Update
-    }
-
-    public class EPFArchive : IDisposable
+    public class EPFArchive : INotifyPropertyChanged, IDisposable
     {
         #region Private Fields
 
         private static readonly char[] SIGNATURE = { 'E', 'P', 'F', 'S' };
-
-        private byte[] _hiddenData;
         private Stream _BackStream;
         private LZWCompressor _compressor = null;
         private LZWDecompressor _decompressor = null;
-        private ReadOnlyCollection<EPFArchiveEntry> _readOnlyEntries;
         private List<EPFArchiveEntry> _entries;
+        private int _modifiedEntryiesNo = 0;
         private Dictionary<string, EPFArchiveEntry> _entryDictionary;
         private ExtractProgressEventArgs _extractProgressEventArgs;
+        private byte[] _hiddenData;
+
         private bool _IsDisposed;
+
+        private bool _isModified;
+
         private Stream _MainStream;
+
         private SaveProgressEventArgs _saveProgressEventArgs;
 
         #endregion Private Fields
@@ -63,6 +68,8 @@ namespace EPF
 
         public EPFArchive(Stream stream, EPFArchiveMode mode = EPFArchiveMode.Read)
         {
+            PropertyChanged += EPFArchive_PropertyChanged;
+
             Init(stream, mode);
         }
 
@@ -70,7 +77,11 @@ namespace EPF
 
         #region Public Events
 
+        public event EntryChangedEventHandler EntryChanged;
+
         public event ExtractProgressEventHandler ExtractProgress;
+
+        public event PropertyChangedEventHandler PropertyChanged;
 
         public event SaveProgressEventHandler SaveProgress;
 
@@ -78,7 +89,43 @@ namespace EPF
 
         #region Public Properties
 
-        public ReadOnlyCollection<EPFArchiveEntry> Entries { get { return _readOnlyEntries; } }
+        public ReadOnlyCollection<EPFArchiveEntry> Entries { get; private set; }
+
+        internal int ModifiedEntryiesNo
+        {
+            get
+            {
+                return _modifiedEntryiesNo;
+            }
+
+            set
+            {
+                if (_modifiedEntryiesNo == value)
+                    return;
+
+                _modifiedEntryiesNo = value;
+
+                PropertyChanged(this, new PropertyChangedEventArgs(nameof(ModifiedEntryiesNo)));
+            }
+        }
+
+        public bool IsModified
+        {
+            get
+            {
+                return _isModified;
+            }
+
+            protected set
+            {
+                if (_isModified == value)
+                    return;
+
+                _isModified = value;
+
+                PropertyChanged(this, new PropertyChangedEventArgs(nameof(IsModified)));
+            }
+        }
 
         public EPFArchiveMode Mode { get; private set; }
 
@@ -113,11 +160,6 @@ namespace EPF
         #endregion Internal Properties
 
         #region Public Methods
-
-        private static bool IsASCII(string value)
-        {
-            return Encoding.UTF8.GetByteCount(value) == value.Length;
-        }
 
         public static string ValidateEntryName(string name)
         {
@@ -161,8 +203,14 @@ namespace EPF
 
         public EPFArchiveEntry CreateEntry(string entryName, string filePath)
         {
+            if (_entryDictionary.ContainsKey(entryName))
+                throw new InvalidOperationException($"Entry '{entryName}' already exists.");
+
             var newEntry = new EPFArchiveEntryForCreate(this, entryName, filePath);
             AddEntry(newEntry);
+
+            ModifiedEntryiesNo++;
+
             return newEntry;
         }
 
@@ -177,7 +225,14 @@ namespace EPF
             ExtractEntries(folderPath, _entries);
         }
 
-        public EPFArchiveEntry GetEntry(string entryName)
+        public void ExtractEntries(string folderPath, ICollection<string> entryNames)
+        {
+            var entries = _entries.Where(item => entryNames.Contains(item.Name)).ToList();
+
+            ExtractEntries(folderPath, entries);
+        }
+
+        public EPFArchiveEntry FindEntry(string entryName)
         {
             if (entryName == null)
                 throw new ArgumentNullException("entryName");
@@ -188,6 +243,41 @@ namespace EPF
             EPFArchiveEntry entry = null;
             _entryDictionary.TryGetValue(entryName, out entry);
             return entry;
+        }
+
+        public bool RemoveEntry(string entryName)
+        {
+            var entry = FindEntry(entryName);
+
+            if (entry == null)
+                return false;
+
+            _entries.Remove(entry);
+            _entryDictionary.Remove(entryName);
+
+            ModifiedEntryiesNo++;
+
+            RaiseEntryChanged(entry, EntryChangedEventType.Removed);
+            return true;
+        }
+
+        public EPFArchiveEntry ReplaceEntry(string entryName, string filePath)
+        {
+            var oldEntry = FindEntry(entryName);
+
+            if (oldEntry == null)
+                throw new InvalidOperationException($"Entry {entryName} doesn't exists.");
+
+            var entryIndex = _entries.IndexOf(oldEntry);
+
+            var newEntry = new EPFArchiveEntryForCreate(this, entryName, filePath);
+            _entries[entryIndex] = newEntry;
+            _entryDictionary[newEntry.Name] = newEntry;
+
+            ModifiedEntryiesNo++;
+
+            RaiseEntryChanged(newEntry, EntryChangedEventType.Replaced);
+            return newEntry;
         }
 
         public void Save()
@@ -204,9 +294,6 @@ namespace EPF
                     _saveProgressEventArgs.EventType = SaveProgressEventType.SavingStarted;
                     OnSaveProgress(_saveProgressEventArgs);
 
-                    //Remove entries marked for removing
-                    RemoveMarkedEntries();
-
                     _saveProgressEventArgs.EntriesTotal = _entries.Count;
 
                     //Write remaining entries to archive
@@ -222,12 +309,18 @@ namespace EPF
             finally
             {
                 _saveProgressEventArgs = null;
+                ModifiedEntryiesNo = 0;
             }
         }
 
         #endregion Public Methods
 
         #region Internal Methods
+
+        internal void RaiseEntryChanged(EPFArchiveEntry entry, EntryChangedEventType eventType)
+        {
+            OnEntryChanged(new EntryChangedEventArgs(entry, eventType));
+        }
 
         internal void ThrowIfDisposed()
         {
@@ -254,6 +347,12 @@ namespace EPF
             }
         }
 
+        protected void OnEntryChanged(EntryChangedEventArgs eventArgs)
+        {
+            if (EntryChanged != null)
+                EntryChanged(this, eventArgs);
+        }
+
         protected void OnExtractProgress(ExtractProgressEventArgs eventArgs)
         {
             if (ExtractProgress != null)
@@ -270,27 +369,16 @@ namespace EPF
 
         #region Private Methods
 
+        private static bool IsASCII(string value)
+        {
+            return Encoding.UTF8.GetByteCount(value) == value.Length;
+        }
+
         private void AddEntry(EPFArchiveEntry entry)
         {
-            if (_entryDictionary.ContainsKey(entry.Name))
-                throw new InvalidOperationException($"Entry with name '{entry.Name}' already exist.");
-
             _entries.Add(entry);
             _entryDictionary.Add(entry.Name, entry);
-        }
-
-        private void ReplaceEntry(EPFArchiveEntry oldEntry, EPFArchiveEntryForCreate newEntry)
-        {
-            var entryIndex = _entries.IndexOf(oldEntry);
-
-            _entries[entryIndex] = newEntry;
-            _entryDictionary[newEntry.Name] = newEntry;
-        }
-
-        private void RemoveEntry(EPFArchiveEntry entry)
-        {
-            _entries.Remove(entry);
-            _entryDictionary.Remove(entry.Name);
+            RaiseEntryChanged(entry, EntryChangedEventType.Added);
         }
 
         private void CloseStreams()
@@ -306,17 +394,7 @@ namespace EPF
                 _MainStream.Dispose();
                 _MainStream = null;
             }
-
         }
-
-        public void ExtractEntries(string folderPath, ICollection<string> entryNames)
-        {
-            var entries = _entries.Where(item => entryNames.Contains(item.Name)).ToList();
-
-            ExtractEntries(folderPath, entries);
-        }
-
-        #endregion Private Methods
 
         private void ExtractEntries(string folderPath, ICollection<EPFArchiveEntry> entries)
         {
@@ -360,7 +438,7 @@ namespace EPF
         private void Init(Stream stream, EPFArchiveMode mode)
         {
             _entries = new List<EPFArchiveEntry>();
-            _readOnlyEntries = new ReadOnlyCollection<EPFArchiveEntry>(_entries);
+            Entries = new ReadOnlyCollection<EPFArchiveEntry>(_entries);
             _entryDictionary = new Dictionary<string, EPFArchiveEntry>();
 
             // check stream against mode
@@ -435,15 +513,6 @@ namespace EPF
             ReadEntries();
         }
 
-        private void UpdateBackStream()
-        {
-            _MainStream.Seek(0, SeekOrigin.Begin);
-            _BackStream.Seek(0, SeekOrigin.Begin);
-            _MainStream.CopyTo(_BackStream);
-            _MainStream.Seek(0, SeekOrigin.Begin);
-            _BackStream.Seek(0, SeekOrigin.Begin);
-        }
-
         private void ReadEntries()
         {
             char[] signature = ArchiveReader.ReadChars(4);
@@ -476,20 +545,22 @@ namespace EPF
                     throw new InvalidOperationException("Reading archive entries only possible in Read or Update mode.");
 
                 epfArchiveEntry.ReadInfo(ArchiveReader);
+
+                if (_entryDictionary.ContainsKey(epfArchiveEntry.Name))
+                    throw new InvalidOperationException($"Entry with name '{epfArchiveEntry.Name}' already exists.");
+
                 AddEntry(epfArchiveEntry);
                 dataPos += epfArchiveEntry.CompressedLength;
             }
         }
 
-        private void RemoveMarkedEntries()
+        private void UpdateBackStream()
         {
-            var entriesToRemove = _entries.Where(item => item.Action == EPFEntryAction.Remove).ToArray();
-
-            foreach (var entry in entriesToRemove)
-            {
-                entry.Close();
-                RemoveEntry(entry);
-            }
+            _MainStream.Seek(0, SeekOrigin.Begin);
+            _BackStream.Seek(0, SeekOrigin.Begin);
+            _MainStream.CopyTo(_BackStream);
+            _MainStream.Seek(0, SeekOrigin.Begin);
+            _BackStream.Seek(0, SeekOrigin.Begin);
         }
 
         private void WriteEntries(BinaryWriter writer)
@@ -524,7 +595,10 @@ namespace EPF
 
                 //If entry is EntryForCrate (new or to replace), then convert it to EntryForUpdate
                 if (entry is EPFArchiveEntryForCreate)
+                {
                     _entries[i] = ((EPFArchiveEntryForCreate)entry).Convert();
+                    RaiseEntryChanged(_entries[i], EntryChangedEventType.Stored);
+                }
 
                 _saveProgressEventArgs.EventType = SaveProgressEventType.SavingAfterWriteEntry;
                 _saveProgressEventArgs.EntriesSaved = i + 1;
@@ -545,11 +619,18 @@ namespace EPF
             }
         }
 
-        public EPFArchiveEntry ReplaceEntry(EPFArchiveEntry entry, string filePath)
+        private void EPFArchive_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            var newEntry = new EPFArchiveEntryForCreate(this, entry.Name, filePath);
-            ReplaceEntry(entry, newEntry);
-            return newEntry;
+            switch (e.PropertyName)
+            {
+                case nameof(ModifiedEntryiesNo):
+                    IsModified = ModifiedEntryiesNo > 0;
+                    break;
+                default:
+                    break;
+            }
         }
+
+        #endregion Private Methods
     }
 }

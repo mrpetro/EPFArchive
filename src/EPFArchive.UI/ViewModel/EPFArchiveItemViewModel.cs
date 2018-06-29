@@ -5,7 +5,8 @@
         Unchanged,
         Modifying,
         Adding,
-        Removing
+        Removing,
+        Replacing
     }
 
     public class EPFArchiveItemViewModel : BaseViewModel
@@ -19,27 +20,24 @@
         private int _length;
         private string _name;
         private EPFArchiveItemStatus _status;
-        private bool _toRemove;
 
         #endregion Private Fields
 
         #region Public Constructors
 
-        public EPFArchiveItemViewModel(EPFArchiveEntry entry)
+        public EPFArchiveItemViewModel(EPFArchiveEntry entry, EPFArchiveItemStatus status)
         {
             _entry = entry;
 
             Name = entry.Name;
+            Status = status;
 
-            if (entry is EPFArchiveEntryForCreate)
-                Status = EPFArchiveItemStatus.Adding;
-            else
-                Status = EPFArchiveItemStatus.Unchanged;
-
-            IsCompressed = entry.IsCompressed;
+            IsCompressed = entry.ToCompress;
             Length = entry.Length;
             CompressedLength = entry.CompressedLength;
             CompressionRatio = (float)CompressedLength / (float)Length;
+
+            _entry.PropertyChanged += _entry_PropertyChanged;
 
             PropertyChanged += EPFArchiveItemViewModel_PropertyChanged;
         }
@@ -50,149 +48,63 @@
 
         public int CompressedLength
         {
-            get
-            {
-                return _compressedLength;
-            }
-
-            set
-            {
-                if (_compressedLength == value)
-                    return;
-
-                _compressedLength = value;
-                OnPropertyChanged(nameof(CompressedLength));
-            }
+            get { return _compressedLength; }
+            set { SetProperty(ref _compressedLength, value); }
         }
 
         public float CompressionRatio
         {
-            get
-            {
-                return _compressionRatio;
-            }
-
-            set
-            {
-                if (_compressionRatio == value)
-                    return;
-
-                _compressionRatio = value;
-                OnPropertyChanged(nameof(CompressionRatio));
-            }
+            get { return _compressionRatio; }
+            set { SetProperty(ref _compressionRatio, value); }
         }
 
         public bool IsCompressed
         {
-            get
-            {
-                return _isCompressed;
-            }
-
-            set
-            {
-                if (_isCompressed == value)
-                    return;
-
-                _isCompressed = value;
-                OnPropertyChanged(nameof(IsCompressed));
-            }
+            get { return _isCompressed; }
+            set { SetProperty(ref _isCompressed, value); }
         }
 
         public int Length
         {
-            get
-            {
-                return _length;
-            }
-
-            set
-            {
-                if (_length == value)
-                    return;
-
-                _length = value;
-                OnPropertyChanged(nameof(Length));
-            }
+            get { return _length; }
+            set { SetProperty(ref _length, value); }
         }
 
         public string Name
         {
-            get
-            {
-                return _name;
-            }
-
-            set
-            {
-                if (_name == value)
-                    return;
-
-                _name = value;
-                OnPropertyChanged(nameof(Name));
-            }
+            get { return _name; }
+            set { SetProperty(ref _name, value); }
         }
 
         public EPFArchiveItemStatus Status
         {
-            get
-            {
-                return _status;
-            }
-
-            set
-            {
-                if (_status == value)
-                    return;
-
-                _status = value;
-                OnPropertyChanged(nameof(Status));
-            }
-        }
-
-        public bool ToRemove
-        {
-            get
-            {
-                return _toRemove;
-            }
-
-            set
-            {
-                if (_toRemove == value)
-                    return;
-
-                _toRemove = value;
-                OnPropertyChanged(nameof(ToRemove));
-            }
+            get { return _status; }
+            set { SetProperty(ref _status, value); }
         }
 
         #endregion Public Properties
 
-        #region Internal Methods
-
-        internal void ReplaceWith(string filePath)
-        {
-            _entry = _entry.Replace(filePath);
-            Status = EPFArchiveItemStatus.Modifying;
-        }
-
-        #endregion Internal Methods
-
         #region Private Methods
+
+        private void _entry_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            switch (e.PropertyName)
+            {
+                case nameof(_entry.IsModified):
+                    Status = _entry.IsModified ? EPFArchiveItemStatus.Modifying : EPFArchiveItemStatus.Unchanged;
+                    break;
+
+                default:
+                    break;
+            }
+        }
 
         private void EPFArchiveItemViewModel_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
             switch (e.PropertyName)
             {
                 case nameof(IsCompressed):
-                    _entry.Action = IsCompressed ? EPFEntryAction.Compress : EPFEntryAction.Decompress;
-                    Status = _entry.Action != EPFEntryAction.Nothing ? EPFArchiveItemStatus.Modifying : EPFArchiveItemStatus.Unchanged;
-                    break;
-
-                case nameof(ToRemove):
-                    _entry.Action = EPFEntryAction.Remove;
-                    Status = EPFArchiveItemStatus.Removing;
+                    _entry.ToCompress = IsCompressed;
                     break;
 
                 default:

@@ -1,22 +1,22 @@
 ﻿using System;
+using System.ComponentModel;
 using System.IO;
 using System.Text;
 
 namespace EPF
 {
-
-    public enum EPFEntryAction
+    public abstract class EPFArchiveEntry : INotifyPropertyChanged
     {
-        Nothing = 0,
-        Add = 1,
-        Remove = 2,
-        Compress = 4,
-        Decompress = 8
-    }
+        #region Protected Fields
 
-    public abstract class EPFArchiveEntry
-    {
+        protected bool isCompressed;
+
+        #endregion Protected Fields
+
         #region Private Fields
+
+        private bool _isModified;
+        private bool _toCompress;
 
         #endregion Private Fields
 
@@ -28,21 +28,62 @@ namespace EPF
                 throw new ArgumentNullException(nameof(archive));
 
             Archive = archive;
+
+            PropertyChanged += EPFArchiveEntry_PropertyChanged;
         }
 
         #endregion Protected Constructors
 
+        #region Public Events
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        #endregion Public Events
+
         #region Public Properties
 
         public EPFArchive Archive { get; private set; }
+
         public int CompressedLength { get; protected set; }
-        public bool IsCompressed { get; private set; }
+
+        public bool IsModified
+        {
+            get
+            {
+                return _isModified;
+            }
+
+            protected set
+            {
+                if (_isModified == value)
+                    return;
+
+                _isModified = value;
+
+                PropertyChanged(this, new PropertyChangedEventArgs(nameof(IsModified)));
+            }
+        }
 
         public int Length { get; protected set; }
-
-        public EPFEntryAction Action { get; set; }
-
         public string Name { get; protected set; }
+
+        public virtual bool ToCompress
+        {
+            get
+            {
+                return _toCompress;
+            }
+
+            set
+            {
+                if (_toCompress == value)
+                    return;
+
+                _toCompress = value;
+
+                PropertyChanged(this, new PropertyChangedEventArgs(nameof(ToCompress)));
+            }
+        }
 
         #endregion Public Properties
 
@@ -53,7 +94,7 @@ namespace EPF
         public void ExtractTo(string folderPath)
         {
             if (!Directory.Exists(folderPath))
-                throw new InvalidOperationException($"Directory '{folderPath}' doesn't exist.");
+                throw new InvalidOperationException($"Directory '{folderPath}' doesn't exists.");
 
             using (var entryStream = Open())
             {
@@ -72,7 +113,7 @@ namespace EPF
         internal void ReadInfo(BinaryReader reader)
         {
             Name = Encoding.ASCII.GetString(reader.ReadBytes(13)).Split(new char[] { '\0' })[0];
-            IsCompressed = reader.ReadBoolean();
+            isCompressed = _toCompress = reader.ReadBoolean();
             CompressedLength = reader.ReadInt32();
             Length = reader.ReadInt32();
         }
@@ -81,22 +122,25 @@ namespace EPF
 
         internal void WriteInfo(BinaryWriter writer)
         {
-            if (Action.HasFlag(EPFEntryAction.Compress))
-                IsCompressed = true;
-            else if (Action.HasFlag(EPFEntryAction.Decompress))
-                IsCompressed = false;
-
             writer.Write(Encoding.ASCII.GetBytes(Name.PadRight(13, '\0')));
-            writer.Write(IsCompressed);
+            writer.Write(ToCompress);
             writer.Write(CompressedLength);
             writer.Write(Length);
 
-            Action = EPFEntryAction.Nothing;
+            isCompressed = ToCompress;
+            IsModified = false;
+            Archive.RaiseEntryChanged(this, EntryChangedEventType.Stored);
         }
 
         #endregion Internal Methods
 
         #region Protected Methods
+
+        protected void OnPropertyChanged(string name)
+        {
+            if (PropertyChanged != null)
+                PropertyChanged(this, new PropertyChangedEventArgs(name));
+        }
 
         protected void ThrowIfInvalidArchive()
         {
@@ -105,11 +149,25 @@ namespace EPF
             Archive.ThrowIfDisposed();
         }
 
-        public EPFArchiveEntry Replace(string filePath)
+        #endregion Protected Methods
+
+        #region Private Methods
+
+        private void EPFArchiveEntry_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            return Archive.ReplaceEntry(this, filePath);
+            switch (e.PropertyName)
+            {
+                case nameof(ToCompress):
+                    IsModified = (isCompressed != ToCompress);
+                    break;
+                case nameof(IsModified):
+                    Archive.ModifiedEntryiesNo += IsModified ? 1 : -1;
+                    break;
+                default:
+                    break;
+            }
         }
 
-        #endregion Protected Methods
+        #endregion Private Methods
     }
 }

@@ -23,6 +23,12 @@ namespace EPF
 
         #region Public Properties
 
+        public override bool ToCompress
+        {
+            get => base.ToCompress;
+            set => throw new InvalidOperationException("Changing IsCompressed flag in read-only mode is not allowed.");
+        }
+
         #endregion Public Properties
 
         #region Internal Properties
@@ -56,7 +62,7 @@ namespace EPF
             {
                 fs.SetLength(Length);
 
-                if (IsCompressed)
+                if (isCompressed)
                     Archive.Decompressor.Decompress(Archive.ArchiveReader.BaseStream, fs);
                 else
                     fs.Write(Archive.ArchiveReader.ReadBytes(Length), 0, Length);
