@@ -12,8 +12,6 @@ namespace EPF
         private List<byte> m_Data;
         private int m_BitsNo;
 
-        public int Length { get { return m_BitsNo; } }
-
         public BitArray()
         {
             m_BitsNo = 0;
