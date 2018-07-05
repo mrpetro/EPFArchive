@@ -28,6 +28,7 @@ namespace EPF.UI.WinForms.Controls
             _checkBox.BackColor = System.Drawing.Color.White;
             _checkBox.Click += _checkBox_Clicked;
 
+
             _dgv.Controls.Add(_checkBox);
             _dgv.CellMouseEnter += _dgv_CellMouseEnter;
         }
@@ -38,6 +39,12 @@ namespace EPF.UI.WinForms.Controls
 
             if (cell == null)
                 return;
+
+            if (cell.ReadOnly)
+            {
+                _checkBox.Checked = !_checkBox.Checked;
+                return;
+            }
 
             if ((bool)cell.Value == true)
                 cell.Value = false;

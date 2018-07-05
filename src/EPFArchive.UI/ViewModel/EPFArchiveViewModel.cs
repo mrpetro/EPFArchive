@@ -524,6 +524,7 @@ namespace EPF.UI.ViewModel
                     if (entry == null)
                     {
                         var epfEntry = _epfArchive.CreateEntry(entryName, filePath);
+
                     }
                     else
                     {

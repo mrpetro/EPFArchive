@@ -5,7 +5,7 @@ using System.Text;
 
 namespace EPF
 {
-    public abstract class EPFArchiveEntry : INotifyPropertyChanged
+    public abstract class EPFArchiveEntry : INotifyPropertyChanged, IDisposable
     {
         #region Protected Fields
 
@@ -89,12 +89,15 @@ namespace EPF
 
         #region Public Methods
 
-        public abstract void Close();
-
+        /// <summary>
+        /// This method extracts(and decompresses if needed) entry data into folder
+        /// given as parameter. Given folder must exists. 
+        /// </summary>
+        /// <param name="folderPath">Entry data destination folder</param>
         public void ExtractTo(string folderPath)
         {
             if (!Directory.Exists(folderPath))
-                throw new InvalidOperationException($"Directory '{folderPath}' doesn't exists.");
+                throw new ArgumentException($"Extraction folder '{folderPath}' is invalid or doesn't exist.");
 
             using (var entryStream = Open())
             {
@@ -166,6 +169,11 @@ namespace EPF
                 default:
                     break;
             }
+        }
+
+        public virtual void Dispose()
+        {
+            Archive = null;
         }
 
         #endregion Private Methods

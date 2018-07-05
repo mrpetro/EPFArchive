@@ -39,11 +39,6 @@ namespace EPF
 
         #region Public Methods
 
-        public override void Close()
-        {
-            //TODO: Clean up here if temporary file was created
-        }
-
         /// <summary>
         /// This method will open entry stream in read-only mode
         /// It copies entry data (or decompresses) from EPF archvie to temporary file

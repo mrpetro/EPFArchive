@@ -24,6 +24,10 @@ namespace EPF
 
             Name = name;
             var fileInfo = new FileInfo(filePath);
+
+            if (!fileInfo.Exists)
+                throw new ArgumentException("Source file for entry doesn't exist.");
+
             Length = (int)fileInfo.Length;
             CompressedLength = Length;
             _filePath = filePath;
@@ -33,10 +37,6 @@ namespace EPF
         #endregion Internal Constructors
 
         #region Public Methods
-
-        public override void Close()
-        {
-        }
 
         public override Stream Open()
         {

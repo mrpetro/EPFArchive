@@ -44,8 +44,10 @@ namespace EPF
     {
         #region Private Fields
 
+        private bool _leaveOpen;
         private static readonly char[] SIGNATURE = { 'E', 'P', 'F', 'S' };
         private Stream _BackStream;
+        private string _backupArchivePath;
         private LZWCompressor _compressor = null;
         private LZWDecompressor _decompressor = null;
         private List<EPFArchiveEntry> _entries;
@@ -66,8 +68,20 @@ namespace EPF
 
         #region Public Constructors
 
-        public EPFArchive(Stream stream, EPFArchiveMode mode = EPFArchiveMode.Read)
+        /// <summary>
+        /// Opens EPF archive file given in stream
+        /// By default it opens it in read-only mode and closes the stream on dispose
+        /// </summary>
+        /// <param name="stream"></param>
+        /// <param name="mode"></param>
+        /// <param name="leaveOpen"></param>
+        public EPFArchive(Stream stream, EPFArchiveMode mode = EPFArchiveMode.Read, bool leaveOpen = false)
         {
+            if (stream == null)
+                throw new ArgumentNullException(nameof(stream));
+
+            _leaveOpen = leaveOpen;
+
             PropertyChanged += EPFArchive_PropertyChanged;
 
             Init(stream, mode);
@@ -177,34 +191,29 @@ namespace EPF
             return name.ToUpper();
         }
 
-        public void Close(bool saveChanges)
+        private void CloseStreams()
         {
-            try
+            if (_BackStream != null)
             {
-                switch (Mode)
-                {
-                    case EPFArchiveMode.Read:
-                        break;
-
-                    case EPFArchiveMode.Create:
-                    case EPFArchiveMode.Update:
-                    default:
-                        Debug.Assert(Mode == EPFArchiveMode.Update || Mode == EPFArchiveMode.Create);
-                        if (saveChanges)
-                            Save();
-                        break;
-                }
+                _BackStream.Dispose();
+                _BackStream = null;
+                File.Delete(_backupArchivePath);
             }
-            finally
+
+            if (!_leaveOpen &&_MainStream != null)
             {
-                CloseStreams();
+                _MainStream.Dispose();
+                _MainStream = null;
             }
         }
 
         public EPFArchiveEntry CreateEntry(string entryName, string filePath)
         {
+            if (Mode == EPFArchiveMode.Read)
+                throw new InvalidOperationException("Unable to create any entry in read-only mode");
+
             if (_entryDictionary.ContainsKey(entryName))
-                throw new InvalidOperationException($"Entry '{entryName}' already exists.");
+                throw new ArgumentException($"Entry '{entryName}' already exists.");
 
             var newEntry = new EPFArchiveEntryForCreate(this, entryName, filePath);
             AddEntry(newEntry);
@@ -220,18 +229,34 @@ namespace EPF
             GC.SuppressFinalize(this);
         }
 
+        /// <summary>
+        /// This method extracts all entries (and decompresses if needed) data into folder
+        /// given as parameter. Given folder must exist. 
+        /// </summary>
+        /// <param name="folderPath">Entries data destination folder</param>
         public void ExtractAll(string folderPath)
         {
             ExtractEntries(folderPath, _entries);
         }
 
+        /// <summary>
+        /// This method extracts given entries (and decompresses if needed) data into folder
+        /// given as parameter. Given folder must exist. 
+        /// </summary>
+        /// <param name="folderPath">Entries data destination folder</param>
+        /// <param name="entryNames">Collection of entry names to extract</param>
         public void ExtractEntries(string folderPath, ICollection<string> entryNames)
         {
-            var entries = _entries.Where(item => entryNames.Contains(item.Name)).ToList();
+            var entries = _entries.Where(item => entryNames.Contains(item.Name, StringComparer.OrdinalIgnoreCase)).ToList();
 
             ExtractEntries(folderPath, entries);
         }
 
+        /// <summary>
+        /// Find entry with given name (case insensitive search) and returns entry object controller
+        /// </summary>
+        /// <param name="entryName"></param>
+        /// <returns></returns>
         public EPFArchiveEntry FindEntry(string entryName)
         {
             if (entryName == null)
@@ -247,6 +272,9 @@ namespace EPF
 
         public bool RemoveEntry(string entryName)
         {
+            if (Mode == EPFArchiveMode.Read)
+                throw new InvalidOperationException("Unable to remove any entry in read-only mode");
+
             var entry = FindEntry(entryName);
 
             if (entry == null)
@@ -263,10 +291,15 @@ namespace EPF
 
         public EPFArchiveEntry ReplaceEntry(string entryName, string filePath)
         {
+            if (Mode == EPFArchiveMode.Read)
+                throw new InvalidOperationException("Unable to replace any entry in read-only mode");
+
             var oldEntry = FindEntry(entryName);
 
             if (oldEntry == null)
-                throw new InvalidOperationException($"Entry {entryName} doesn't exists.");
+                throw new ArgumentException($"Entry {entryName} doesn't exists.");
+
+            oldEntry.Dispose();
 
             var entryIndex = _entries.IndexOf(oldEntry);
 
@@ -282,13 +315,13 @@ namespace EPF
 
         public void Save()
         {
+            if (Mode == EPFArchiveMode.Read)
+                throw new InvalidOperationException("Unable to save in read-only mode");
+
             try
             {
                 using (var binWriter = new BinaryWriter(_MainStream, System.Text.Encoding.UTF8, true))
                 {
-                    if (Mode == EPFArchiveMode.Read)
-                        throw new InvalidOperationException("Trying to save in read-only mode");
-
                     _saveProgressEventArgs = new SaveProgressEventArgs();
 
                     _saveProgressEventArgs.EventType = SaveProgressEventType.SavingStarted;
@@ -338,7 +371,7 @@ namespace EPF
             {
                 try
                 {
-                    Close(false);
+                    CloseStreams();
                 }
                 catch (Exception)
                 {
@@ -379,21 +412,6 @@ namespace EPF
             _entries.Add(entry);
             _entryDictionary.Add(entry.Name, entry);
             RaiseEntryChanged(entry, EntryChangedEventType.Added);
-        }
-
-        private void CloseStreams()
-        {
-            if (ArchiveReader != null)
-            {
-                ArchiveReader.Dispose();
-                ArchiveReader = null;
-            }
-
-            if (_MainStream != null)
-            {
-                _MainStream.Dispose();
-                _MainStream = null;
-            }
         }
 
         private void ExtractEntries(string folderPath, ICollection<EPFArchiveEntry> entries)
@@ -439,7 +457,7 @@ namespace EPF
         {
             _entries = new List<EPFArchiveEntry>();
             Entries = new ReadOnlyCollection<EPFArchiveEntry>(_entries);
-            _entryDictionary = new Dictionary<string, EPFArchiveEntry>();
+            _entryDictionary = new Dictionary<string, EPFArchiveEntry>(StringComparer.OrdinalIgnoreCase);
 
             // check stream against mode
             switch (mode)
@@ -495,14 +513,15 @@ namespace EPF
         private void OpenForUpdate(Stream stream)
         {
             if (!stream.CanRead || !stream.CanWrite || !stream.CanSeek)
-                throw new ArgumentException("Incorrect input stream capabilities in archive update mode");
+                throw new InvalidOperationException("Incorrect input stream capabilities in archive update mode");
 
             Mode = EPFArchiveMode.Update;
 
             _MainStream = stream;
 
             //Create BackStream from temporary file
-            _BackStream = File.Open(Path.GetTempFileName(), FileMode.Open);
+            _backupArchivePath = Path.GetTempFileName();
+            _BackStream = File.Open(_backupArchivePath, FileMode.Open);
 
             //Backup archive stream (MainStream) to BackStream
             UpdateBackStream();

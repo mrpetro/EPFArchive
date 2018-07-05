@@ -37,8 +37,7 @@ namespace EPF.UI.WinForms.Controls
             _viewModel = viewModel;
 
             _viewModel.SelectedEntries.ListChanged += SelectedEntries_ListChanged;
-
-            //_viewModel.EntriesRefresher += _viewModel_EntriesRefresher;
+            _viewModel.PropertyChanged += _viewModel_PropertyChanged;
 
             DGV.AutoGenerateColumns = false;
             DGV.DataSource = _viewModel.Entries;
@@ -48,10 +47,21 @@ namespace EPF.UI.WinForms.Controls
             DGVColumnPackedSize.DataPropertyName = "CompressedLength";
             DGVColumnRatio.DataPropertyName = "CompressionRatio";
             DGVColumnIsCompressed.DataPropertyName = "IsCompressed";
-       
             DGV.SelectionChanged += DGV_SelectionChanged;
             DGV.PreviewKeyDown += DGV_PreviewKeyDown;
             DGV.CellFormatting += DGV_CellFormatting;
+        }
+
+        private void _viewModel_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            switch (e.PropertyName)
+            {
+                case nameof(_viewModel.IsReadOnly):
+                    DGVColumnIsCompressed.ReadOnly = _viewModel.IsReadOnly;
+                    break;
+                default:
+                    break;
+            }
         }
 
         private void DGV_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)

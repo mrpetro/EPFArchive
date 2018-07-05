@@ -38,19 +38,13 @@ namespace EPF
 
         #region Public Methods
 
-        public override void Close()
-        {
-            if (_openedStream != null)
-            {
-                _openedStream.Dispose();
-                _openedStream = null;
-            }
-        }
-
         /// <summary>
         /// This function will open entry stream in read-write mode
         /// It copies entry data (or decompresses) from EPF archvie to temporary file
         /// Then opens this file and returns it's stream
+        /// Entry stream can be modified in anyway.
+        /// Entry changes will be stored to archive when Save is performed.
+        /// Changes will not be stored if opened stream is not disposed.
         /// </summary>
         /// <returns>Stream of entry</returns>
         public override Stream Open()
@@ -101,8 +95,8 @@ namespace EPF
 
             _archiveDataPos = writer.BaseStream.Position;
 
-            //Entry was never opened so it will be copied from original
-            if (_openedStream == null)
+            //Entry was never opened or disposed so it will be copied from original
+            if (_openedStream == null || !_openedStream.CanRead)
             {
                 var bytes = Archive.ArchiveReader.ReadBytes(CompressedLength);
 
@@ -131,6 +125,17 @@ namespace EPF
                     CompressedLength = Length;
                 }
             }
+        }
+
+        public override void Dispose()
+        {
+            if (_openedStream != null)
+            {
+                _openedStream.Dispose();
+                _openedStream = null;
+            }
+
+            base.Dispose();
         }
 
         #endregion Internal Methods
