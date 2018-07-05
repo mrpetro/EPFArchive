@@ -344,6 +344,21 @@ namespace EPFArchiveTests
         }
 
         [TestMethod()]
+        public void get_IsModified_ReturnsTrue_Test()
+        {
+            //Arrange
+            var epfArchive = new EPFArchive(_readWriteEPFArchiveFile, EPFArchiveMode.Update);
+
+            //Act
+            var isModifiedBefore = epfArchive.IsModified;
+            epfArchive.RemoveEntry("TFile1.txt");
+            var isModifiedAfter = epfArchive.IsModified;
+
+            //Assert
+            Assert.IsTrue(!isModifiedBefore && isModifiedAfter, "Extracted entry should be exact as saved entry");
+        }
+
+        [TestMethod()]
         public void Save_SavesData_Test()
         {
             //Arrange

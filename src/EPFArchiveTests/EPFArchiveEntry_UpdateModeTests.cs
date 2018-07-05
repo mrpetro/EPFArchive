@@ -99,6 +99,24 @@ namespace EPFArchiveTests
         }
 
         [TestMethod()]
+        public void set_ToCompress_Changes_Test()
+        {
+            //Arrange
+            var epfArchive = new EPFArchive(_readWriteEPFArchiveFile, EPFArchiveMode.Update);
+
+            var epfArchiveEntry = epfArchive.FindEntry(EXISTING_ENTRY_NAME_B);
+
+            var isModifiedBefore = epfArchiveEntry.IsModified;
+
+            epfArchiveEntry.ToCompress = !epfArchiveEntry.ToCompress;
+
+            var isModifiedAfter = epfArchiveEntry.IsModified;
+
+            //Assert
+            Assert.IsTrue(!isModifiedBefore && isModifiedAfter, "IsModified should have changed to true.");
+        }
+
+        [TestMethod()]
         public void Open_OpensEntryStreamForModificationAndStorage_Test()
         {
             //Arrange
