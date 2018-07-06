@@ -212,6 +212,11 @@ namespace EPF.UI.ViewModel
             SelectedEntries.ResetBindings();
         }
 
+        public void TryCreateArchive()
+        {
+            throw new NotImplementedException("CreateArchive");
+        }
+
         public void TryAddEntries()
         {
             try
@@ -240,7 +245,7 @@ namespace EPF.UI.ViewModel
             }
         }
 
-        public bool TryClose()
+        public bool TryCloseArchive()
         {
             if (!IsArchiveOpened)
                 return true;
@@ -256,7 +261,7 @@ namespace EPF.UI.ViewModel
                 }
                 else if (answer == DialogAnswer.Yes)
                 {
-                    if (!TrySave())
+                    if (!TrySaveArchive())
                         return false;
                 }
             }
@@ -292,7 +297,7 @@ namespace EPF.UI.ViewModel
                 return false;
 
             //Try close any archive that is already opened
-            if (!TryClose())
+            if (!TryCloseArchive())
                 return false;
 
             OpenArchive(fileDialog.FileName);
@@ -310,7 +315,7 @@ namespace EPF.UI.ViewModel
                 return false;
 
             //Try close any archive that is already opened
-            if (!TryClose())
+            if (!TryCloseArchive())
                 return false;
 
             OpenArchiveReadOnly(fileDialog.FileName);
@@ -342,7 +347,7 @@ namespace EPF.UI.ViewModel
             }
         }
 
-        public bool TrySave()
+        public bool TrySaveArchive()
         {
             try
             {
@@ -358,7 +363,7 @@ namespace EPF.UI.ViewModel
             return false;
         }
 
-        public bool TrySaveAs()
+        public bool TrySaveArchiveAs()
         {
             try
             {

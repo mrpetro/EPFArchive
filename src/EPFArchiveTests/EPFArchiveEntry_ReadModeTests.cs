@@ -17,7 +17,6 @@ namespace EPFArchiveTests
         private string VALID_OUTPUT_EXTRACT_DIR = @".\SandBox\ValidOutput";
         private string INVALID_OUTPUT_EXTRACT_DIR = @".\SandBox\InvalidOutput";
 
-        private string NOT_EXISTING_ENTRY_NAME = "Huh.txt";
         private string EXISTING_ENTRY_NAME = "TFile1.txt";
         private string EXPECTED_EXTRACTED_FILE_NAME = "TFile1.txt";
 

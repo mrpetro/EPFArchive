@@ -60,7 +60,7 @@ namespace EPF
 
                 _isModified = value;
 
-                PropertyChanged(this, new PropertyChangedEventArgs(nameof(IsModified)));
+               OnPropertyChanged(nameof(IsModified));
             }
         }
 
@@ -81,7 +81,7 @@ namespace EPF
 
                 _toCompress = value;
 
-                PropertyChanged(this, new PropertyChangedEventArgs(nameof(ToCompress)));
+                OnPropertyChanged(nameof(ToCompress));
             }
         }
 
@@ -164,7 +164,7 @@ namespace EPF
                     IsModified = (isCompressed != ToCompress);
                     break;
                 case nameof(IsModified):
-                    Archive.ModifiedEntryiesNo += IsModified ? 1 : -1;
+                    Archive.ModifiedEntriesNo += IsModified ? 1 : -1;
                     break;
                 default:
                     break;

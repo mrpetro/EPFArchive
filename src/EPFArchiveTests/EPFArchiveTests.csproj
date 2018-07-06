@@ -51,6 +51,7 @@
   <ItemGroup>
     <Compile Include="EPFArchiveEntry_UpdateModeTests.cs" />
     <Compile Include="EPFArchiveEntry_ReadModeTests.cs" />
+    <Compile Include="EPFArchive_CreateModeTests.cs" />
     <Compile Include="EPFArchive_UpdateModeTests.cs" />
     <Compile Include="EPFArchive_ReadModeTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

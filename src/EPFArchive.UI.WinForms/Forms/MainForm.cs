@@ -109,12 +109,12 @@ namespace EPF.UI.WinForms.Forms
 
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
-            _viewModel.TryClose();
+            _viewModel.TryCloseArchive();
         }
 
         private void MenuItemArchiveClose_Click(object sender, EventArgs e)
         {
-            _viewModel.TryClose();
+            _viewModel.TryCloseArchive();
         }
 
         private void MenuItemArchiveOpen_Click(object sender, EventArgs e)
@@ -134,12 +134,12 @@ namespace EPF.UI.WinForms.Forms
 
         private void MenuItemArchiveSave_Click(object sender, EventArgs e)
         {
-            _viewModel.TrySave();
+            _viewModel.TrySaveArchive();
         }
 
         private void MenuItemArchiveSaveAs_Click(object sender, EventArgs e)
         {
-            _viewModel.TrySaveAs();
+            _viewModel.TrySaveArchiveAs();
         }
 
         private void MenuItemDeselectAll_Click(object sender, EventArgs e)
@@ -149,7 +149,7 @@ namespace EPF.UI.WinForms.Forms
 
         private void MenuItemExit_Click(object sender, EventArgs e)
         {
-            _viewModel.TryClose();
+            _viewModel.TryCloseArchive();
         }
 
         private void MenuItemExtractAll_Click(object sender, EventArgs e)
@@ -164,7 +164,7 @@ namespace EPF.UI.WinForms.Forms
 
         private void MenuItemFileNew_Click(object sender, EventArgs e)
         {
-            MessageBox.Show("'New' not implemented.");
+            _viewModel.TryCreateArchive();
         }
 
         private void MenuItemInvertSelection_Click(object sender, EventArgs e)

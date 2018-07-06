@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -44,24 +43,20 @@ namespace EPF
     {
         #region Private Fields
 
-        private bool _leaveOpen;
         private static readonly char[] SIGNATURE = { 'E', 'P', 'F', 'S' };
         private Stream _BackStream;
         private string _backupArchivePath;
         private LZWCompressor _compressor = null;
         private LZWDecompressor _decompressor = null;
         private List<EPFArchiveEntry> _entries;
-        private int _modifiedEntryiesNo = 0;
         private Dictionary<string, EPFArchiveEntry> _entryDictionary;
         private ExtractProgressEventArgs _extractProgressEventArgs;
         private byte[] _hiddenData;
-
         private bool _IsDisposed;
-
         private bool _isModified;
-
+        private bool _leaveOpen;
         private Stream _MainStream;
-
+        private int _modifiedEntryiesNo = 0;
         private SaveProgressEventArgs _saveProgressEventArgs;
 
         #endregion Private Fields
@@ -105,24 +100,6 @@ namespace EPF
 
         public ReadOnlyCollection<EPFArchiveEntry> Entries { get; private set; }
 
-        internal int ModifiedEntryiesNo
-        {
-            get
-            {
-                return _modifiedEntryiesNo;
-            }
-
-            set
-            {
-                if (_modifiedEntryiesNo == value)
-                    return;
-
-                _modifiedEntryiesNo = value;
-
-                PropertyChanged(this, new PropertyChangedEventArgs(nameof(ModifiedEntryiesNo)));
-            }
-        }
-
         public bool IsModified
         {
             get
@@ -137,7 +114,7 @@ namespace EPF
 
                 _isModified = value;
 
-                PropertyChanged(this, new PropertyChangedEventArgs(nameof(IsModified)));
+                OnPropertyChanged(nameof(IsModified));
             }
         }
 
@@ -171,6 +148,24 @@ namespace EPF
             }
         }
 
+        internal int ModifiedEntriesNo
+        {
+            get
+            {
+                return _modifiedEntryiesNo;
+            }
+
+            set
+            {
+                if (_modifiedEntryiesNo == value)
+                    return;
+
+                _modifiedEntryiesNo = value;
+
+                OnPropertyChanged(nameof(ModifiedEntriesNo));
+            }
+        }
+
         #endregion Internal Properties
 
         #region Public Methods
@@ -178,7 +173,7 @@ namespace EPF
         public static string ValidateEntryName(string name)
         {
             if (name == null)
-                throw new Exception("Name is not set");
+                throw new ArgumentNullException(nameof(name));
 
             if (!IsASCII(name))
                 throw new InvalidOperationException("Name must contain only ASCII characters");
@@ -189,22 +184,6 @@ namespace EPF
                 throw new InvalidOperationException("Name length must not exceed 12 characters");
 
             return name.ToUpper();
-        }
-
-        private void CloseStreams()
-        {
-            if (_BackStream != null)
-            {
-                _BackStream.Dispose();
-                _BackStream = null;
-                File.Delete(_backupArchivePath);
-            }
-
-            if (!_leaveOpen &&_MainStream != null)
-            {
-                _MainStream.Dispose();
-                _MainStream = null;
-            }
         }
 
         public EPFArchiveEntry CreateEntry(string entryName, string filePath)
@@ -218,7 +197,7 @@ namespace EPF
             var newEntry = new EPFArchiveEntryForCreate(this, entryName, filePath);
             AddEntry(newEntry);
 
-            ModifiedEntryiesNo++;
+            ModifiedEntriesNo++;
 
             return newEntry;
         }
@@ -231,7 +210,7 @@ namespace EPF
 
         /// <summary>
         /// This method extracts all entries (and decompresses if needed) data into folder
-        /// given as parameter. Given folder must exist. 
+        /// given as parameter. Given folder must exist.
         /// </summary>
         /// <param name="folderPath">Entries data destination folder</param>
         public void ExtractAll(string folderPath)
@@ -241,7 +220,7 @@ namespace EPF
 
         /// <summary>
         /// This method extracts given entries (and decompresses if needed) data into folder
-        /// given as parameter. Given folder must exist. 
+        /// given as parameter. Given folder must exist.
         /// </summary>
         /// <param name="folderPath">Entries data destination folder</param>
         /// <param name="entryNames">Collection of entry names to extract</param>
@@ -283,7 +262,7 @@ namespace EPF
             _entries.Remove(entry);
             _entryDictionary.Remove(entryName);
 
-            ModifiedEntryiesNo++;
+            ModifiedEntriesNo++;
 
             RaiseEntryChanged(entry, EntryChangedEventType.Removed);
             return true;
@@ -307,7 +286,7 @@ namespace EPF
             _entries[entryIndex] = newEntry;
             _entryDictionary[newEntry.Name] = newEntry;
 
-            ModifiedEntryiesNo++;
+            ModifiedEntriesNo++;
 
             RaiseEntryChanged(newEntry, EntryChangedEventType.Replaced);
             return newEntry;
@@ -332,17 +311,28 @@ namespace EPF
                     //Write remaining entries to archive
                     WriteEntries(binWriter);
 
+                    if (Mode == EPFArchiveMode.Create)
+                        CreateBackupStream();
+
                     //Update BackStream with new MainStream content
                     UpdateBackStream();
 
                     _saveProgressEventArgs.EventType = SaveProgressEventType.SavingCompleted;
                     OnSaveProgress(_saveProgressEventArgs);
                 }
+
+                if (Mode == EPFArchiveMode.Create)
+                {
+                    //Reading will be done from BackStream and writing will be done to MainStream
+                    ArchiveReader = new BinaryReader(_BackStream);
+
+                    Mode = EPFArchiveMode.Update;
+                }
             }
             finally
             {
                 _saveProgressEventArgs = null;
-                ModifiedEntryiesNo = 0;
+                ModifiedEntriesNo = 0;
             }
         }
 
@@ -392,6 +382,12 @@ namespace EPF
                 ExtractProgress(this, eventArgs);
         }
 
+        protected void OnPropertyChanged(string name)
+        {
+            if (PropertyChanged != null)
+                PropertyChanged(this, new PropertyChangedEventArgs(name));
+        }
+
         protected void OnSaveProgress(SaveProgressEventArgs eventArgs)
         {
             if (SaveProgress != null)
@@ -412,6 +408,41 @@ namespace EPF
             _entries.Add(entry);
             _entryDictionary.Add(entry.Name, entry);
             RaiseEntryChanged(entry, EntryChangedEventType.Added);
+        }
+
+        private void CloseStreams()
+        {
+            if (_BackStream != null)
+            {
+                _BackStream.Dispose();
+                _BackStream = null;
+                File.Delete(_backupArchivePath);
+            }
+
+            if (!_leaveOpen && _MainStream != null)
+            {
+                _MainStream.Dispose();
+                _MainStream = null;
+            }
+        }
+
+        private void CreateBackupStream()
+        {
+            _backupArchivePath = Path.GetTempFileName();
+            _BackStream = File.Open(_backupArchivePath, FileMode.Open);
+        }
+
+        private void EPFArchive_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            switch (e.PropertyName)
+            {
+                case nameof(ModifiedEntriesNo):
+                    IsModified = ModifiedEntriesNo > 0;
+                    break;
+
+                default:
+                    break;
+            }
         }
 
         private void ExtractEntries(string folderPath, ICollection<EPFArchiveEntry> entries)
@@ -463,9 +494,9 @@ namespace EPF
             switch (mode)
             {
                 case EPFArchiveMode.Create:
-                    throw new NotImplementedException("Create mode is not implemented yet");
-                //OpenForCreate(stream);
-                //break;
+                    OpenForCreate(stream);
+                    break;
+
                 case EPFArchiveMode.Read:
                     OpenForRead(stream);
                     break;
@@ -520,8 +551,7 @@ namespace EPF
             _MainStream = stream;
 
             //Create BackStream from temporary file
-            _backupArchivePath = Path.GetTempFileName();
-            _BackStream = File.Open(_backupArchivePath, FileMode.Open);
+            CreateBackupStream();
 
             //Backup archive stream (MainStream) to BackStream
             UpdateBackStream();
@@ -635,18 +665,6 @@ namespace EPF
             {
                 var entry = Entries[i];
                 entry.WriteInfo(writer);
-            }
-        }
-
-        private void EPFArchive_PropertyChanged(object sender, PropertyChangedEventArgs e)
-        {
-            switch (e.PropertyName)
-            {
-                case nameof(ModifiedEntryiesNo):
-                    IsModified = ModifiedEntryiesNo > 0;
-                    break;
-                default:
-                    break;
             }
         }
 

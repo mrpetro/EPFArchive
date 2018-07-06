@@ -123,6 +123,31 @@ namespace EPFArchiveTests
         }
 
         [TestMethod()]
+        [ExpectedException(typeof(ArgumentNullException))]
+        public void ValidateEntryName_NullName_Throws_Test()
+        {
+            //Arrange
+            string proposedName = null;
+            //Act
+            var validEntryName = EPFArchive.ValidateEntryName(proposedName);
+
+            //Assert
+        }
+
+        [TestMethod()]
+        [ExpectedException(typeof(InvalidOperationException))]
+        public void ValidateEntryName_NonASCIIName_Throws_Test()
+        {
+            //Arrange
+            string proposedName = "Błąd";
+            //Act
+            var validEntryName = EPFArchive.ValidateEntryName(proposedName);
+
+            //Assert
+        }
+
+
+        [TestMethod()]
         [ExpectedException(typeof(InvalidOperationException))]
         public void CreateEntry_Throws_Test()
         {
