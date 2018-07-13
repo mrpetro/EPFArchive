@@ -50,10 +50,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="EPFArchiveEntry_UpdateModeTests.cs" />
-    <Compile Include="EPFArchiveEntry_ReadModeTests.cs" />
-    <Compile Include="EPFArchive_CreateModeTests.cs" />
-    <Compile Include="EPFArchive_UpdateModeTests.cs" />
-    <Compile Include="EPFArchive_ReadModeTests.cs" />
+    <Compile Include="EPFArchiveEntry_ExtractModeTests.cs" />
+    <Compile Include="EPFArchive_ToCreateTests.cs" />
+    <Compile Include="EPFArchive_ToUpdateTests.cs" />
+    <Compile Include="EPFArchive_ToExtractTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Helpers.cs" />
   </ItemGroup>

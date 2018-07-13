@@ -682,7 +682,7 @@ namespace EPF.UI.ViewModel
         {
             try
             {
-                _epfArchive = new EPFArchive();
+                _epfArchive = EPFArchive.ToCreate();
                 _epfArchive.EntryChanged += _epfArchive_EntryChanged;
                 _epfArchive.PropertyChanged += _epfArchive_PropertyChanged;
 
@@ -709,7 +709,7 @@ namespace EPF.UI.ViewModel
                 var archiveFilePath = argument as string;
 
                 var fileStream = File.Open(archiveFilePath, FileMode.Open, FileAccess.ReadWrite);
-                _epfArchive = new EPFArchive(fileStream, EPFArchiveMode.Update);
+                _epfArchive = EPFArchive.ToUpdate(fileStream);
                 _epfArchive.EntryChanged += _epfArchive_EntryChanged;
                 _epfArchive.PropertyChanged += _epfArchive_PropertyChanged;
 
@@ -733,7 +733,7 @@ namespace EPF.UI.ViewModel
             try
             {
                 var fileStream = File.Open(archiveFilePath, FileMode.Open, FileAccess.Read);
-                _epfArchive = new EPFArchive(fileStream, EPFArchiveMode.Read);
+                _epfArchive = EPFArchive.ToExtract(fileStream);
 
                 RefreshEntriesCallback.Invoke();
 

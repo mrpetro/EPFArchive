@@ -12,13 +12,14 @@ using System.Threading;
 namespace EPFArchiveTests
 {
     [TestClass()]
-    public class EPFArchive_CreateModeTests
+    public class EPFArchive_ToCreateTests
     {
         private string EXPECTED_EXTRACT_DIR = @".\SandBox\ExpectedExtract";
         private string VALID_OUTPUT_EXTRACT_DIR = @".\SandBox\OutputExtract";
 
         private string[] TEST_ENTRIES = new string[] { "TFile1.txt", "TFile2.png" };
-        private Stream _newEPFFile;
+        private Stream _newEPFFileStream;
+        private Stream _readonlyEPFFileStream;
 
         [TestInitialize()]
         public void Initialize()
@@ -41,17 +42,23 @@ namespace EPFArchiveTests
 
             Thread.Sleep(100);
 
-            _newEPFFile = File.Create(@".\SandBox\NewArchive.epf");
-
+            _newEPFFileStream = File.Create(@".\SandBox\NewArchive.epf");
+            _readonlyEPFFileStream = File.OpenRead(@".\SandBox\ValidArchive.epf");
         }
 
         [TestCleanup()]
         public void Cleanup()
         {
-            if (_newEPFFile != null)
+            if (_newEPFFileStream != null)
             {
-                _newEPFFile.Dispose();
-                _newEPFFile = null;
+                _newEPFFileStream.Dispose();
+                _newEPFFileStream = null;
+            }
+
+            if (_readonlyEPFFileStream != null)
+            {
+                _readonlyEPFFileStream.Dispose();
+                _readonlyEPFFileStream = null;
             }
         }
 
@@ -60,7 +67,7 @@ namespace EPFArchiveTests
         {
             //Arrange
             //Act
-            var epfArchive = new EPFArchive(_newEPFFile, EPFArchiveMode.Create);
+            var epfArchive = EPFArchive.ToCreate();
             var entriesNo = epfArchive.Entries.Count;
 
             //Assert
@@ -71,7 +78,7 @@ namespace EPFArchiveTests
         public void CreateEntry_CreatesNewEntry_Test()
         {
             //Arrange
-            var epfArchive = new EPFArchive(_newEPFFile, EPFArchiveMode.Create);
+            var epfArchive = EPFArchive.ToCreate();
 
             //Act
             epfArchive.CreateEntry("TFile1.txt", $@"{EXPECTED_EXTRACT_DIR}\TFile1.txt");
@@ -87,7 +94,7 @@ namespace EPFArchiveTests
         public void Save_ChangesModeToUpdate_Throws_Test()
         {
             //Arrange
-            var epfArchive = new EPFArchive(_newEPFFile, EPFArchiveMode.Create);
+            var epfArchive = EPFArchive.ToCreate();
             epfArchive.CreateEntry("TFile1.txt", $@"{EXPECTED_EXTRACT_DIR}\TFile1.txt");
             var entriesNo = epfArchive.Entries.Count;
 
@@ -97,23 +104,37 @@ namespace EPFArchiveTests
             //Assert
         }
 
-
         [TestMethod()]
-        public void SaveAs_ChangesModeToUpdate_Test()
+        [ExpectedException(typeof(InvalidOperationException))]
+        public void SaveAs_InvalidStream_Throws_Test()
         {
             //Arrange
-            var epfArchive = new EPFArchive(_newEPFFile, EPFArchiveMode.Create);
+            var epfArchive = EPFArchive.ToCreate();
             epfArchive.CreateEntry("TFile1.txt", $@"{EXPECTED_EXTRACT_DIR}\TFile1.txt");
             var entriesNo = epfArchive.Entries.Count;
 
             //Act
-            var oldMode = epfArchive.Mode;
-            epfArchive.SaveAs(_newEPFFile);
-            var newMode = epfArchive.Mode;
+            epfArchive.SaveAs(_readonlyEPFFileStream);
 
             //Assert
-            Assert.IsTrue(oldMode == EPFArchiveMode.Create &&
-                newMode == EPFArchiveMode.Update , "Saving created archive should change it's Mode to Update");
+        }
+
+        [TestMethod()]
+        public void SaveAs_ValidStream_IsModifiedChanged_Test()
+        {
+            //Arrange
+            var epfArchive = EPFArchive.ToCreate();
+            epfArchive.CreateEntry("TFile1.txt", $@"{EXPECTED_EXTRACT_DIR}\TFile1.txt");
+            var entriesNo = epfArchive.Entries.Count;
+
+            //Act
+            var oldValue = epfArchive.IsModified;
+            epfArchive.SaveAs(_newEPFFileStream);
+            var newValue = epfArchive.IsModified;
+
+            //Assert
+            Assert.IsTrue(oldValue == true &&
+                newValue == false , "Saving created archive should change IsModified propery from true to false.");
         }
     }
 }

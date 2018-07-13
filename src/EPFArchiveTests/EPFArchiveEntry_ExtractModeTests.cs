@@ -11,7 +11,7 @@ using System.Threading;
 namespace EPFArchiveTests
 {
     [TestClass()]
-    public class EPFArchiveEntry_ReadModeTests
+    public class EPFArchiveEntry_ExtractModeTests
     {
         private string EXPECTED_EXTRACT_DIR = @".\SandBox\ExpectedExtract";
         private string VALID_OUTPUT_EXTRACT_DIR = @".\SandBox\ValidOutput";
@@ -69,7 +69,7 @@ namespace EPFArchiveTests
         public void ExtractTo_InvalidOutputFolder_Throws_Test()
         {
             //Arrange
-            var epfArchive = new EPFArchive(_readWriteEPFArchiveFile, EPFArchiveMode.Read);
+            var epfArchive = EPFArchive.ToExtract(_readWriteEPFArchiveFile);
             var epfArchiveEntry = epfArchive.FindEntry(EXISTING_ENTRY_NAME);
 
             //Act
@@ -82,7 +82,7 @@ namespace EPFArchiveTests
         public void ExtractTo_ValidOutputFolder_ExtractsEntry_Test()
         {
             //Arrange
-            var epfArchive = new EPFArchive(_readWriteEPFArchiveFile, EPFArchiveMode.Read);
+            var epfArchive = EPFArchive.ToExtract(_readWriteEPFArchiveFile);
             var epfArchiveEntry = epfArchive.FindEntry(EXISTING_ENTRY_NAME);
 
             //Act
@@ -99,7 +99,7 @@ namespace EPFArchiveTests
         public void Open_ReturnsStream_Test()
         {
             //Arrange
-            var epfArchive = new EPFArchive(_readWriteEPFArchiveFile, EPFArchiveMode.Read);
+            var epfArchive = EPFArchive.ToExtract(_readWriteEPFArchiveFile);
             var epfArchiveEntry = epfArchive.FindEntry(EXISTING_ENTRY_NAME);
 
             //Act

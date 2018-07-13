@@ -12,7 +12,7 @@ using System.Threading;
 namespace EPFArchiveTests
 {
     [TestClass()]
-    public class EPFArchive_UpdateModeTests
+    public class EPFArchive_ToUpdateTests
     {
         private string EXPECTED_EXTRACT_DIR = @".\SandBox\ExpectedExtract";
         private string VALID_OUTPUT_EXTRACT_DIR = @".\SandBox\OutputExtract";
@@ -79,7 +79,7 @@ namespace EPFArchiveTests
         {
             //Arrange
             //Act
-            var epfArchive = new EPFArchive(_readonlyEPFArchiveFile, EPFArchiveMode.Update);
+            var epfArchive = EPFArchive.ToUpdate(_readonlyEPFArchiveFile);
 
             //Assert
         }
@@ -90,7 +90,7 @@ namespace EPFArchiveTests
         {
             //Arrange
             //Act
-            var epfArchive = new EPFArchive(null, EPFArchiveMode.Update);
+            var epfArchive = EPFArchive.ToUpdate(null);
 
             //Assert
         }
@@ -101,7 +101,7 @@ namespace EPFArchiveTests
         {
             //Arrange
             //Act
-            var epfArchive = new EPFArchive(_notEPFArchiveFile, EPFArchiveMode.Update);
+            var epfArchive = EPFArchive.ToUpdate(_notEPFArchiveFile);
 
             //Assert
         }
@@ -111,7 +111,7 @@ namespace EPFArchiveTests
         {
             //Arrange
             Helpers.DeployResource(@".\SandBox\ValidEntry.png", "ValidEntry.png");
-            var epfArchive = new EPFArchive(_readWriteEPFArchiveFile, EPFArchiveMode.Update);
+            var epfArchive = EPFArchive.ToUpdate(_readWriteEPFArchiveFile);
 
             //Act
             var entry = epfArchive.CreateEntry("VALID_ENTRY", @".\SandBox\ValidEntry.png");
@@ -126,7 +126,7 @@ namespace EPFArchiveTests
         {
             //Arrange
             Helpers.DeployResource(@".\SandBox\ValidEntry.png", "ValidEntry.png");
-            var epfArchive = new EPFArchive(_readWriteEPFArchiveFile, EPFArchiveMode.Update);
+            var epfArchive = EPFArchive.ToUpdate(_readWriteEPFArchiveFile);
 
             //Act
             epfArchive.CreateEntry("TFile1.txt", @".\SandBox\ValidEntry.png");
@@ -139,7 +139,7 @@ namespace EPFArchiveTests
         public void CreateEntry_ExistingEntryName_InvalidInputFile_Throws_Test()
         {
             //Arrange
-            var epfArchive = new EPFArchive(_readWriteEPFArchiveFile, EPFArchiveMode.Update);
+            var epfArchive = EPFArchive.ToUpdate(_readWriteEPFArchiveFile);
 
             //Act
             epfArchive.CreateEntry("Huh.txt", @".\SandBox\Huh.txt");
@@ -152,7 +152,7 @@ namespace EPFArchiveTests
         public void Dispose_CloseInputStream_Test()
         {
             //Arrange
-            var epfArchive = new EPFArchive(_readWriteEPFArchiveFile, EPFArchiveMode.Update);
+            var epfArchive = EPFArchive.ToUpdate(_readWriteEPFArchiveFile);
 
             //Act
             epfArchive.Dispose();
@@ -165,7 +165,7 @@ namespace EPFArchiveTests
         public void Dispose_LeaveInputStreamOpen_Test()
         {
             //Arrange
-            var epfArchive = new EPFArchive(_readWriteEPFArchiveFile, EPFArchiveMode.Update, true);
+            var epfArchive = EPFArchive.ToUpdate(_readWriteEPFArchiveFile, true);
 
             //Act
             epfArchive.Dispose();
@@ -178,7 +178,7 @@ namespace EPFArchiveTests
         public void ExtractAll_ValidOutputFolder_AllEntriesExtracted_Test()
         {
             //Arrange
-            var epfArchive = new EPFArchive(_readWriteEPFArchiveFile, EPFArchiveMode.Update);
+            var epfArchive = EPFArchive.ToUpdate(_readWriteEPFArchiveFile);
 
             //Act
             epfArchive.ExtractAll(VALID_OUTPUT_EXTRACT_DIR);
@@ -201,7 +201,7 @@ namespace EPFArchiveTests
         public void ExtractAll_InvalidOutputFolder_Throws_Test()
         {
             //Arrange
-            var epfArchive = new EPFArchive(_readWriteEPFArchiveFile, EPFArchiveMode.Update);
+            var epfArchive = EPFArchive.ToUpdate(_readWriteEPFArchiveFile);
 
             //Act
             epfArchive.ExtractAll(MISSING_OUTPUT_EXTRACT_DIR);
@@ -213,7 +213,7 @@ namespace EPFArchiveTests
         public void ExtractEntries_ValidOutputFolder_EntriesExtracted_Test()
         {
             //Arrange
-            var epfArchive = new EPFArchive(_readWriteEPFArchiveFile, EPFArchiveMode.Update);
+            var epfArchive = EPFArchive.ToUpdate(_readWriteEPFArchiveFile);
 
             //Act
             epfArchive.ExtractEntries(VALID_OUTPUT_EXTRACT_DIR, TEST_ENTRIES);
@@ -236,7 +236,7 @@ namespace EPFArchiveTests
         public void ExtractEntries_InvalidOutputFolder_Throws_Test()
         {
             //Arrange
-            var epfArchive = new EPFArchive(_readWriteEPFArchiveFile, EPFArchiveMode.Update);
+            var epfArchive = EPFArchive.ToUpdate(_readWriteEPFArchiveFile);
 
             //Act
             epfArchive.ExtractEntries(MISSING_OUTPUT_EXTRACT_DIR, TEST_ENTRIES);
@@ -248,7 +248,7 @@ namespace EPFArchiveTests
         public void FindEntry_ExistingEntry_ReturnsEntryObject_Test()
         {
             //Arrange
-            var epfArchive = new EPFArchive(_readWriteEPFArchiveFile, EPFArchiveMode.Update);
+            var epfArchive = EPFArchive.ToUpdate(_readWriteEPFArchiveFile);
 
             //Act
             var entry = epfArchive.FindEntry("TFile1.txt");
@@ -261,7 +261,7 @@ namespace EPFArchiveTests
         public void FindEntry_NotExistingEntry_ReturnsNull_Test()
         {
             //Arrange
-            var epfArchive = new EPFArchive(_readWriteEPFArchiveFile, EPFArchiveMode.Update);
+            var epfArchive = EPFArchive.ToUpdate(_readWriteEPFArchiveFile);
 
             //Act
             var entry = epfArchive.FindEntry("Huh.txt");
@@ -274,7 +274,7 @@ namespace EPFArchiveTests
         public void RemoveEntry_ExistingEntryName_EntryRemoved_Test()
         {
             //Arrange
-            var epfArchive = new EPFArchive(_readWriteEPFArchiveFile, EPFArchiveMode.Update);
+            var epfArchive = EPFArchive.ToUpdate(_readWriteEPFArchiveFile);
 
             //Act
             var beforeRemove = epfArchive.Entries.Count;
@@ -290,7 +290,7 @@ namespace EPFArchiveTests
         public void RemoveEntry_NotExistingEntryName_ReturnsFalse_Test()
         {
             //Arrange
-            var epfArchive = new EPFArchive(_readWriteEPFArchiveFile, EPFArchiveMode.Update);
+            var epfArchive = EPFArchive.ToUpdate(_readWriteEPFArchiveFile);
 
             //Act
             var beforeRemove = epfArchive.Entries.Count;
@@ -307,7 +307,7 @@ namespace EPFArchiveTests
         {
             //Arrange
             Helpers.DeployResource(@".\SandBox\ValidEntry.png", "ValidEntry.png");
-            var epfArchive = new EPFArchive(_readWriteEPFArchiveFile, EPFArchiveMode.Update);
+            var epfArchive = EPFArchive.ToUpdate(_readWriteEPFArchiveFile);
 
             //Act
             var result = epfArchive.ReplaceEntry("TFile1.txt", @".\SandBox\ValidEntry.png");
@@ -322,7 +322,7 @@ namespace EPFArchiveTests
         {
             //Arrange
             Helpers.DeployResource(@".\SandBox\ValidEntry.png", "ValidEntry.png");
-            var epfArchive = new EPFArchive(_readWriteEPFArchiveFile, EPFArchiveMode.Update);
+            var epfArchive = EPFArchive.ToUpdate(_readWriteEPFArchiveFile);
 
             //Act
             epfArchive.ReplaceEntry("Huh.txt", @".\SandBox\ValidEntry.png");
@@ -335,7 +335,7 @@ namespace EPFArchiveTests
         public void ReplaceEntry_NotExistingEntryName_NotExistingInputFile_Throws()
         {
             //Arrange
-            var epfArchive = new EPFArchive(_readWriteEPFArchiveFile, EPFArchiveMode.Update);
+            var epfArchive = EPFArchive.ToUpdate(_readWriteEPFArchiveFile);
 
             //Act
             epfArchive.ReplaceEntry("Huh.txt", @".\SandBox\Huh.png");
@@ -347,7 +347,7 @@ namespace EPFArchiveTests
         public void get_IsModified_ReturnsTrue_Test()
         {
             //Arrange
-            var epfArchive = new EPFArchive(_readWriteEPFArchiveFile, EPFArchiveMode.Update);
+            var epfArchive = EPFArchive.ToUpdate(_readWriteEPFArchiveFile);
 
             //Act
             var isModifiedBefore = epfArchive.IsModified;
@@ -363,7 +363,7 @@ namespace EPFArchiveTests
         {
             //Arrange
             Helpers.DeployResource(@".\SandBox\ValidEntry.png", "ValidEntry.png");
-            var epfArchive = new EPFArchive(_readWriteEPFArchiveFile, EPFArchiveMode.Update);
+            var epfArchive = EPFArchive.ToUpdate(_readWriteEPFArchiveFile);
 
             //Act
             var epfEntry = epfArchive.CreateEntry("NewEntry.png", @".\SandBox\ValidEntry.png");
@@ -371,7 +371,7 @@ namespace EPFArchiveTests
             epfArchive.Dispose();
             using (var savedFile = File.OpenRead(@".\SandBox\ReadWriteValidArchive.epf"))
             {
-                epfArchive = new EPFArchive(savedFile, EPFArchiveMode.Read);
+                epfArchive = EPFArchive.ToExtract(savedFile);
                 epfArchive.ExtractEntries(VALID_OUTPUT_EXTRACT_DIR, new string[] { "NewEntry.png" });
             }
 
