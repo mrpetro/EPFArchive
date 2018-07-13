@@ -29,17 +29,19 @@
         {
             _entry = entry;
 
+            _entry.PropertyChanged += _entry_PropertyChanged;
+            PropertyChanged += EPFArchiveItemViewModel_PropertyChanged;
+
             Name = entry.Name;
             Status = status;
 
             IsCompressed = entry.ToCompress;
             Length = entry.Length;
             CompressedLength = entry.CompressedLength;
-            CompressionRatio = (float)CompressedLength / (float)Length;
 
-            _entry.PropertyChanged += _entry_PropertyChanged;
+            RecalculateCompressionRatio();
 
-            PropertyChanged += EPFArchiveItemViewModel_PropertyChanged;
+
         }
 
         #endregion Public Constructors
@@ -92,11 +94,18 @@
             {
                 case nameof(_entry.IsModified):
                     Status = _entry.IsModified ? EPFArchiveItemStatus.Modifying : EPFArchiveItemStatus.Unchanged;
+                    Length = _entry.Length;
+                    CompressedLength = _entry.CompressedLength;
                     break;
 
                 default:
                     break;
             }
+        }
+
+        private void RecalculateCompressionRatio()
+        {
+            CompressionRatio = (float)CompressedLength / (float)Length;
         }
 
         private void EPFArchiveItemViewModel_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
@@ -106,7 +115,10 @@
                 case nameof(IsCompressed):
                     _entry.ToCompress = IsCompressed;
                     break;
-
+                case nameof(CompressedLength):
+                case nameof(Length):
+                    RecalculateCompressionRatio();
+                    break;
                 default:
                     break;
             }

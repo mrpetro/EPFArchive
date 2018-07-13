@@ -82,6 +82,11 @@ namespace EPF
             Init(stream, mode);
         }
 
+        public EPFArchive()
+        {
+            Init(null, EPFArchiveMode.Create);
+        }
+
         #endregion Public Constructors
 
         #region Public Events
@@ -292,10 +297,21 @@ namespace EPF
             return newEntry;
         }
 
+        public void SaveAs(Stream stream)
+        {
+            if (_MainStream == null)
+                OpenForCreate(stream);
+
+            Save();
+        }
+
         public void Save()
         {
             if (Mode == EPFArchiveMode.Read)
                 throw new InvalidOperationException("Unable to save in read-only mode");
+
+            if (_MainStream == null && Mode == EPFArchiveMode.Create)
+                throw new InvalidOperationException("SaveAs has to be used when archive was created.");
 
             try
             {
@@ -494,7 +510,8 @@ namespace EPF
             switch (mode)
             {
                 case EPFArchiveMode.Create:
-                    OpenForCreate(stream);
+                    _MainStream = null;
+                    //OpenForCreate(stream);
                     break;
 
                 case EPFArchiveMode.Read:

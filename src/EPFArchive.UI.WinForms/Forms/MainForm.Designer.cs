@@ -54,11 +54,11 @@
             this.StatusStripMessage = new EPF.UI.WinForms.Controls.ToolStripStatusLabelEx();
             this.StatusStripProgressBar = new EPF.UI.WinForms.Controls.ToolStripProgressBarEx();
             this.ToolStrip = new System.Windows.Forms.ToolStrip();
-            this.ToolStripAdd = new System.Windows.Forms.ToolStripButton();
-            this.ToolStripRemove = new System.Windows.Forms.ToolStripButton();
+            this.ToolStripAdd = new Controls.ToolStripButtonEx();
+            this.ToolStripRemove = new Controls.ToolStripButtonEx();
             this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
-            this.ToolStripExtractSelection = new System.Windows.Forms.ToolStripButton();
-            this.ToolStripExtractAll = new System.Windows.Forms.ToolStripButton();
+            this.ToolStripExtractSelection = new Controls.ToolStripButtonEx();
+            this.ToolStripExtractAll = new Controls.ToolStripButtonEx();
             this.EntryList = new EPF.UI.WinForms.Controls.EPFArchiveEntryListCtrl();
             this.MenuMain.SuspendLayout();
             this.StatusStrip.SuspendLayout();
@@ -98,78 +98,78 @@
             // MenuItemFileNew
             // 
             this.MenuItemFileNew.Name = "MenuItemFileNew";
-            this.MenuItemFileNew.Size = new System.Drawing.Size(180, 22);
+            this.MenuItemFileNew.Size = new System.Drawing.Size(171, 22);
             this.MenuItemFileNew.Text = "New";
             this.MenuItemFileNew.Click += new System.EventHandler(this.MenuItemFileNew_Click);
             // 
             // MenuItemFileOpenReadOnly
             // 
             this.MenuItemFileOpenReadOnly.Name = "MenuItemFileOpenReadOnly";
-            this.MenuItemFileOpenReadOnly.Size = new System.Drawing.Size(180, 22);
+            this.MenuItemFileOpenReadOnly.Size = new System.Drawing.Size(171, 22);
             this.MenuItemFileOpenReadOnly.Text = "Open Read-Only...";
             this.MenuItemFileOpenReadOnly.Click += new System.EventHandler(this.MenuItemArchiveOpenReadOnly_Click);
             // 
             // MenuItemFileOpen
             // 
             this.MenuItemFileOpen.Name = "MenuItemFileOpen";
-            this.MenuItemFileOpen.Size = new System.Drawing.Size(180, 22);
+            this.MenuItemFileOpen.Size = new System.Drawing.Size(171, 22);
             this.MenuItemFileOpen.Text = "Open...";
             this.MenuItemFileOpen.Click += new System.EventHandler(this.MenuItemArchiveOpen_Click);
             // 
             // MenuItemFileSave
             // 
             this.MenuItemFileSave.Name = "MenuItemFileSave";
-            this.MenuItemFileSave.Size = new System.Drawing.Size(180, 22);
+            this.MenuItemFileSave.Size = new System.Drawing.Size(171, 22);
             this.MenuItemFileSave.Text = "Save";
             this.MenuItemFileSave.Click += new System.EventHandler(this.MenuItemArchiveSave_Click);
             // 
             // MenuItemFileSaveAs
             // 
             this.MenuItemFileSaveAs.Name = "MenuItemFileSaveAs";
-            this.MenuItemFileSaveAs.Size = new System.Drawing.Size(180, 22);
+            this.MenuItemFileSaveAs.Size = new System.Drawing.Size(171, 22);
             this.MenuItemFileSaveAs.Text = "Save As...";
             this.MenuItemFileSaveAs.Click += new System.EventHandler(this.MenuItemArchiveSaveAs_Click);
             // 
             // toolStripSeparator4
             // 
             this.toolStripSeparator4.Name = "toolStripSeparator4";
-            this.toolStripSeparator4.Size = new System.Drawing.Size(177, 6);
+            this.toolStripSeparator4.Size = new System.Drawing.Size(168, 6);
             // 
             // MenuItemFileClose
             // 
             this.MenuItemFileClose.Name = "MenuItemFileClose";
-            this.MenuItemFileClose.Size = new System.Drawing.Size(180, 22);
+            this.MenuItemFileClose.Size = new System.Drawing.Size(171, 22);
             this.MenuItemFileClose.Text = "Close";
             this.MenuItemFileClose.Click += new System.EventHandler(this.MenuItemArchiveClose_Click);
             // 
             // toolStripSeparator1
             // 
             this.toolStripSeparator1.Name = "toolStripSeparator1";
-            this.toolStripSeparator1.Size = new System.Drawing.Size(177, 6);
+            this.toolStripSeparator1.Size = new System.Drawing.Size(168, 6);
             // 
             // MenuItemExtractAll
             // 
             this.MenuItemExtractAll.Name = "MenuItemExtractAll";
-            this.MenuItemExtractAll.Size = new System.Drawing.Size(180, 22);
+            this.MenuItemExtractAll.Size = new System.Drawing.Size(171, 22);
             this.MenuItemExtractAll.Text = "Extract All...";
             this.MenuItemExtractAll.Click += new System.EventHandler(this.MenuItemExtractAll_Click);
             // 
             // MenuItemExtractSelection
             // 
             this.MenuItemExtractSelection.Name = "MenuItemExtractSelection";
-            this.MenuItemExtractSelection.Size = new System.Drawing.Size(180, 22);
+            this.MenuItemExtractSelection.Size = new System.Drawing.Size(171, 22);
             this.MenuItemExtractSelection.Text = "Extract Selected...";
             this.MenuItemExtractSelection.Click += new System.EventHandler(this.MenuItemExtractSelection_Click);
             // 
             // toolStripSeparator2
             // 
             this.toolStripSeparator2.Name = "toolStripSeparator2";
-            this.toolStripSeparator2.Size = new System.Drawing.Size(177, 6);
+            this.toolStripSeparator2.Size = new System.Drawing.Size(168, 6);
             // 
             // MenuItemExit
             // 
             this.MenuItemExit.Name = "MenuItemExit";
-            this.MenuItemExit.Size = new System.Drawing.Size(180, 22);
+            this.MenuItemExit.Size = new System.Drawing.Size(171, 22);
             this.MenuItemExit.Text = "Exit";
             this.MenuItemExit.Click += new System.EventHandler(this.MenuItemExit_Click);
             // 
@@ -188,33 +188,33 @@
             // MenuItemSelectAll
             // 
             this.MenuItemSelectAll.Name = "MenuItemSelectAll";
-            this.MenuItemSelectAll.Size = new System.Drawing.Size(180, 22);
+            this.MenuItemSelectAll.Size = new System.Drawing.Size(155, 22);
             this.MenuItemSelectAll.Text = "Select All";
             this.MenuItemSelectAll.Click += new System.EventHandler(this.MenuItemSelectAll_Click);
             // 
             // MenuItemDeselectAll
             // 
             this.MenuItemDeselectAll.Name = "MenuItemDeselectAll";
-            this.MenuItemDeselectAll.Size = new System.Drawing.Size(180, 22);
+            this.MenuItemDeselectAll.Size = new System.Drawing.Size(155, 22);
             this.MenuItemDeselectAll.Text = "Deselect All";
             this.MenuItemDeselectAll.Click += new System.EventHandler(this.MenuItemDeselectAll_Click);
             // 
             // MenuItemInvertSelection
             // 
             this.MenuItemInvertSelection.Name = "MenuItemInvertSelection";
-            this.MenuItemInvertSelection.Size = new System.Drawing.Size(180, 22);
+            this.MenuItemInvertSelection.Size = new System.Drawing.Size(155, 22);
             this.MenuItemInvertSelection.Text = "Invert Selection";
             this.MenuItemInvertSelection.Click += new System.EventHandler(this.MenuItemInvertSelection_Click);
             // 
             // toolStripSeparator5
             // 
             this.toolStripSeparator5.Name = "toolStripSeparator5";
-            this.toolStripSeparator5.Size = new System.Drawing.Size(177, 6);
+            this.toolStripSeparator5.Size = new System.Drawing.Size(152, 6);
             // 
             // MenuItemArchiveProperties
             // 
             this.MenuItemArchiveProperties.Name = "MenuItemArchiveProperties";
-            this.MenuItemArchiveProperties.Size = new System.Drawing.Size(180, 22);
+            this.MenuItemArchiveProperties.Size = new System.Drawing.Size(155, 22);
             this.MenuItemArchiveProperties.Text = "Properties...";
             this.MenuItemArchiveProperties.Click += new System.EventHandler(this.MenuItemArchiveProperties_Click);
             // 
@@ -385,11 +385,11 @@
         private Controls.ToolStripStatusLabelEx StatusStripMessage;
         private System.Windows.Forms.ToolStripMenuItem MenuItemFileOpenReadOnly;
         private System.Windows.Forms.ToolStrip ToolStrip;
-        private System.Windows.Forms.ToolStripButton ToolStripAdd;
-        private System.Windows.Forms.ToolStripButton ToolStripRemove;
+        private Controls.ToolStripButtonEx ToolStripAdd;
+        private Controls.ToolStripButtonEx ToolStripRemove;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator3;
-        private System.Windows.Forms.ToolStripButton ToolStripExtractSelection;
-        private System.Windows.Forms.ToolStripButton ToolStripExtractAll;
+        private Controls.ToolStripButtonEx ToolStripExtractSelection;
+        private Controls.ToolStripButtonEx ToolStripExtractAll;
         private Controls.EPFArchiveEntryListCtrl EntryList;
         private System.Windows.Forms.ToolStripMenuItem MenuItemFileNew;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator4;

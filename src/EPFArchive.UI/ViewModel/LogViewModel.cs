@@ -14,36 +14,14 @@ namespace EPF.UI.ViewModel
 
         public Color Color
         {
-            get
-            {
-                return _color;
-            }
-
-            private set
-            {
-                if (_color == value)
-                    return;
-
-                _color = value;
-                OnPropertyChanged(nameof(Color));
-            }
+            get { return _color; }
+            private set{ SetProperty(ref _color, value); }
         }
 
         public string Message
         {
-            get
-            {
-                return _message;
-            }
-
-            private set
-            {
-                if (_message == value)
-                    return;
-
-                _message = value;
-                OnPropertyChanged(nameof(Message));
-            }
+            get { return _message; }
+            private set { SetProperty(ref _message, value); }
         }
 
         public void Error(string message)

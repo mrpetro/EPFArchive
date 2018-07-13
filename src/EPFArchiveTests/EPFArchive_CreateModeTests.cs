@@ -82,9 +82,24 @@ namespace EPFArchiveTests
 
         }
 
+        [TestMethod()]
+        [ExpectedException(typeof(InvalidOperationException))]
+        public void Save_ChangesModeToUpdate_Throws_Test()
+        {
+            //Arrange
+            var epfArchive = new EPFArchive(_newEPFFile, EPFArchiveMode.Create);
+            epfArchive.CreateEntry("TFile1.txt", $@"{EXPECTED_EXTRACT_DIR}\TFile1.txt");
+            var entriesNo = epfArchive.Entries.Count;
+
+            //Act
+            epfArchive.Save();
+
+            //Assert
+        }
+
 
         [TestMethod()]
-        public void Save_ChangesModeToUpdate_Test()
+        public void SaveAs_ChangesModeToUpdate_Test()
         {
             //Arrange
             var epfArchive = new EPFArchive(_newEPFFile, EPFArchiveMode.Create);
@@ -93,7 +108,7 @@ namespace EPFArchiveTests
 
             //Act
             var oldMode = epfArchive.Mode;
-            epfArchive.Save();
+            epfArchive.SaveAs(_newEPFFile);
             var newMode = epfArchive.Mode;
 
             //Assert

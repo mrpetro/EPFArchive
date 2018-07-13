@@ -52,6 +52,9 @@
     <Compile Include="Controls\EPFArchiveEntryListCtrl.Designer.cs">
       <DependentUpon>EPFArchiveEntryListCtrl.cs</DependentUpon>
     </Compile>
+    <Compile Include="Controls\ToolStripButtonEx.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="Controls\ToolStripMenuItemEx.cs">
       <SubType>Component</SubType>
     </Compile>
