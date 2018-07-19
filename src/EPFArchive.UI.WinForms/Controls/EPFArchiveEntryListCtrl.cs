@@ -50,7 +50,14 @@ namespace EPF.UI.WinForms.Controls
             DGV.SelectionChanged += DGV_SelectionChanged;
             DGV.PreviewKeyDown += DGV_PreviewKeyDown;
             DGV.CellFormatting += DGV_CellFormatting;
+
+            _viewModel.ClearEntriesCallback = ClearEntries;
+            _viewModel.RefreshEntriesCallback = RefreshEntries;
         }
+
+        #endregion Public Methods
+
+        #region Private Methods
 
         private void _viewModel_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
@@ -59,9 +66,15 @@ namespace EPF.UI.WinForms.Controls
                 case nameof(_viewModel.IsReadOnly):
                     DGVColumnIsCompressed.ReadOnly = _viewModel.IsReadOnly;
                     break;
+
                 default:
                     break;
             }
+        }
+
+        private void ClearEntries()
+        {
+            this.Invoke(new Action(() => { _viewModel.ClearEntries(); }));
         }
 
         private void DGV_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
@@ -77,13 +90,8 @@ namespace EPF.UI.WinForms.Controls
                     e.CellStyle.BackColor = System.Drawing.Color.Orange;
 
                 e.Value = string.Format(CultureInfo.InvariantCulture, "{0:F1}%", value);
-
             }
         }
-
-        #endregion Public Methods
-
-        #region Private Methods
 
         private void DGV_PreviewKeyDown(object sender, PreviewKeyDownEventArgs e)
         {
@@ -94,7 +102,6 @@ namespace EPF.UI.WinForms.Controls
         private void DGV_SelectionChanged(object sender, EventArgs e)
         {
             _viewModel.SelectedEntries.RaiseListChangedEvents = false;
-
             _viewModel.SelectedEntries.Clear();
 
             foreach (DataGridViewRow row in DGV.SelectedRows)
@@ -102,6 +109,11 @@ namespace EPF.UI.WinForms.Controls
 
             _viewModel.SelectedEntries.RaiseListChangedEvents = true;
             _viewModel.SelectedEntries.ResetBindings();
+        }
+
+        private void RefreshEntries()
+        {
+            this.Invoke(new Action(() => { _viewModel.RefreshEntries(); }));
         }
 
         private void SelectedEntries_ListChanged(object sender, ListChangedEventArgs e)

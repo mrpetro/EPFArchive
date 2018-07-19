@@ -7,6 +7,9 @@ using System.Threading;
 
 namespace EPF.UI.ViewModel
 {
+    public delegate void ClearEntries();
+    public delegate void RefreshEntries();
+
     public class EPFArchiveViewModel : BaseViewModel
     {
         #region Private Fields
@@ -24,6 +27,9 @@ namespace EPF.UI.ViewModel
         #endregion Private Fields
 
         #region Public Constructors
+
+        public ClearEntries ClearEntriesCallback { get; set; }
+        public RefreshEntries RefreshEntriesCallback { get; set; }
 
         public EPFArchiveViewModel(IDialogProvider dialogProvider)
         {
@@ -138,6 +144,14 @@ namespace EPF.UI.ViewModel
             SelectedEntries.ResetBindings();
         }
 
+        public void ClearEntries()
+        {
+            Entries.RaiseListChangedEvents = false;
+            Entries.Clear();
+            Entries.RaiseListChangedEvents = true;
+            Entries.ResetBindings();
+        }
+
         public void RefreshEntries()
         {
             if (_epfArchive == null)
@@ -164,11 +178,11 @@ namespace EPF.UI.ViewModel
                 if (IsArchiveSaveAllowed == false)
                     throw new InvalidOperationException("EPF Archive save not allowed!");
 
-                Locked = true;
+                //Locked = true;
 
-                Status.Progress.Value = 0;
+                //Status.Progress.Value = 0;
                 _epfArchive.SaveProgress += _epfArchive_SaveProgress;
-                Status.Progress.Visible = true;
+                //Status.Progress.Visible = true;
 
                 _epfArchive.Save();
             }
@@ -179,21 +193,35 @@ namespace EPF.UI.ViewModel
             finally
             {
                 _epfArchive.SaveProgress -= _epfArchive_SaveProgress;
-                Status.Progress.Visible = false;
-                Locked = false;
-                IsArchiveModified = false;
             }
         }
 
-        public void SaveAs(string filePath)
+        public void SaveAs(object argument)
         {
-            if (_epfArchive == null)
-                throw new InvalidOperationException("EPF Archive not opened!");
+            try
+            {
+                if (_epfArchive == null)
+                    throw new InvalidOperationException("EPF Archive not opened!");
 
-            if (IsArchiveSaveAllowed == false)
-                throw new InvalidOperationException("EPF Archive save not allowed!");
+                if (IsArchiveSaveAllowed == false)
+                    throw new InvalidOperationException("EPF Archive save not allowed!");
 
-            throw new NotImplementedException("SaveAs");
+                var archiveFilePath = argument as string;
+
+                _epfArchive.SaveProgress += _epfArchive_SaveProgress;
+
+                _epfArchive.SaveAs(File.Create(archiveFilePath));
+                ArchiveFilePath = archiveFilePath;
+                AppLabel = $"{APP_NAME} - {ArchiveFilePath}";
+            }
+            catch (Exception ex)
+            {
+                Status.Log.Error($"Unable to save entries. Reason: {ex.Message}");
+            }
+            finally
+            {
+                _epfArchive.SaveProgress -= _epfArchive_SaveProgress;
+            }
         }
 
         public void SelectAll()
@@ -210,6 +238,15 @@ namespace EPF.UI.ViewModel
 
             SelectedEntries.RaiseListChangedEvents = true;
             SelectedEntries.ResetBindings();
+        }
+
+        public void TryCreateArchive()
+        {
+            //Try close any archive that is already opened
+            if (!TryCloseArchive())
+                return;
+
+            CreateArchive();
         }
 
         public void TryAddEntries()
@@ -240,14 +277,14 @@ namespace EPF.UI.ViewModel
             }
         }
 
-        public bool TryClose()
+        public bool TryCloseArchive()
         {
             if (!IsArchiveOpened)
                 return true;
 
             if (IsArchiveModified)
             {
-                var answer = DialogProvider.ShowMessageWithQuestion("Archive have been modified. Do you want to save it before closing?", "Save modified archive before closing?", QuestionDialogButtons.YesNoCancel);
+                var answer = DialogProvider.ShowMessageWithQuestion("Archive has been modified. Do you want to save it before closing?", "Save modified archive before closing?", QuestionDialogButtons.YesNoCancel);
 
                 if (answer == DialogAnswer.Cancel)
                 {
@@ -256,12 +293,14 @@ namespace EPF.UI.ViewModel
                 }
                 else if (answer == DialogAnswer.Yes)
                 {
-                    if (!TrySave())
+                    if (!TrySaveArchive())
                         return false;
+
                 }
             }
 
-            Close();
+            EnqueueWork(Close);
+
             return true;
         }
 
@@ -270,7 +309,7 @@ namespace EPF.UI.ViewModel
             var folderBrowser = DialogProvider.ShowFolderBrowserDialog("Choose folder to extract all entries...", null);
 
             if (folderBrowser.Answer == DialogAnswer.OK)
-                StartWork(ExtractAll, folderBrowser.SelectedDirectory);
+                EnqueueWork(ExtractAll, folderBrowser.SelectedDirectory);
         }
 
         public void TryExtractSelection()
@@ -278,7 +317,7 @@ namespace EPF.UI.ViewModel
             var folderBrowser = DialogProvider.ShowFolderBrowserDialog("Choose folder to extract selected entries...", null);
 
             if (folderBrowser.Answer == DialogAnswer.OK)
-                StartWork(ExtractSelection, folderBrowser.SelectedDirectory);
+                EnqueueWork(ExtractSelection, folderBrowser.SelectedDirectory);
         }
 
         public bool TryOpenArchive()
@@ -292,10 +331,10 @@ namespace EPF.UI.ViewModel
                 return false;
 
             //Try close any archive that is already opened
-            if (!TryClose())
+            if (!TryCloseArchive())
                 return false;
 
-            OpenArchive(fileDialog.FileName);
+            EnqueueWork(OpenArchive, fileDialog.FileName);
             return true;
         }
 
@@ -310,7 +349,7 @@ namespace EPF.UI.ViewModel
                 return false;
 
             //Try close any archive that is already opened
-            if (!TryClose())
+            if (!TryCloseArchive())
                 return false;
 
             OpenArchiveReadOnly(fileDialog.FileName);
@@ -342,11 +381,14 @@ namespace EPF.UI.ViewModel
             }
         }
 
-        public bool TrySave()
+        public bool TrySaveArchive()
         {
             try
             {
-                StartWork(Save);
+                if (ArchiveFilePath == null)
+                    return TrySaveArchiveAs();
+                else
+                    EnqueueWork(Save);
 
                 return true;
             }
@@ -358,7 +400,7 @@ namespace EPF.UI.ViewModel
             return false;
         }
 
-        public bool TrySaveAs()
+        public bool TrySaveArchiveAs()
         {
             try
             {
@@ -373,9 +415,7 @@ namespace EPF.UI.ViewModel
                 if (fileDialog.Answer != DialogAnswer.OK)
                     return false;
 
-                var newFilePath = fileDialog.FileName;
-
-                SaveAs(newFilePath);
+                EnqueueWork(SaveAs, fileDialog.FileName);
 
                 return true;
             }
@@ -458,6 +498,9 @@ namespace EPF.UI.ViewModel
             {
                 case ExtractProgressEventType.ExtractionStarted:
                     Status.Log.Info("Extraction started.");
+                    Status.Progress.Value = 0;
+                    Status.Progress.Visible = true;
+                    Locked = true;
                     break;
 
                 case ExtractProgressEventType.ExtractionBeforeReadEntry:
@@ -470,6 +513,8 @@ namespace EPF.UI.ViewModel
 
                 case ExtractProgressEventType.ExtractionCompleted:
                     Status.Log.Success("Extraction from archive completed.");
+                    Locked = false;
+                    Status.Progress.Visible = false;
                     break;
 
                 case ExtractProgressEventType.ExtractionEntryBytesWrite:
@@ -486,6 +531,9 @@ namespace EPF.UI.ViewModel
             {
                 case SaveProgressEventType.SavingStarted:
                     Status.Log.Info("Saving archive started.");
+                    Status.Progress.Visible = true;
+                    Status.Progress.Value = 0;
+                    Locked = true;
                     break;
 
                 case SaveProgressEventType.SavingBeforeWriteEntry:
@@ -498,6 +546,9 @@ namespace EPF.UI.ViewModel
 
                 case SaveProgressEventType.SavingCompleted:
                     Status.Log.Success("Saving to archive completed.");
+                    Status.Progress.Visible = false;
+                    Locked = false;
+                    IsArchiveModified = false;
                     break;
 
                 case SaveProgressEventType.SavingEntryBytesRead:
@@ -561,8 +612,7 @@ namespace EPF.UI.ViewModel
             }
         }
 
-
-        private void Close()
+        private void Close(object argument)
         {
             if (_epfArchive == null)
                 throw new InvalidOperationException("EPF Archive not opened!");
@@ -570,7 +620,7 @@ namespace EPF.UI.ViewModel
             _epfArchive.Dispose();
             _epfArchive = null;
 
-            Entries.Clear();
+            ClearEntriesCallback.Invoke();
 
             Status.Log.Success($"Archive '{ Path.GetFileName(ArchiveFilePath)}' closed.");
             ArchiveFilePath = null;
@@ -586,15 +636,12 @@ namespace EPF.UI.ViewModel
         {
             try
             {
-                Locked = true;
                 var folderPath = argument as string;
 
                 if (!Directory.Exists(folderPath))
                     throw new Exception("Directory doesn't exists.");
 
-                Status.Progress.Value = 0;
                 _epfArchive.ExtractProgress += _epfArchive_ExtractProgress;
-                Status.Progress.Visible = true;
                 _epfArchive.ExtractAll(folderPath);
             }
             catch (Exception ex)
@@ -604,8 +651,6 @@ namespace EPF.UI.ViewModel
             finally
             {
                 _epfArchive.ExtractProgress -= _epfArchive_ExtractProgress;
-                Status.Progress.Visible = false;
-                Locked = false;
             }
         }
 
@@ -613,7 +658,6 @@ namespace EPF.UI.ViewModel
         {
             try
             {
-                Locked = true;
                 var folderPath = argument as string;
 
                 if (!Directory.Exists(folderPath))
@@ -621,9 +665,7 @@ namespace EPF.UI.ViewModel
 
                 var selectedEntryNames = SelectedEntries.Select(item => item.Name).ToList();
 
-                Status.Progress.Value = 0;
                 _epfArchive.ExtractProgress += _epfArchive_ExtractProgress;
-                Status.Progress.Visible = true;
                 _epfArchive.ExtractEntries(folderPath, selectedEntryNames);
             }
             catch (Exception ex)
@@ -633,21 +675,45 @@ namespace EPF.UI.ViewModel
             finally
             {
                 _epfArchive.ExtractProgress -= _epfArchive_ExtractProgress;
-                Status.Progress.Visible = false;
-                Locked = false;
             }
         }
 
-        private void OpenArchive(string archiveFilePath)
+        private void CreateArchive()
         {
             try
             {
-                var fileStream = File.Open(archiveFilePath, FileMode.Open, FileAccess.ReadWrite);
-                _epfArchive = new EPFArchive(fileStream, EPFArchiveMode.Update);
+                _epfArchive = EPFArchive.ToCreate();
                 _epfArchive.EntryChanged += _epfArchive_EntryChanged;
                 _epfArchive.PropertyChanged += _epfArchive_PropertyChanged;
 
-                RefreshEntries();
+                RefreshEntriesCallback.Invoke();
+
+                ArchiveFilePath = null;
+                AppLabel = $"{APP_NAME} - New archive";
+                IsReadOnly = false;
+                IsArchiveOpened = true;
+                IsArchiveModified = true;
+                IsArchiveSaveAllowed = true;
+                Status.Log.Success($"New archive created.");
+            }
+            catch (Exception ex)
+            {
+                Status.Log.Error($"Unable to create archive. Reason: {ex.Message}");
+            }
+        }
+
+        private void OpenArchive(object argument)
+        {
+            try
+            {
+                var archiveFilePath = argument as string;
+
+                var fileStream = File.Open(archiveFilePath, FileMode.Open, FileAccess.ReadWrite);
+                _epfArchive = EPFArchive.ToUpdate(fileStream);
+                _epfArchive.EntryChanged += _epfArchive_EntryChanged;
+                _epfArchive.PropertyChanged += _epfArchive_PropertyChanged;
+
+                RefreshEntriesCallback.Invoke();
 
                 ArchiveFilePath = archiveFilePath;
                 AppLabel = $"{APP_NAME} - {ArchiveFilePath}";
@@ -667,9 +733,9 @@ namespace EPF.UI.ViewModel
             try
             {
                 var fileStream = File.Open(archiveFilePath, FileMode.Open, FileAccess.Read);
-                _epfArchive = new EPFArchive(fileStream, EPFArchiveMode.Read);
+                _epfArchive = EPFArchive.ToExtract(fileStream);
 
-                RefreshEntries();
+                RefreshEntriesCallback.Invoke();
 
                 ArchiveFilePath = archiveFilePath;
                 AppLabel = $"{APP_NAME} - {ArchiveFilePath} (Read-Only)";
@@ -684,13 +750,17 @@ namespace EPF.UI.ViewModel
             }
         }
 
-        private void StartWork(WaitCallback function, object argument)
+        private void EnqueueWork(WaitCallback function, object argument)
         {
+            ThreadPool.SetMinThreads(0, 0);
+            ThreadPool.SetMaxThreads(1, 1);
             ThreadPool.QueueUserWorkItem(function, argument);
         }
 
-        private void StartWork(WaitCallback function)
+        private void EnqueueWork(WaitCallback function)
         {
+            ThreadPool.SetMinThreads(0, 0);
+            ThreadPool.SetMaxThreads(1, 1);
             ThreadPool.QueueUserWorkItem(function);
         }
 

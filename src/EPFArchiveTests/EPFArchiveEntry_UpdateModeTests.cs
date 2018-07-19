@@ -16,8 +16,6 @@ namespace EPFArchiveTests
         private string EXPECTED_EXTRACT_DIR = @".\SandBox\ExpectedExtract";
         private string VALID_OUTPUT_EXTRACT_DIR = @".\SandBox\ValidOutput";
         private string INVALID_OUTPUT_EXTRACT_DIR = @".\SandBox\InvalidOutput";
-
-        private string NOT_EXISTING_ENTRY_NAME = "Huh.txt";
         private string EXISTING_ENTRY_NAME_A = "TFile1.txt";
         private string EXISTING_ENTRY_NAME_B = "TFile2.png";
         private string EXPECTED_EXTRACTED_FILE_NAME = "TFile1.txt";
@@ -72,7 +70,7 @@ namespace EPFArchiveTests
         public void ExtractTo_InvalidOutputFolder_Throws_Test()
         {
             //Arrange
-            var epfArchive = new EPFArchive(_readWriteEPFArchiveFile, EPFArchiveMode.Update);
+            var epfArchive = EPFArchive.ToUpdate(_readWriteEPFArchiveFile);
             var epfArchiveEntry = epfArchive.FindEntry(EXISTING_ENTRY_NAME_A);
 
             //Act
@@ -85,7 +83,7 @@ namespace EPFArchiveTests
         public void ExtractTo_ValidOutputFolder_ExtractsEntry_Test()
         {
             //Arrange
-            var epfArchive = new EPFArchive(_readWriteEPFArchiveFile, EPFArchiveMode.Update);
+            var epfArchive = EPFArchive.ToUpdate(_readWriteEPFArchiveFile);
             var epfArchiveEntry = epfArchive.FindEntry(EXISTING_ENTRY_NAME_A);
 
             //Act
@@ -102,7 +100,7 @@ namespace EPFArchiveTests
         public void set_ToCompress_Changes_Test()
         {
             //Arrange
-            var epfArchive = new EPFArchive(_readWriteEPFArchiveFile, EPFArchiveMode.Update);
+            var epfArchive = EPFArchive.ToUpdate(_readWriteEPFArchiveFile);
 
             var epfArchiveEntry = epfArchive.FindEntry(EXISTING_ENTRY_NAME_B);
 
@@ -120,7 +118,7 @@ namespace EPFArchiveTests
         public void Open_OpensEntryStreamForModificationAndStorage_Test()
         {
             //Arrange
-            var epfArchive = new EPFArchive(_readWriteEPFArchiveFile, EPFArchiveMode.Update);
+            var epfArchive = EPFArchive.ToUpdate(_readWriteEPFArchiveFile);
             var epfArchiveEntry = epfArchive.FindEntry(EXISTING_ENTRY_NAME_B);
             var entryStream = epfArchiveEntry.Open();
 
@@ -135,7 +133,7 @@ namespace EPFArchiveTests
             epfArchive.Dispose();
             using (var savedFile = File.OpenRead(@".\SandBox\ReadWriteValidArchive.epf"))
             {
-                epfArchive = new EPFArchive(savedFile, EPFArchiveMode.Read);
+                epfArchive = EPFArchive.ToExtract(savedFile);
                 epfArchive.ExtractEntries(VALID_OUTPUT_EXTRACT_DIR, new string[] { EXISTING_ENTRY_NAME_B });
             }
 

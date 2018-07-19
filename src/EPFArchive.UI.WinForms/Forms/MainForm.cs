@@ -39,11 +39,24 @@ namespace EPF.UI.WinForms.Forms
             }
         }
 
+        public new string Text
+        {
+            get
+            {
+                return base.Text;
+            }
+
+            set
+            {
+                this.InvokeIfRequired(() => { base.Text = value; });
+            }
+        }
+
         public bool Locked
         {
             get
             {
-                return Locked;
+                return _locked;
             }
 
             set
@@ -55,9 +68,6 @@ namespace EPF.UI.WinForms.Forms
 
                     MainMenuStrip.Enabled = !value;
                     EntryList.Enabled = !value;
-
-                    //Tools.ChangeEnabled(this, !value);
-
                     _locked = value;
                 });
             }
@@ -95,6 +105,12 @@ namespace EPF.UI.WinForms.Forms
 
             MenuItemFileSave.DataBindings.Add("Enabled", _viewModel, nameof(_viewModel.IsArchiveModified), false, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged);
             MenuItemFileSaveAs.DataBindings.Add("Enabled", _viewModel, nameof(_viewModel.IsArchiveModified), false, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged);
+
+            ToolStripAdd.DataBindings.Add("Enabled", _viewModel, nameof(_viewModel.IsArchiveSaveAllowed), false, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged);
+            ToolStripRemove.DataBindings.Add("Enabled", _viewModel, nameof(_viewModel.IsArchiveSaveAllowed), false, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged);
+
+            ToolStripExtractAll.DataBindings.Add("Enabled", _viewModel, nameof(_viewModel.IsArchiveOpened), false, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged);
+            ToolStripExtractSelection.DataBindings.Add("Enabled", _viewModel, nameof(_viewModel.IsArchiveOpened), false, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged);
         }
 
         #endregion Public Methods
@@ -109,17 +125,17 @@ namespace EPF.UI.WinForms.Forms
 
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
-            _viewModel.TryClose();
+            _viewModel.TryCloseArchive();
         }
 
         private void MenuItemArchiveClose_Click(object sender, EventArgs e)
         {
-            _viewModel.TryClose();
+            _viewModel.TryCloseArchive();
         }
 
         private void MenuItemArchiveOpen_Click(object sender, EventArgs e)
         {
-            _viewModel.TryOpenArchive();
+            this.Invoke(new Action(() => { _viewModel.TryOpenArchive(); }));
         }
 
         private void MenuItemArchiveOpenReadOnly_Click(object sender, EventArgs e)
@@ -134,12 +150,12 @@ namespace EPF.UI.WinForms.Forms
 
         private void MenuItemArchiveSave_Click(object sender, EventArgs e)
         {
-            _viewModel.TrySave();
+            _viewModel.TrySaveArchive();
         }
 
         private void MenuItemArchiveSaveAs_Click(object sender, EventArgs e)
         {
-            _viewModel.TrySaveAs();
+            _viewModel.TrySaveArchiveAs();
         }
 
         private void MenuItemDeselectAll_Click(object sender, EventArgs e)
@@ -149,7 +165,7 @@ namespace EPF.UI.WinForms.Forms
 
         private void MenuItemExit_Click(object sender, EventArgs e)
         {
-            _viewModel.TryClose();
+            _viewModel.TryCloseArchive();
         }
 
         private void MenuItemExtractAll_Click(object sender, EventArgs e)
@@ -164,7 +180,7 @@ namespace EPF.UI.WinForms.Forms
 
         private void MenuItemFileNew_Click(object sender, EventArgs e)
         {
-            MessageBox.Show("'New' not implemented.");
+            _viewModel.TryCreateArchive();
         }
 
         private void MenuItemInvertSelection_Click(object sender, EventArgs e)
