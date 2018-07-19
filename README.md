@@ -6,6 +6,7 @@ http://www.shikadi.net/moddingwiki/EPF_Format
 
 **Current EPF Archive class functionality:**
 - Opening archives
+- Creating new archives
 - Reading archive entries data using streams
 - Updating archive entries data using streams
 - Adding new archive entries
@@ -13,17 +14,14 @@ http://www.shikadi.net/moddingwiki/EPF_Format
 
 **Current EPF Archive UI functionality:**
 - WinForms are used as UI front-end
+- Creating new EPF archives for saving
 - Opening EPF archives in read-only mode, extracting selected or all entries
 - Opening EPF archives in read-write mode, extracting, adding, removing entries
 - Showing compression ratio on each entry
 
 **EPF Archive class functionality to add/improve:**
 - [Feature] Adding hidden data to archive
-- [Feature] Create new EPF Archive
-- [Feature] Add SaveAs method to EPF Archive
 
 **EPF Archive UI functionality to add/improve:**
-- [Feature] Add and implement 'New archive' functionality
-- [Feature] Implement 'Save As...' functionality
 - [Feature] Add better icons
 - [Feature] Add WPF as a optional UI front-end
