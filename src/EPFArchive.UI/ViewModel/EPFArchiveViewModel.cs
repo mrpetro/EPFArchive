@@ -8,10 +8,12 @@ using System.Threading;
 namespace EPF.UI.ViewModel
 {
     public delegate void ClearEntries();
+
     public delegate void RefreshEntries();
 
     public class EPFArchiveViewModel : BaseViewModel
     {
+
         #region Private Fields
 
         private const string APP_NAME = "EPF Archive";
@@ -21,15 +23,13 @@ namespace EPF.UI.ViewModel
         private bool _isArchiveModified;
         private bool _isArchiveOpened;
         private bool _isArchiveSaveAllowed;
+        private bool _hasHiddenData;
         private bool _isReadOnly;
         private bool _locked;
 
         #endregion Private Fields
 
         #region Public Constructors
-
-        public ClearEntries ClearEntriesCallback { get; set; }
-        public RefreshEntries RefreshEntriesCallback { get; set; }
 
         public EPFArchiveViewModel(IDialogProvider dialogProvider)
         {
@@ -66,8 +66,8 @@ namespace EPF.UI.ViewModel
             internal set { SetProperty(ref _archiveFilePath, value); }
         }
 
+        public ClearEntries ClearEntriesCallback { get; set; }
         public BindingList<EPFArchiveItemViewModel> Entries { get; private set; }
-
         public bool IsArchiveModified
         {
             get { return _isArchiveModified; }
@@ -90,6 +90,15 @@ namespace EPF.UI.ViewModel
         }
 
         /// <summary>
+        /// This flag determines if opened archive contains any hidden data
+        /// </summary>
+        public bool HasHiddenData
+        {
+            get { return _hasHiddenData; }
+            internal set { SetProperty(ref _hasHiddenData, value); }
+        }
+
+        /// <summary>
         /// This flag determines if archive is opened in Read-Only mode or Read/Write mode
         /// </summary>
         public bool IsReadOnly
@@ -107,6 +116,7 @@ namespace EPF.UI.ViewModel
             internal set { SetProperty(ref _locked, value); }
         }
 
+        public RefreshEntries RefreshEntriesCallback { get; set; }
         public BindingList<EPFArchiveItemViewModel> SelectedEntries { get; private set; }
 
         public StatusViewModel Status { get; private set; }
@@ -120,6 +130,14 @@ namespace EPF.UI.ViewModel
         #endregion Internal Properties
 
         #region Public Methods
+
+        public void ClearEntries()
+        {
+            Entries.RaiseListChangedEvents = false;
+            Entries.Clear();
+            Entries.RaiseListChangedEvents = true;
+            Entries.ResetBindings();
+        }
 
         public void DeselectAll()
         {
@@ -143,15 +161,6 @@ namespace EPF.UI.ViewModel
             SelectedEntries.RaiseListChangedEvents = true;
             SelectedEntries.ResetBindings();
         }
-
-        public void ClearEntries()
-        {
-            Entries.RaiseListChangedEvents = false;
-            Entries.Clear();
-            Entries.RaiseListChangedEvents = true;
-            Entries.ResetBindings();
-        }
-
         public void RefreshEntries()
         {
             if (_epfArchive == null)
@@ -203,8 +212,8 @@ namespace EPF.UI.ViewModel
                 if (_epfArchive == null)
                     throw new InvalidOperationException("EPF Archive not opened!");
 
-                if (IsArchiveSaveAllowed == false)
-                    throw new InvalidOperationException("EPF Archive save not allowed!");
+                //if (IsArchiveSaveAllowed == false)
+                //    throw new InvalidOperationException("EPF Archive save not allowed!");
 
                 var archiveFilePath = argument as string;
 
@@ -240,15 +249,6 @@ namespace EPF.UI.ViewModel
             SelectedEntries.ResetBindings();
         }
 
-        public void TryCreateArchive()
-        {
-            //Try close any archive that is already opened
-            if (!TryCloseArchive())
-                return;
-
-            CreateArchive();
-        }
-
         public void TryAddEntries()
         {
             try
@@ -277,6 +277,48 @@ namespace EPF.UI.ViewModel
             }
         }
 
+        public bool TryRemoveHiddenData()
+        {
+            if (!IsArchiveOpened)
+                return false;
+
+            _epfArchive.RemoveHiddenData();
+
+            HasHiddenData = _epfArchive.HasHiddenData;
+
+            Status.Log.Info($"Hidden data has been removed from EPF archive.");
+
+            return true;
+        }
+
+        public bool TryUpdateHiddenData()
+        {
+            if (!IsArchiveOpened)
+                return false;
+
+            var initialDirectory = Path.GetDirectoryName(ArchiveFilePath);
+            var initialFileName = Path.GetFileName(ArchiveFilePath);
+
+            var fileDialog = DialogProvider.ShowOpenFileDialog("Choose file to store in EPF archive as hidden data...",
+                                                               "All Files (*.*)|*.*",
+                                                               initialDirectory,
+                                                               initialFileName);
+
+            if (fileDialog.Answer != DialogAnswer.OK)
+            {
+                Status.Log.Info($"Adding hidden data canceled...");
+                return false;
+            }
+
+            _epfArchive.UpdateHiddenData(fileDialog.FileName);
+
+            HasHiddenData = _epfArchive.HasHiddenData;
+
+            Status.Log.Info($"Hidden data has been added to EPF archive.");
+
+            return true;
+        }
+
         public bool TryCloseArchive()
         {
             if (!IsArchiveOpened)
@@ -295,7 +337,6 @@ namespace EPF.UI.ViewModel
                 {
                     if (!TrySaveArchive())
                         return false;
-
                 }
             }
 
@@ -304,12 +345,39 @@ namespace EPF.UI.ViewModel
             return true;
         }
 
+        public void TryCreateArchive()
+        {
+            //Try close any archive that is already opened
+            if (!TryCloseArchive())
+                return;
+
+            CreateArchive();
+        }
         public void TryExtractAll()
         {
             var folderBrowser = DialogProvider.ShowFolderBrowserDialog("Choose folder to extract all entries...", null);
 
             if (folderBrowser.Answer == DialogAnswer.OK)
                 EnqueueWork(ExtractAll, folderBrowser.SelectedDirectory);
+        }
+
+        public bool TryExtractHiddenData()
+        {
+            if (!IsArchiveOpened)
+                return false;
+
+            var initialDirectory = Path.GetDirectoryName(ArchiveFilePath);
+            var initialFileName = Path.GetFileName(ArchiveFilePath);
+
+            var fileDialog = DialogProvider.ShowSaveFileDialog("Choose file name and extension to which EPF archive hidden data will be extracted...",
+                                                               "All Files (*.*)|*.*",
+                                                               initialDirectory,
+                                                               initialFileName);
+
+            if (fileDialog.Answer == DialogAnswer.OK)
+                EnqueueWork(ExtractHiddenData, fileDialog.FileName);
+
+            return true;
         }
 
         public void TryExtractSelection()
@@ -431,30 +499,6 @@ namespace EPF.UI.ViewModel
 
         #region Private Methods
 
-        private void EPFArchiveViewModel_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
-        {
-            switch (e.PropertyName)
-            {
-                case nameof(IsArchiveModified):
-
-                    break;
-                default:
-                    break;
-            }
-        }
-
-        private void _epfArchive_PropertyChanged(object sender, PropertyChangedEventArgs e)
-        {
-            switch (e.PropertyName)
-            {
-                case nameof(_epfArchive.IsModified):
-                    IsArchiveModified = _epfArchive.IsModified;
-                    break;
-                default:
-                    break;
-            }
-        }
-
         private void _epfArchive_EntryChanged(object sender, EntryChangedEventArgs e)
         {
             switch (e.EventType)
@@ -465,6 +509,7 @@ namespace EPF.UI.ViewModel
                         Status.Log.Info($"Entry '{e.Entry.Name}' added.");
                     }
                     break;
+
                 case EntryChangedEventType.Removed:
                     {
                         var entry = Entries.FirstOrDefault(item => item.Name == e.Entry.Name);
@@ -472,6 +517,7 @@ namespace EPF.UI.ViewModel
                         Status.Log.Info($"Entry '{e.Entry.Name}' removed.");
                     }
                     break;
+
                 case EntryChangedEventType.Replaced:
                     {
                         var entry = Entries.FirstOrDefault(item => item.Name == e.Entry.Name);
@@ -520,6 +566,21 @@ namespace EPF.UI.ViewModel
                 case ExtractProgressEventType.ExtractionEntryBytesWrite:
                     break;
 
+                default:
+                    break;
+            }
+        }
+
+        private void _epfArchive_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            switch (e.PropertyName)
+            {
+                case nameof(_epfArchive.IsModified):
+                    IsArchiveModified = _epfArchive.IsModified;
+                    break;
+                case nameof(_epfArchive.HasHiddenData):
+                    HasHiddenData = _epfArchive.HasHiddenData;
+                    break;
                 default:
                     break;
             }
@@ -575,7 +636,6 @@ namespace EPF.UI.ViewModel
                     if (entry == null)
                     {
                         var epfEntry = _epfArchive.CreateEntry(entryName, filePath);
-
                     }
                     else
                     {
@@ -632,52 +692,6 @@ namespace EPF.UI.ViewModel
             Status.ItemsSelected = 0;
         }
 
-        private void ExtractAll(object argument)
-        {
-            try
-            {
-                var folderPath = argument as string;
-
-                if (!Directory.Exists(folderPath))
-                    throw new Exception("Directory doesn't exists.");
-
-                _epfArchive.ExtractProgress += _epfArchive_ExtractProgress;
-                _epfArchive.ExtractAll(folderPath);
-            }
-            catch (Exception ex)
-            {
-                Status.Log.Error($"Unable to extract entries. Reason: {ex.Message}");
-            }
-            finally
-            {
-                _epfArchive.ExtractProgress -= _epfArchive_ExtractProgress;
-            }
-        }
-
-        private void ExtractSelection(object argument)
-        {
-            try
-            {
-                var folderPath = argument as string;
-
-                if (!Directory.Exists(folderPath))
-                    throw new Exception("Directory doesn't exists.");
-
-                var selectedEntryNames = SelectedEntries.Select(item => item.Name).ToList();
-
-                _epfArchive.ExtractProgress += _epfArchive_ExtractProgress;
-                _epfArchive.ExtractEntries(folderPath, selectedEntryNames);
-            }
-            catch (Exception ex)
-            {
-                Status.Log.Error($"Unable to extract entries. Reason: {ex.Message}");
-            }
-            finally
-            {
-                _epfArchive.ExtractProgress -= _epfArchive_ExtractProgress;
-            }
-        }
-
         private void CreateArchive()
         {
             try
@@ -702,6 +716,92 @@ namespace EPF.UI.ViewModel
             }
         }
 
+        private void EnqueueWork(WaitCallback function, object argument)
+        {
+            ThreadPool.SetMinThreads(0, 0);
+            ThreadPool.SetMaxThreads(1, 1);
+            ThreadPool.QueueUserWorkItem(function, argument);
+        }
+
+        private void EnqueueWork(WaitCallback function)
+        {
+            ThreadPool.SetMinThreads(0, 0);
+            ThreadPool.SetMaxThreads(1, 1);
+            ThreadPool.QueueUserWorkItem(function);
+        }
+
+        private void EPFArchiveViewModel_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            switch (e.PropertyName)
+            {
+                case nameof(IsArchiveModified):
+
+                    break;
+
+                default:
+                    break;
+            }
+        }
+
+        private void ExtractAll(object argument)
+        {
+            try
+            {
+                var folderPath = argument as string;
+
+                if (!Directory.Exists(folderPath))
+                    throw new Exception("Directory doesn't exists.");
+
+                _epfArchive.ExtractProgress += _epfArchive_ExtractProgress;
+                _epfArchive.ExtractAll(folderPath);
+            }
+            catch (Exception ex)
+            {
+                Status.Log.Error($"Unable to extract entries. Reason: {ex.Message}");
+            }
+            finally
+            {
+                _epfArchive.ExtractProgress -= _epfArchive_ExtractProgress;
+            }
+        }
+
+        private void ExtractHiddenData(object argument)
+        {
+            try
+            {
+                var filePath = argument as string;
+                _epfArchive.ExtractHiddenData(filePath);
+
+                Status.Log.Info($"Hidden data has been extracted from EPF archive.");
+            }
+            catch (Exception ex)
+            {
+                Status.Log.Error($"Unable to extract hidden data. Reason: {ex.Message}");
+            }
+        }
+        private void ExtractSelection(object argument)
+        {
+            try
+            {
+                var folderPath = argument as string;
+
+                if (!Directory.Exists(folderPath))
+                    throw new Exception("Directory doesn't exists.");
+
+                var selectedEntryNames = SelectedEntries.Select(item => item.Name).ToList();
+
+                _epfArchive.ExtractProgress += _epfArchive_ExtractProgress;
+                _epfArchive.ExtractEntries(folderPath, selectedEntryNames);
+            }
+            catch (Exception ex)
+            {
+                Status.Log.Error($"Unable to extract entries. Reason: {ex.Message}");
+            }
+            finally
+            {
+                _epfArchive.ExtractProgress -= _epfArchive_ExtractProgress;
+            }
+        }
         private void OpenArchive(object argument)
         {
             try
@@ -718,6 +818,7 @@ namespace EPF.UI.ViewModel
                 ArchiveFilePath = archiveFilePath;
                 AppLabel = $"{APP_NAME} - {ArchiveFilePath}";
                 IsReadOnly = false;
+                HasHiddenData = _epfArchive.HasHiddenData;
                 IsArchiveOpened = true;
                 IsArchiveSaveAllowed = true;
                 Status.Log.Success($"Archive '{ Path.GetFileName(ArchiveFilePath)}' opened.");
@@ -748,20 +849,6 @@ namespace EPF.UI.ViewModel
             {
                 Status.Log.Error($"Unable to open archive in read-only mode. Reason: {ex.Message}");
             }
-        }
-
-        private void EnqueueWork(WaitCallback function, object argument)
-        {
-            ThreadPool.SetMinThreads(0, 0);
-            ThreadPool.SetMaxThreads(1, 1);
-            ThreadPool.QueueUserWorkItem(function, argument);
-        }
-
-        private void EnqueueWork(WaitCallback function)
-        {
-            ThreadPool.SetMinThreads(0, 0);
-            ThreadPool.SetMaxThreads(1, 1);
-            ThreadPool.QueueUserWorkItem(function);
         }
 
         #endregion Private Methods

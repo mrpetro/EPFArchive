@@ -104,13 +104,19 @@ namespace EPF.UI.WinForms.Forms
             MenuItemExtractSelection.DataBindings.Add("Enabled", _viewModel, nameof(_viewModel.IsArchiveOpened), false, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged);
 
             MenuItemFileSave.DataBindings.Add("Enabled", _viewModel, nameof(_viewModel.IsArchiveModified), false, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged);
-            MenuItemFileSaveAs.DataBindings.Add("Enabled", _viewModel, nameof(_viewModel.IsArchiveModified), false, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged);
+            MenuItemFileSaveAs.DataBindings.Add("Enabled", _viewModel, nameof(_viewModel.IsArchiveSaveAllowed), false, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged);
 
             ToolStripAdd.DataBindings.Add("Enabled", _viewModel, nameof(_viewModel.IsArchiveSaveAllowed), false, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged);
             ToolStripRemove.DataBindings.Add("Enabled", _viewModel, nameof(_viewModel.IsArchiveSaveAllowed), false, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged);
 
             ToolStripExtractAll.DataBindings.Add("Enabled", _viewModel, nameof(_viewModel.IsArchiveOpened), false, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged);
             ToolStripExtractSelection.DataBindings.Add("Enabled", _viewModel, nameof(_viewModel.IsArchiveOpened), false, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged);
+
+            MenuItemHiddenData.DataBindings.Add("Enabled", _viewModel, nameof(_viewModel.IsArchiveOpened), false, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged);
+            MenuItemHiddenDataAdd.DataBindings.Add("Enabled", _viewModel, nameof(_viewModel.IsArchiveSaveAllowed), false, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged);
+            MenuItemHiddenDataExtract.DataBindings.Add("Enabled", _viewModel, nameof(_viewModel.HasHiddenData), false, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged);
+            MenuItemHiddenDataRemove.DataBindings.Add("Enabled", _viewModel, nameof(_viewModel.HasHiddenData), false, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged);
+
         }
 
         #endregion Public Methods
@@ -141,11 +147,6 @@ namespace EPF.UI.WinForms.Forms
         private void MenuItemArchiveOpenReadOnly_Click(object sender, EventArgs e)
         {
             _viewModel.TryOpenArchiveReadOnly();
-        }
-
-        private void MenuItemArchiveProperties_Click(object sender, EventArgs e)
-        {
-            MessageBox.Show("'Properties...' not implemented.");
         }
 
         private void MenuItemArchiveSave_Click(object sender, EventArgs e)
@@ -211,6 +212,21 @@ namespace EPF.UI.WinForms.Forms
         private void ToolStripRemove_Click(object sender, EventArgs e)
         {
             _viewModel.TryRemoveSelectedEntries();
+        }
+
+        private void MenuItemHiddenDataExtract_Click(object sender, EventArgs e)
+        {
+            _viewModel.TryExtractHiddenData();
+        }
+
+        private void MenuItemHiddenDataAdd_Click(object sender, EventArgs e)
+        {
+            _viewModel.TryUpdateHiddenData();
+        }
+
+        private void MenuItemHiddenDataRemove_Click(object sender, EventArgs e)
+        {
+            _viewModel.TryRemoveHiddenData();
         }
 
         #endregion Private Methods
