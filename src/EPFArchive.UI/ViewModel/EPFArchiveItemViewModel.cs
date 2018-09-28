@@ -29,9 +29,6 @@
         {
             _entry = entry;
 
-            _entry.PropertyChanged += _entry_PropertyChanged;
-            PropertyChanged += EPFArchiveItemViewModel_PropertyChanged;
-
             Name = entry.Name;
             Status = status;
 
@@ -41,7 +38,8 @@
 
             RecalculateCompressionRatio();
 
-
+            _entry.PropertyChanged += _entry_PropertyChanged;
+            PropertyChanged += EPFArchiveItemViewModel_PropertyChanged;
         }
 
         #endregion Public Constructors

@@ -40,6 +40,8 @@ namespace EPF.UI
 
         FileDialogResult ShowSaveFileDialog(string title, string filter, string initialDirectory, string fileName = null);
 
+        FileDialogResult ShowOpenFileDialog(string title, string filter, string initialDirectory, string fileName = null);
+
         #endregion Public Methods
     }
 

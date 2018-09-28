@@ -43,20 +43,23 @@ namespace EPF
 
         private static readonly char[] SIGNATURE = { 'E', 'P', 'F', 'S' };
         private Stream _BackStream;
-        private string _backupArchivePath;
+        private string _backStreamFilePath;
         private LZWCompressor _compressor = null;
         private LZWDecompressor _decompressor = null;
         private List<EPFArchiveEntry> _entries;
         private Dictionary<string, EPFArchiveEntry> _entryDictionary;
         private ExtractProgressEventArgs _extractProgressEventArgs;
-        private SaveProgressEventArgs _saveProgressEventArgs;
-        private byte[] _hiddenData;
+        private string _hiddenDataFilePath;
+        private int _hiddenDataLength;
+        private long _hiddenDataPos;
         private bool _IsDisposed;
+        private bool _hasHiddenData;
         private bool _isModified;
         private bool _leaveOpen;
         private Stream _MainStream;
         private EPFArchiveMode _mode;
         private int _modifiedEntryiesNo = 0;
+        private SaveProgressEventArgs _saveProgressEventArgs;
 
         #endregion Private Fields
 
@@ -97,6 +100,24 @@ namespace EPF
         #region Public Properties
 
         public ReadOnlyCollection<EPFArchiveEntry> Entries { get; private set; }
+
+        public bool HasHiddenData
+        {
+            get
+            {
+                return _hasHiddenData;
+            }
+
+            protected set
+            {
+                if (_hasHiddenData == value)
+                    return;
+
+                _hasHiddenData = value;
+
+                OnPropertyChanged(nameof(HasHiddenData));
+            }
+        }
 
         public bool IsModified
         {
@@ -260,6 +281,17 @@ namespace EPF
             ExtractEntries(folderPath, entries);
         }
 
+        public void ExtractHiddenData(string filePath)
+        {
+            if (_mode == EPFArchiveMode.Create)
+                throw new InvalidOperationException("Unable to get hidden data in when archive is new");
+
+            ArchiveReader.BaseStream.Position = _hiddenDataPos;
+
+            using (FileStream fs = File.Create(filePath))
+                fs.Write(ArchiveReader.ReadBytes(_hiddenDataLength), 0, _hiddenDataLength);
+        }
+
         /// <summary>
         /// Find entry with given name (case insensitive search) and returns entry object controller
         /// </summary>
@@ -295,6 +327,20 @@ namespace EPF
 
             RaiseEntryChanged(entry, EntryChangedEventType.Removed);
             return true;
+        }
+
+        public void RemoveHiddenData()
+        {
+            if (_mode == EPFArchiveMode.Read)
+                throw new InvalidOperationException("Unable to remove hidden data in read-only mode");
+
+            _hiddenDataFilePath = null;
+            _hiddenDataLength = 0;
+
+            if (HasHiddenData)
+                ModifiedEntriesNo++;
+
+            HasHiddenData = false;
         }
 
         public EPFArchiveEntry ReplaceEntry(string entryName, string filePath)
@@ -370,10 +416,32 @@ namespace EPF
 
         public void SaveAs(Stream stream)
         {
-            if (_MainStream == null)
-                OpenForCreate(stream);
+            CloseMainStream();
+
+            OpenForCreate(stream);
 
             Save();
+        }
+
+        public void UpdateHiddenData(string filePath)
+        {
+            if (_mode == EPFArchiveMode.Read)
+                throw new InvalidOperationException("Unable to set hidden data in read-only mode");
+
+            var fileInfo = new FileInfo(filePath);
+
+            if (!fileInfo.Exists)
+                throw new ArgumentException("Source file for hidden data doesn't exist.");
+
+            if (fileInfo.Length == 0)
+                return;
+
+            _hiddenDataFilePath = filePath;
+
+            if (!HasHiddenData)
+                ModifiedEntriesNo++;
+
+            HasHiddenData = true;
         }
 
         #endregion Public Methods
@@ -450,26 +518,41 @@ namespace EPF
             RaiseEntryChanged(entry, EntryChangedEventType.Added);
         }
 
-        private void CloseStreams()
+        private void CloseMainStream()
         {
-            if (_BackStream != null)
-            {
-                _BackStream.Dispose();
-                _BackStream = null;
-                File.Delete(_backupArchivePath);
-            }
-
-            if (!_leaveOpen && _MainStream != null)
+            if (_MainStream != null)
             {
                 _MainStream.Dispose();
                 _MainStream = null;
             }
         }
 
+        private void CloseBackStream()
+        {
+            if (_BackStream != null)
+            {
+                _BackStream.Dispose();
+                _BackStream = null;
+                ArchiveReader = null;
+                File.Delete(_backStreamFilePath);
+                _backStreamFilePath = null;
+            }
+        }
+
+        private void CloseStreams()
+        {
+            CloseBackStream();
+
+            if (!_leaveOpen)
+                CloseMainStream();
+        }
+
         private void CreateBackupStream()
         {
-            _backupArchivePath = Path.GetTempFileName();
-            _BackStream = File.Open(_backupArchivePath, FileMode.Open);
+            CloseBackStream();
+
+            _backStreamFilePath = Path.GetTempFileName();
+            _BackStream = File.Open(_backStreamFilePath, FileMode.Open);
         }
 
         private void EPFArchive_PropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -555,8 +638,12 @@ namespace EPF
 
             _mode = EPFArchiveMode.Create;
             _MainStream = stream;
-            _BackStream = null;
-            ArchiveReader = null;
+
+            // (disposeBackStream)
+            //
+            //  _BackStream = null;
+            //  ArchiveReader = null;
+            //
         }
 
         /// <summary>
@@ -645,6 +732,10 @@ namespace EPF
                 AddEntry(epfArchiveEntry);
                 dataPos += epfArchiveEntry.CompressedLength;
             }
+
+            _hiddenDataPos = dataPos;
+            _hiddenDataLength = (int)(fatOffset - dataPos);
+            HasHiddenData = _hiddenDataLength > 0;
         }
 
         private void UpdateBackStream()
@@ -661,7 +752,7 @@ namespace EPF
             writer.BaseStream.SetLength(0);
             writer.BaseStream.Seek(0, SeekOrigin.Begin);
 
-            UInt32 fatOffset = 0;
+            long fatOffset = 0;
             long fatOffsetDataPos = 0;
 
             //Write archive header
@@ -669,7 +760,7 @@ namespace EPF
             //Remeber fat offset data position
             fatOffsetDataPos = writer.BaseStream.Position;
             //Reserve fat offset data space
-            writer.Write(fatOffset);
+            writer.Write((UInt32)fatOffset);
             //Write alignment(unknown purpose) byte
             writer.Write((byte)0);
             //Write number of entries
@@ -698,17 +789,47 @@ namespace EPF
                 OnSaveProgress(_saveProgressEventArgs);
             }
 
-            fatOffset = (UInt32)writer.BaseStream.Position;
+            //Write hidden data
+            WriteHiddenData(writer);
+
+            fatOffset = writer.BaseStream.Position;
             //Get back to fatOffset information and write it
             writer.BaseStream.Seek(fatOffsetDataPos, SeekOrigin.Begin);
-            writer.Write(fatOffset);
+            writer.Write((UInt32)fatOffset);
             //Get back to FATOffet
-            writer.BaseStream.Seek((long)fatOffset, SeekOrigin.Begin);
+            writer.BaseStream.Seek(fatOffset, SeekOrigin.Begin);
             //Write all entries info
             for (int i = 0; i < Entries.Count; i++)
             {
                 var entry = Entries[i];
                 entry.WriteInfo(writer);
+            }
+        }
+
+        private void WriteHiddenData(BinaryWriter writer)
+        {
+            if (_hiddenDataFilePath != null)
+            {
+                //Hidden data will be added/updated in archive
+                using (var fileStream = File.OpenRead(_hiddenDataFilePath))
+                {
+                    _hiddenDataLength = (int)fileStream.Length;
+
+                    using (var reader = new BinaryReader(fileStream, Encoding.UTF8, true))
+                        writer.Write(reader.ReadBytes(_hiddenDataLength), 0, _hiddenDataLength);
+                }
+
+                _hiddenDataPos = writer.BaseStream.Position;
+            }
+            else
+            {
+                //Otherwise old data will be written
+                if (_hiddenDataLength != 0)
+                {
+                    ArchiveReader.BaseStream.Position = _hiddenDataPos;
+                    var bytes = ArchiveReader.ReadBytes(_hiddenDataLength);
+                    writer.Write(bytes, 0, _hiddenDataLength);
+                }
             }
         }
 
