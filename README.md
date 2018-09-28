@@ -11,6 +11,7 @@ http://www.shikadi.net/moddingwiki/EPF_Format
 - Updating archive entries data using streams
 - Adding new archive entries
 - Closing archives with saving changes
+- Adding/updating/removing hidden data in archive
 
 **Current EPF Archive UI functionality:**
 - WinForms are used as UI front-end
@@ -18,9 +19,6 @@ http://www.shikadi.net/moddingwiki/EPF_Format
 - Opening EPF archives in read-only mode, extracting selected or all entries
 - Opening EPF archives in read-write mode, extracting, adding, removing entries
 - Showing compression ratio on each entry
-
-**EPF Archive class functionality to add/improve:**
-- [Feature] Adding hidden data to archive
 
 **EPF Archive UI functionality to add/improve:**
 - [Feature] Add better icons
