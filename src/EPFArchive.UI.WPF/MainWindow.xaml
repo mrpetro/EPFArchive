@@ -1,0 +1,65 @@
+﻿<Window
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:EPFArchive.UI.WPF"
+        xmlns:Converters="clr-namespace:EPFArchive.UI.WPF.Converters"
+        xmlns:Controls="clr-namespace:EPFArchive.UI.WPF.Controls"
+        x:Class="EPFArchive.UI.WPF.MainWindow"
+        mc:Ignorable="d"
+        Title="{Binding AppLabel}" Height="450" Width="800" >
+    <Window.Resources>
+        <Converters:InverseBooleanConverter x:Key="InverseBooleanConverter" />
+        <Style x:Key="ButtonStyle1" TargetType="{x:Type Button}">
+            <Setter Property="Width" Value="16"/>
+            <Setter Property="MaxWidth" Value="16"/>
+            <Setter Property="Height" Value="16"/>
+            <Setter Property="MaxHeight" Value="16"/>
+            <Setter Property="Margin" Value="1"/>
+            <Setter Property="Padding" Value="1"/>
+            <Setter Property="BorderBrush" Value="Black"/>
+            <Setter Property="BorderThickness" Value="1"/>
+        </Style>
+    </Window.Resources>
+    <Window.IsEnabled>
+        <Binding Converter="{StaticResource InverseBooleanConverter}" Path="Locked"/>
+    </Window.IsEnabled>
+    <DockPanel LastChildFill="True" >
+        <Menu DockPanel.Dock="Top" x:Name="MainMenu">
+            <MenuItem Header="File">
+                <MenuItem Header="New"/>
+                <MenuItem Header="Open Read-Only..."/>
+                <MenuItem Header="Open..."/>
+                <MenuItem x:Name="MenuItemFileSave" Header="Save"/>
+                <MenuItem x:Name="MenuItemFileSaveAs" Header="Save As..."/>
+                <Separator/>
+                <MenuItem x:Name="MenuItemFileClose" Header="Close"/>
+                <Separator/>
+                <MenuItem x:Name="MenuItemExtractAll" Header="Extract All..."/>
+                <MenuItem x:Name="MenuItemExtractSelection" Header="Extract Selected..."/>
+                <Separator/>
+                <MenuItem Header="Exit"/>
+            </MenuItem>
+            <MenuItem Header="Edit">
+                <MenuItem x:Name="MenuItemSelectAll" Header="Select All"/>
+                <MenuItem x:Name="MenuItemDeselectAll" Header="Deselect All"/>
+                <MenuItem x:Name="MenuItemInvertSelection" Header="Invert Selection"/>
+                <Separator/>
+                <MenuItem Header="Hidden data">
+                    <MenuItem Header="Extract..."/>
+                    <MenuItem Header="Add/Update..."/>
+                    <MenuItem Header="Remove"/>
+                </MenuItem>
+            </MenuItem>
+        </Menu>
+        <ToolBar x:Name="ToolStrip" DockPanel.Dock="Top" Height="27" >
+            <Button x:Name="ToolStripAdd" Style="{StaticResource ButtonStyle1}" />
+            <Button x:Name="ToolStripRemove" Style="{StaticResource ButtonStyle1}" BorderBrush="Black"/>
+            <Separator/>
+            <Button x:Name="ToolStripExtractSelection" Style="{StaticResource ButtonStyle1}"/>
+            <Button x:Name="ToolStripExtractAll" Style="{StaticResource ButtonStyle1}"/>
+        </ToolBar>
+        <Controls:EPFArchiveEntityListCtrl />
+    </DockPanel>
+</Window>

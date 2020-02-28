@@ -102,10 +102,10 @@
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>
-    <Resource Include="Resources\Images\Add.png" />
-    <Resource Include="Resources\Images\ExtractAll.png" />
-    <Resource Include="Resources\Images\ExtractSelection.png" />
-    <Resource Include="Resources\Images\Remove.png" />
+    <Resource Include="..\EPFArchive.Resources\Images\Add.png" />
+    <Resource Include="..\EPFArchive.Resources\Images\ExtractAll.png" />
+    <Resource Include="..\EPFArchive.Resources\Images\ExtractSelection.png" />
+    <Resource Include="..\EPFArchive.Resources\Images\Remove.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

@@ -11,6 +11,16 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EPFArchive.UI.WinForms", "E
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EPFArchiveTests", "EPFArchiveTests\EPFArchiveTests.csproj", "{8275073F-BBCE-440C-B214-65DD10FF94D4}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EPFArchive.UI.WPF", "EPFArchive.UI.WPF\EPFArchive.UI.WPF.csproj", "{BF4D9B2D-2A66-425D-AB94-6C26F2C1A93C}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Resources", "Resources", "{A448669E-C4B6-4D6B-89B4-47F783EA699F}"
+	ProjectSection(SolutionItems) = preProject
+		EPFArchive.Resources\Images\Add.png = EPFArchive.Resources\Images\Add.png
+		EPFArchive.Resources\Images\ExtractAll.png = EPFArchive.Resources\Images\ExtractAll.png
+		EPFArchive.Resources\Images\ExtractSelection.png = EPFArchive.Resources\Images\ExtractSelection.png
+		EPFArchive.Resources\Images\Remove.png = EPFArchive.Resources\Images\Remove.png
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -87,6 +97,22 @@ Global
 		{8275073F-BBCE-440C-B214-65DD10FF94D4}.Release|Win32.Build.0 = Release|Any CPU
 		{8275073F-BBCE-440C-B214-65DD10FF94D4}.Release|x86.ActiveCfg = Release|Any CPU
 		{8275073F-BBCE-440C-B214-65DD10FF94D4}.Release|x86.Build.0 = Release|Any CPU
+		{BF4D9B2D-2A66-425D-AB94-6C26F2C1A93C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BF4D9B2D-2A66-425D-AB94-6C26F2C1A93C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BF4D9B2D-2A66-425D-AB94-6C26F2C1A93C}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{BF4D9B2D-2A66-425D-AB94-6C26F2C1A93C}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{BF4D9B2D-2A66-425D-AB94-6C26F2C1A93C}.Debug|Win32.ActiveCfg = Debug|Any CPU
+		{BF4D9B2D-2A66-425D-AB94-6C26F2C1A93C}.Debug|Win32.Build.0 = Debug|Any CPU
+		{BF4D9B2D-2A66-425D-AB94-6C26F2C1A93C}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{BF4D9B2D-2A66-425D-AB94-6C26F2C1A93C}.Debug|x86.Build.0 = Debug|Any CPU
+		{BF4D9B2D-2A66-425D-AB94-6C26F2C1A93C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BF4D9B2D-2A66-425D-AB94-6C26F2C1A93C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BF4D9B2D-2A66-425D-AB94-6C26F2C1A93C}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{BF4D9B2D-2A66-425D-AB94-6C26F2C1A93C}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{BF4D9B2D-2A66-425D-AB94-6C26F2C1A93C}.Release|Win32.ActiveCfg = Release|Any CPU
+		{BF4D9B2D-2A66-425D-AB94-6C26F2C1A93C}.Release|Win32.Build.0 = Release|Any CPU
+		{BF4D9B2D-2A66-425D-AB94-6C26F2C1A93C}.Release|x86.ActiveCfg = Release|Any CPU
+		{BF4D9B2D-2A66-425D-AB94-6C26F2C1A93C}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
