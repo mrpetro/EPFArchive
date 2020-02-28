@@ -117,16 +117,16 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\Add.png" />
+    <Resource Include="Resources\Add.png" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\ExtractAll.png" />
+    <Resource Include="Resources\ExtractAll.png" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\ExtractSelection.png" />
+    <Resource Include="Resources\ExtractSelection.png" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\Remove.png" />
+    <Resource Include="Resources\Remove.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
