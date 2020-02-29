@@ -24,5 +24,10 @@ namespace EPFArchive.UI.WPF.Controls
         {
             InitializeComponent();
         }
+
+        public void Initialize(object dataContext)
+        {
+            this.DataContext = dataContext;
+        }
     }
 }

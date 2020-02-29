@@ -141,7 +141,7 @@ namespace EPF.UI.WinForms.Forms
 
         private void MenuItemArchiveOpen_Click(object sender, EventArgs e)
         {
-            this.Invoke(new Action(() => { _viewModel.TryOpenArchive(); }));
+            this.Invoke(new Action(() => { _viewModel.CommandTryOpenArchive.Execute(null); }));
         }
 
         private void MenuItemArchiveOpenReadOnly_Click(object sender, EventArgs e)

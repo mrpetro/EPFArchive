@@ -27,5 +27,11 @@ namespace EPFArchive.UI.WPF
 
             this.DataContext = new EPFArchiveViewModel(new DialogProvider());
         }
+
+        public void Initialize(EPFArchiveViewModel dataContext)
+        {
+            this.DataContext = dataContext;
+            EntityList.DataContext = dataContext;
+        }
     }
 }

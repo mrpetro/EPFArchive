@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Threading;
+using System.Windows.Input;
 
 namespace EPF.UI.ViewModel
 {
@@ -13,7 +14,6 @@ namespace EPF.UI.ViewModel
 
     public class EPFArchiveViewModel : BaseViewModel
     {
-
         #region Private Fields
 
         private const string APP_NAME = "EPF Archive";
@@ -48,11 +48,54 @@ namespace EPF.UI.ViewModel
             SelectedEntries.ListChanged += (s, e) => { Status.ItemsSelected = SelectedEntries.Count; };
             Entries.ListChanged += (s, e) => { Status.TotalItems = Entries.Count; };
             PropertyChanged += EPFArchiveViewModel_PropertyChanged;
+
+            CommandTryCreateArchive = new CommandRelay(() => TryCreateArchive(), () => true);
+            CommandTryOpenArchive = new CommandRelay(() => TryOpenArchive(), () => true);
+            CommandTryOpenArchiveReadOnly = new CommandRelay(() => TryOpenArchiveReadOnly(), () => true);
+            CommandTrySaveArchive = new CommandRelay(() => TrySaveArchive(), () => true);
+            CommandTrySaveArchiveAs = new CommandRelay(() => TrySaveArchiveAs(), () => true);
+            CommandTryCloseArchive = new CommandRelay(() => TryCloseArchive(), () => true);
+            CommandTryExtractAll = new CommandRelay(() => TryExtractAll(), () => true);
+            CommandTryExtractSelection = new CommandRelay(() => TryExtractSelection(), () => true);
+
+            CommandTryAddEntries = new CommandRelay(() => TryAddEntries(), () => true);
+            CommandTryRemoveSelectedEntries = new CommandRelay(() => TryRemoveSelectedEntries(), () => true);
+
+            CommandSelectAll = new CommandRelay(() => SelectAll(), () => true);
+            CommandDeselectAll = new CommandRelay(() => DeselectAll(), () => true);
+            CommandInvertSelection = new CommandRelay(() => InvertSelection(), () => true);
+
+            CommandSelectAll = new CommandRelay(() => SelectAll(), () => true);
+            CommandDeselectAll = new CommandRelay(() => DeselectAll(), () => true);
+            CommandInvertSelection = new CommandRelay(() => InvertSelection(), () => true);
+
+            CommandTryExtractHiddenData = new CommandRelay(() => TryExtractHiddenData(), () => true);
+            CommandTryUpdateHiddenData = new CommandRelay(() => TryUpdateHiddenData(), () => true);
+            CommandTryRemoveHiddenData = new CommandRelay(() => TryRemoveHiddenData(), () => true);
         }
 
         #endregion Public Constructors
 
         #region Public Properties
+
+        public ICommand CommandTryCreateArchive { get; }
+        public ICommand CommandTryOpenArchive { get; }
+        public ICommand CommandTryOpenArchiveReadOnly { get; }
+        public ICommand CommandTrySaveArchive { get; }
+        public ICommand CommandTrySaveArchiveAs { get; }
+        public ICommand CommandTryCloseArchive { get; }
+        public ICommand CommandTryExtractAll { get; }
+        public ICommand CommandTryExtractSelection { get; }
+        public ICommand CommandTryAddEntries { get; }
+        public ICommand CommandTryRemoveSelectedEntries { get; }
+
+        public ICommand CommandSelectAll { get; }
+        public ICommand CommandDeselectAll { get; }
+        public ICommand CommandInvertSelection { get; }
+
+        public ICommand CommandTryExtractHiddenData { get; }
+        public ICommand CommandTryUpdateHiddenData { get; }
+        public ICommand CommandTryRemoveHiddenData { get; }
 
         public string AppLabel
         {
@@ -68,6 +111,7 @@ namespace EPF.UI.ViewModel
 
         public ClearEntries ClearEntriesCallback { get; set; }
         public BindingList<EPFArchiveItemViewModel> Entries { get; private set; }
+
         public bool IsArchiveModified
         {
             get { return _isArchiveModified; }
@@ -161,6 +205,7 @@ namespace EPF.UI.ViewModel
             SelectedEntries.RaiseListChangedEvents = true;
             SelectedEntries.ResetBindings();
         }
+
         public void RefreshEntries()
         {
             if (_epfArchive == null)
@@ -353,6 +398,7 @@ namespace EPF.UI.ViewModel
 
             CreateArchive();
         }
+
         public void TryExtractAll()
         {
             var folderBrowser = DialogProvider.ShowFolderBrowserDialog("Choose folder to extract all entries...", null);
@@ -578,9 +624,11 @@ namespace EPF.UI.ViewModel
                 case nameof(_epfArchive.IsModified):
                     IsArchiveModified = _epfArchive.IsModified;
                     break;
+
                 case nameof(_epfArchive.HasHiddenData):
                     HasHiddenData = _epfArchive.HasHiddenData;
                     break;
+
                 default:
                     break;
             }
@@ -680,7 +728,7 @@ namespace EPF.UI.ViewModel
             _epfArchive.Dispose();
             _epfArchive = null;
 
-            ClearEntriesCallback.Invoke();
+            ClearEntriesCallback?.Invoke();
 
             Status.Log.Success($"Archive '{ Path.GetFileName(ArchiveFilePath)}' closed.");
             ArchiveFilePath = null;
@@ -779,6 +827,7 @@ namespace EPF.UI.ViewModel
                 Status.Log.Error($"Unable to extract hidden data. Reason: {ex.Message}");
             }
         }
+
         private void ExtractSelection(object argument)
         {
             try
@@ -802,6 +851,7 @@ namespace EPF.UI.ViewModel
                 _epfArchive.ExtractProgress -= _epfArchive_ExtractProgress;
             }
         }
+
         private void OpenArchive(object argument)
         {
             try
@@ -813,7 +863,10 @@ namespace EPF.UI.ViewModel
                 _epfArchive.EntryChanged += _epfArchive_EntryChanged;
                 _epfArchive.PropertyChanged += _epfArchive_PropertyChanged;
 
-                RefreshEntriesCallback.Invoke();
+                if (RefreshEntriesCallback == null)
+                    RefreshEntries();
+                else
+                    RefreshEntriesCallback.Invoke();
 
                 ArchiveFilePath = archiveFilePath;
                 AppLabel = $"{APP_NAME} - {ArchiveFilePath}";
@@ -836,7 +889,10 @@ namespace EPF.UI.ViewModel
                 var fileStream = File.Open(archiveFilePath, FileMode.Open, FileAccess.Read);
                 _epfArchive = EPFArchive.ToExtract(fileStream);
 
-                RefreshEntriesCallback.Invoke();
+                if (RefreshEntriesCallback == null)
+                    RefreshEntries();
+                else
+                    RefreshEntriesCallback.Invoke();
 
                 ArchiveFilePath = archiveFilePath;
                 AppLabel = $"{APP_NAME} - {ArchiveFilePath} (Read-Only)";

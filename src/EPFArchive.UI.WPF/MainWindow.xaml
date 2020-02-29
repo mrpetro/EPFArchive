@@ -33,68 +33,71 @@
         <Menu DockPanel.Dock="Top" x:Name="MainMenu">
             <MenuItem Header="File">
                 <MenuItem Header="New"/>
-                <MenuItem Header="Open Read-Only..."/>
-                <MenuItem Header="Open..."/>
-                <MenuItem x:Name="MenuItemFileSave" Header="Save"/>
-                <MenuItem x:Name="MenuItemFileSaveAs" Header="Save As..."/>
+                <MenuItem Header="Open Read-Only..." Command="{Binding CommandTryOpenArchiveReadOnly}"/>
+                <MenuItem Header="Open..." Command="{Binding CommandTryOpenArchive}"/>
+                <MenuItem x:Name="MenuItemFileSave" Header="Save" IsEnabled="{Binding IsArchiveModified}" Command="{Binding CommandTrySaveArchive}"/>
+                <MenuItem x:Name="MenuItemFileSaveAs" Header="Save As..." IsEnabled="{Binding IsArchiveSaveAllowed}" Command="{Binding CommandTrySaveArchiveAs}"/>
                 <Separator/>
-                <MenuItem x:Name="MenuItemFileClose" Header="Close"/>
+                <MenuItem x:Name="MenuItemFileClose" Header="Close" IsEnabled="{Binding IsArchiveOpened}" Command="{Binding CommandTryCloseArchive}"/>
                 <Separator/>
-                <MenuItem x:Name="MenuItemExtractAll" Header="Extract All..."/>
-                <MenuItem x:Name="MenuItemExtractSelection" Header="Extract Selected..."/>
+                <MenuItem x:Name="MenuItemExtractAll" Header="Extract All..." IsEnabled="{Binding IsArchiveOpened}" Command="{Binding CommandTryExtractAll}"/>
+                <MenuItem x:Name="MenuItemExtractSelection" Header="Extract Selected..." IsEnabled="{Binding IsArchiveOpened}" Command="{Binding CommandTryExtractSelection}"/>
                 <Separator/>
                 <MenuItem Header="Exit"/>
             </MenuItem>
             <MenuItem Header="Edit">
-                <MenuItem x:Name="MenuItemSelectAll" Header="Select All"/>
-                <MenuItem x:Name="MenuItemDeselectAll" Header="Deselect All"/>
-                <MenuItem x:Name="MenuItemInvertSelection" Header="Invert Selection"/>
+                <MenuItem x:Name="MenuItemSelectAll" Header="Select All" IsEnabled="{Binding IsArchiveOpened}" Command="{Binding CommandSelectAll}"/>
+                <MenuItem x:Name="MenuItemDeselectAll" Header="Deselect All" IsEnabled="{Binding IsArchiveOpened}" Command="{Binding CommandDeselectAll}"/>
+                <MenuItem x:Name="MenuItemInvertSelection" Header="Invert Selection" IsEnabled="{Binding IsArchiveOpened}" Command="{Binding CommandInvertSelection}"/>
                 <Separator/>
-                <MenuItem Header="Hidden data">
-                    <MenuItem Header="Extract..."/>
-                    <MenuItem Header="Add/Update..."/>
-                    <MenuItem Header="Remove"/>
+                <MenuItem Header="Hidden data" IsEnabled="{Binding IsArchiveOpened}" >
+                    <MenuItem Header="Extract..." IsEnabled="{Binding HasHiddenData}" Command="{Binding CommandTryExtractHiddenData}"/>
+                    <MenuItem Header="Add/Update..." IsEnabled="{Binding IsArchiveSaveAllowed}" Command="{Binding CommandTryUpdateHiddenData}"/>
+                    <MenuItem Header="Remove" IsEnabled="{Binding HasHiddenData}" Command="{Binding CommandTryRemoveHiddenData}"/>
                 </MenuItem>
             </MenuItem>
         </Menu>
         <ToolBar x:Name="ToolStrip" DockPanel.Dock="Top" Height="27" >
-            <Button x:Name="ToolStripAdd" Style="{StaticResource ToolBarButton}" >
+            <Button x:Name="ToolStripAdd" Style="{StaticResource ToolBarButton}" IsEnabled="{Binding IsArchiveSaveAllowed}" Command="{Binding CommandTryAddEntries}">
                 <Button.Background>
                     <ImageBrush ImageSource="{Binding Mode=OneWay, Source={StaticResource AddIcon}}"/>
                 </Button.Background>
             </Button>
-            <Button x:Name="ToolStripRemove" Style="{StaticResource ToolBarButton}" BorderBrush="Black">
+            <Button x:Name="ToolStripRemove" Style="{StaticResource ToolBarButton}" BorderBrush="Black" IsEnabled="{Binding IsArchiveSaveAllowed}" Command="{Binding CommandTryRemoveSelectedEntries}">
                 <Button.Background>
                     <ImageBrush ImageSource="{Binding Mode=OneWay, Source={StaticResource RemoveIcon}}"/>
                 </Button.Background>
             </Button>
             <Separator/>
-            <Button x:Name="ToolStripExtractSelection" Style="{StaticResource ToolBarButton}">
+            <Button x:Name="ToolStripExtractSelection" Style="{StaticResource ToolBarButton}" IsEnabled="{Binding IsArchiveOpened}" Command="{Binding CommandTryExtractSelection}">
                 <Button.Background>
                     <ImageBrush ImageSource="{Binding Mode=OneWay, Source={StaticResource ExtractSelection}}"/>
                 </Button.Background>
             </Button>
-            <Button x:Name="ToolStripExtractAll" Style="{StaticResource ToolBarButton}">
+            <Button x:Name="ToolStripExtractAll" Style="{StaticResource ToolBarButton}" IsEnabled="{Binding IsArchiveOpened}" Command="{Binding CommandTryExtractAll}">
                 <Button.Background>
                     <ImageBrush ImageSource="{Binding Mode=OneWay, Source={StaticResource ExtractAllIcon}}"/>
                 </Button.Background>
             </Button>
         </ToolBar>
-        <StatusBar x:Name="StatusStrip" DockPanel.Dock="Bottom" Height="27" >
-            <StatusBarItem Width="80" Height="17" HorizontalAlignment="Left">
-                <TextBlock x:Name="StatusStripTotalItemsNo" />
-            </StatusBarItem>
-            <StatusBarItem Width="140" Height="17" HorizontalAlignment="Left">
-                <TextBlock x:Name="StatusStripSelectedItemsNo" />
-            </StatusBarItem>
-            <StatusBarItem Height="17">
-                <TextBlock x:Name="StatusStripMessage" />
-            </StatusBarItem>
-            <StatusBarItem HorizontalAlignment="Right" Width="100" Height="17">
-                <ProgressBar x:Name="StatusStripProgressBar" />
-            </StatusBarItem>
-
-        </StatusBar>
-        <Controls:EPFArchiveEntityListCtrl />
+        <DockPanel x:Name="StatusStrip" DockPanel.Dock="Bottom" Height="27" Background="{DynamicResource {x:Static SystemColors.ControlLightBrushKey}}">
+            <TextBlock x:Name="StatusStripTotalItemsNo" Width="80" Height="17" Text="{Binding Path=Status.TotalItems}" Margin="2" Foreground="White" >
+                <TextBlock.Background>
+                    <SolidColorBrush Color="{DynamicResource {x:Static SystemColors.ControlColorKey}}"/>
+                </TextBlock.Background>
+            </TextBlock>
+            <TextBlock x:Name="StatusStripSelectedItemsNo" Width="140" Height="17" Text="{Binding Path=Status.ItemsSelected}" Margin="2" >
+                <TextBlock.Background>
+                    <SolidColorBrush Color="{DynamicResource {x:Static SystemColors.ControlColorKey}}"/>
+                </TextBlock.Background>
+            </TextBlock>
+            <ProgressBar x:Name="StatusStripProgressBar" DockPanel.Dock="Right" Width="100" Height="17" Value="{Binding Path=Status.Progress.Value}" Margin="2" />
+            <TextBlock x:Name="StatusStripMessage" Text="{Binding Path=Status.Log.Message}" Foreground="{Binding Path=Status.Log.Color}" Margin="2" Height="17" >
+                <TextBlock.Background>
+                    <SolidColorBrush Color="{DynamicResource {x:Static SystemColors.ControlColorKey}}"/>
+                </TextBlock.Background>
+            </TextBlock>
+        </DockPanel>
+        <Controls:EPFArchiveEntityListCtrl x:Name="EntityList" />
     </DockPanel>
 </Window>

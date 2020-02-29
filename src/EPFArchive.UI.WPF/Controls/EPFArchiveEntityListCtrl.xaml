@@ -6,14 +6,14 @@
              xmlns:local="clr-namespace:EPFArchive.UI.WPF.Controls"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
-    <DataGrid  >
+    <DataGrid ItemsSource="{Binding Entries}" AutoGenerateColumns="False" >
         <DataGrid.Columns>
-            <DataGridTextColumn Binding="{x:Null}" ClipboardContentBinding="{x:Null}" Header="Name"/>
-            <DataGridTextColumn Binding="{x:Null}" ClipboardContentBinding="{x:Null}" Header="Status"/>
-            <DataGridTextColumn Binding="{x:Null}" ClipboardContentBinding="{x:Null}" Header="Size"/>
-            <DataGridTextColumn Binding="{x:Null}" ClipboardContentBinding="{x:Null}" Header="Packed Size"/>
-            <DataGridTextColumn Binding="{x:Null}" ClipboardContentBinding="{x:Null}" Header="Ratio"/>
-            <DataGridCheckBoxColumn Binding="{x:Null}" ClipboardContentBinding="{x:Null}" Header="Is Compressed"/>
+            <DataGridTextColumn Binding="{Binding Name}" Header="Name" Width="*" IsReadOnly="True"/>
+            <DataGridTextColumn Binding="{Binding Status}" Header="Status" Width="90" IsReadOnly="True"/>
+            <DataGridTextColumn Binding="{Binding Length}" Header="Size" Width="90" IsReadOnly="True"/>
+            <DataGridTextColumn Binding="{Binding CompressedLength}" Header="Packed Size" Width="90" IsReadOnly="True"/>
+            <DataGridTextColumn Binding="{Binding CompressionRatio}" Header="Ratio" Width="50" IsReadOnly="True"/>
+            <DataGridCheckBoxColumn Binding="{Binding IsCompressed}" Header="Is Compressed" Width="90"/>
         </DataGrid.Columns>
     </DataGrid>
 </UserControl>
