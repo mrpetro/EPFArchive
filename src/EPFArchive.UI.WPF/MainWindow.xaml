@@ -80,6 +80,21 @@
                 </Button.Background>
             </Button>
         </ToolBar>
+        <StatusBar x:Name="StatusStrip" DockPanel.Dock="Bottom" Height="27" >
+            <StatusBarItem Width="80" Height="17" HorizontalAlignment="Left">
+                <TextBlock x:Name="StatusStripTotalItemsNo" />
+            </StatusBarItem>
+            <StatusBarItem Width="140" Height="17" HorizontalAlignment="Left">
+                <TextBlock x:Name="StatusStripSelectedItemsNo" />
+            </StatusBarItem>
+            <StatusBarItem Height="17">
+                <TextBlock x:Name="StatusStripMessage" />
+            </StatusBarItem>
+            <StatusBarItem HorizontalAlignment="Right" Width="100" Height="17">
+                <ProgressBar x:Name="StatusStripProgressBar" />
+            </StatusBarItem>
+
+        </StatusBar>
         <Controls:EPFArchiveEntityListCtrl />
     </DockPanel>
 </Window>
