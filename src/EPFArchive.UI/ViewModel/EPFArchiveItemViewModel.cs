@@ -20,6 +20,7 @@
         private int _length;
         private string _name;
         private EPFArchiveItemStatus _status;
+        private bool _isSelected;
 
         #endregion Private Fields
 
@@ -80,6 +81,12 @@
         {
             get { return _status; }
             set { SetProperty(ref _status, value); }
+        }
+
+        public bool IsSelected
+        {
+            get { return _isSelected; }
+            set { SetProperty(ref _isSelected, value); }
         }
 
         #endregion Public Properties

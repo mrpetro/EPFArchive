@@ -39,14 +39,15 @@ namespace EPF.UI.ViewModel
             DialogProvider = dialogProvider;
 
             Status = new StatusViewModel();
-            SelectedEntries = new BindingList<EPFArchiveItemViewModel>();
             Entries = new BindingList<EPFArchiveItemViewModel>();
             Locked = false;
             IsArchiveOpened = false;
             IsReadOnly = true;
             IsArchiveSaveAllowed = false;
-            SelectedEntries.ListChanged += (s, e) => { Status.ItemsSelected = SelectedEntries.Count; };
-            Entries.ListChanged += (s, e) => { Status.TotalItems = Entries.Count; };
+
+            Entries.ListChanged += (s, e) => {Status.TotalItems = Entries.Count;
+                                              Status.ItemsSelected = Entries.Count(item => item.IsSelected);};
+
             PropertyChanged += EPFArchiveViewModel_PropertyChanged;
 
             CommandTryCreateArchive = new CommandRelay(() => TryCreateArchive(), () => true);
@@ -161,7 +162,6 @@ namespace EPF.UI.ViewModel
         }
 
         public RefreshEntries RefreshEntriesCallback { get; set; }
-        public BindingList<EPFArchiveItemViewModel> SelectedEntries { get; private set; }
 
         public StatusViewModel Status { get; private set; }
 
@@ -185,25 +185,24 @@ namespace EPF.UI.ViewModel
 
         public void DeselectAll()
         {
-            SelectedEntries.RaiseListChangedEvents = false;
-            SelectedEntries.Clear();
-            SelectedEntries.RaiseListChangedEvents = true;
-            SelectedEntries.ResetBindings();
+            Entries.RaiseListChangedEvents = false;
+
+            foreach (var entity in Entries)
+                entity.IsSelected = false;
+
+            Entries.RaiseListChangedEvents = true;
+            Entries.ResetBindings();
         }
 
         public void InvertSelection()
         {
-            var unselectedEntries = Entries.Where(item => !SelectedEntries.Contains(item)).ToList();
+            Entries.RaiseListChangedEvents = false;
 
-            SelectedEntries.RaiseListChangedEvents = false;
+            foreach (var entity in Entries)
+                entity.IsSelected = !entity.IsSelected;
 
-            SelectedEntries.Clear();
-
-            foreach (var entry in unselectedEntries)
-                SelectedEntries.Add(entry);
-
-            SelectedEntries.RaiseListChangedEvents = true;
-            SelectedEntries.ResetBindings();
+            Entries.RaiseListChangedEvents = true;
+            Entries.ResetBindings();
         }
 
         public void RefreshEntries()
@@ -280,18 +279,13 @@ namespace EPF.UI.ViewModel
 
         public void SelectAll()
         {
-            SelectedEntries.RaiseListChangedEvents = false;
+            Entries.RaiseListChangedEvents = false;
 
-            foreach (var entry in Entries)
-            {
-                if (SelectedEntries.Contains(entry))
-                    continue;
+            foreach (var entity in Entries)
+                entity.IsSelected = true;
 
-                SelectedEntries.Add(entry);
-            }
-
-            SelectedEntries.RaiseListChangedEvents = true;
-            SelectedEntries.ResetBindings();
+            Entries.RaiseListChangedEvents = true;
+            Entries.ResetBindings();
         }
 
         public void TryAddEntries()
@@ -480,7 +474,7 @@ namespace EPF.UI.ViewModel
                 if (!IsArchiveSaveAllowed)
                     throw new InvalidOperationException("Archive opened in read-only mode.");
 
-                var entriesToDelete = SelectedEntries.ToList();
+                var entriesToDelete = Entries.Where(item => item.IsSelected).ToList();
 
                 foreach (var entry in entriesToDelete)
                     _epfArchive.RemoveEntry(entry.Name);
@@ -828,6 +822,8 @@ namespace EPF.UI.ViewModel
             }
         }
 
+
+
         private void ExtractSelection(object argument)
         {
             try
@@ -837,7 +833,7 @@ namespace EPF.UI.ViewModel
                 if (!Directory.Exists(folderPath))
                     throw new Exception("Directory doesn't exists.");
 
-                var selectedEntryNames = SelectedEntries.Select(item => item.Name).ToList();
+                var selectedEntryNames = Entries.Where(item => item.IsSelected).Select(item => item.Name).ToList();
 
                 _epfArchive.ExtractProgress += _epfArchive_ExtractProgress;
                 _epfArchive.ExtractEntries(folderPath, selectedEntryNames);

@@ -81,12 +81,15 @@
             </Button>
         </ToolBar>
         <DockPanel x:Name="StatusStrip" DockPanel.Dock="Bottom" Height="27" Background="{DynamicResource {x:Static SystemColors.ControlLightBrushKey}}">
-            <TextBlock x:Name="StatusStripTotalItemsNo" Width="80" Height="17" Text="{Binding Path=Status.TotalItems}" Margin="2" Foreground="White" >
+            <TextBlock x:Name="StatusStripTotalItemsNo" Width="80" Height="17" Text="{Binding Path=Status.TotalItems}" Margin="2" >
+                <TextBlock.Foreground>
+                    <SolidColorBrush Color="{DynamicResource {x:Static SystemColors.ActiveCaptionTextColorKey}}"/>
+                </TextBlock.Foreground>
                 <TextBlock.Background>
                     <SolidColorBrush Color="{DynamicResource {x:Static SystemColors.ControlColorKey}}"/>
                 </TextBlock.Background>
             </TextBlock>
-            <TextBlock x:Name="StatusStripSelectedItemsNo" Width="140" Height="17" Text="{Binding Path=Status.ItemsSelected}" Margin="2" >
+            <TextBlock x:Name="StatusStripSelectedItemsNo" Width="140" Height="17" Text="{Binding Path=Status.ItemsSelected, StringFormat={}{0} items selected}" Margin="2" >
                 <TextBlock.Background>
                     <SolidColorBrush Color="{DynamicResource {x:Static SystemColors.ControlColorKey}}"/>
                 </TextBlock.Background>

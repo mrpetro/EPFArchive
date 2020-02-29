@@ -36,7 +36,7 @@ namespace EPF.UI.WinForms.Controls
 
             _viewModel = viewModel;
 
-            _viewModel.SelectedEntries.ListChanged += SelectedEntries_ListChanged;
+            //_viewModel.SelectedEntries.ListChanged += SelectedEntries_ListChanged;
             _viewModel.PropertyChanged += _viewModel_PropertyChanged;
 
             DGV.AutoGenerateColumns = false;
@@ -47,12 +47,18 @@ namespace EPF.UI.WinForms.Controls
             DGVColumnPackedSize.DataPropertyName = "CompressedLength";
             DGVColumnRatio.DataPropertyName = "CompressionRatio";
             DGVColumnIsCompressed.DataPropertyName = "IsCompressed";
-            DGV.SelectionChanged += DGV_SelectionChanged;
             DGV.PreviewKeyDown += DGV_PreviewKeyDown;
             DGV.CellFormatting += DGV_CellFormatting;
+            DGV.RowStateChanged += DGV_RowStateChanged;
 
             _viewModel.ClearEntriesCallback = ClearEntries;
             _viewModel.RefreshEntriesCallback = RefreshEntries;
+        }
+
+        private void DGV_RowStateChanged(object sender, DataGridViewRowStateChangedEventArgs e)
+        {
+            if (e.StateChanged == DataGridViewElementStates.Selected)
+                ((EPFArchiveItemViewModel)e.Row.DataBoundItem).IsSelected = e.Row.Selected;
         }
 
         #endregion Public Methods
@@ -99,39 +105,9 @@ namespace EPF.UI.WinForms.Controls
                 _viewModel.TryRemoveSelectedEntries();
         }
 
-        private void DGV_SelectionChanged(object sender, EventArgs e)
-        {
-            _viewModel.SelectedEntries.RaiseListChangedEvents = false;
-            _viewModel.SelectedEntries.Clear();
-
-            foreach (DataGridViewRow row in DGV.SelectedRows)
-                _viewModel.SelectedEntries.Add((EPFArchiveItemViewModel)row.DataBoundItem);
-
-            _viewModel.SelectedEntries.RaiseListChangedEvents = true;
-            _viewModel.SelectedEntries.ResetBindings();
-        }
-
         private void RefreshEntries()
         {
             this.Invoke(new Action(() => { _viewModel.RefreshEntries(); }));
-        }
-
-        private void SelectedEntries_ListChanged(object sender, ListChangedEventArgs e)
-        {
-            try
-            {
-                DGV.SelectionChanged -= DGV_SelectionChanged;
-
-                foreach (DataGridViewRow row in DGV.Rows)
-                {
-                    var entry = ((EPFArchiveItemViewModel)row.DataBoundItem);
-                    row.Selected = _viewModel.SelectedEntries.Contains(entry);
-                }
-            }
-            finally
-            {
-                DGV.SelectionChanged += DGV_SelectionChanged;
-            }
         }
 
         #endregion Private Methods
