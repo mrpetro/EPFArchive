@@ -6,7 +6,7 @@
              xmlns:local="clr-namespace:EPFArchive.UI.WPF.Controls"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
-    <DataGrid ItemsSource="{Binding Entries}" AutoGenerateColumns="False" >
+    <DataGrid ItemsSource="{Binding Entries}" AutoGenerateColumns="False" EnableRowVirtualization="False">
         <DataGrid.RowStyle>
             <Style TargetType="{x:Type DataGridRow}">
                 <Setter Property="IsSelected" Value="{Binding IsSelected}"/>
@@ -17,7 +17,7 @@
             <DataGridTextColumn Binding="{Binding Status}" Header="Status" Width="90" IsReadOnly="True"/>
             <DataGridTextColumn Binding="{Binding Length}" Header="Size" Width="90" IsReadOnly="True"/>
             <DataGridTextColumn Binding="{Binding CompressedLength}" Header="Packed Size" Width="90" IsReadOnly="True"/>
-            <DataGridTextColumn Binding="{Binding CompressionRatio}" Header="Ratio" Width="50" IsReadOnly="True"/>
+            <DataGridTextColumn Binding="{Binding CompressionRatio, StringFormat={}{0:0.0%}}" Header="Ratio" Width="50" IsReadOnly="True"/>
             <DataGridCheckBoxColumn Binding="{Binding IsCompressed}" Header="Is Compressed" Width="90"/>
         </DataGrid.Columns>
     </DataGrid>

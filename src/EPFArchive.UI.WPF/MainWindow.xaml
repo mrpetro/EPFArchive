@@ -15,15 +15,39 @@
         <BitmapImage x:Key="ExtractSelection" UriSource="Resources\ExtractSelection.png" />
         <BitmapImage x:Key="RemoveIcon" UriSource="Resources\Remove.png" />
         <Converters:InverseBooleanConverter x:Key="InverseBooleanConverter" />
+        <Converters:ColorConverter x:Key="ColorConverter" />
+        <Converters:VisibilityConverter x:Key="VisibilityConverter" />
         <Style x:Key="ToolBarButton" TargetType="{x:Type Button}">
-            <Setter Property="Width" Value="16"/>
-            <Setter Property="MaxWidth" Value="16"/>
-            <Setter Property="Height" Value="16"/>
-            <Setter Property="MaxHeight" Value="16"/>
-            <Setter Property="Margin" Value="2"/>
-            <Setter Property="Padding" Value="1"/>
-            <Setter Property="BorderBrush" Value="Black"/>
-            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type Button}">
+                        <Border x:Name="ButtonBorderBackground"  Padding="0" Margin="1" Width="22" Height="22" MaxWidth="22" MaxHeight="22" BorderThickness="1" Background="{TemplateBinding Background}">
+                            <Rectangle x:Name="ButtonRectangle" Width="16" Height="16" MaxWidth="16" MaxHeight="16" Fill="{TemplateBinding Foreground}"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsPressed" Value="True" >
+                                <Setter TargetName="ButtonBorderBackground" Property="Background">
+                                    <Setter.Value>
+                                        <SolidColorBrush Color="{DynamicResource {x:Static SystemColors.ActiveCaptionColorKey}}"/>
+                                    </Setter.Value>
+                                </Setter>
+                                <Setter TargetName="ButtonBorderBackground" Property="BorderBrush" Value="Black"/>
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True" >
+                                <Setter TargetName="ButtonBorderBackground" Property="Background">
+                                    <Setter.Value>
+                                        <SolidColorBrush Color="{DynamicResource {x:Static SystemColors.ActiveCaptionColorKey}}"/>
+                                    </Setter.Value>
+                                </Setter>
+                                <Setter TargetName="ButtonBorderBackground" Property="BorderBrush" Value="Black"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="false">
+                                <Setter TargetName="ButtonRectangle" Property="Opacity" Value="0.5"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
     </Window.Resources>
     <Window.IsEnabled>
@@ -57,49 +81,56 @@
                 </MenuItem>
             </MenuItem>
         </Menu>
-        <ToolBar x:Name="ToolStrip" DockPanel.Dock="Top" Height="27" >
+        <ToolBar x:Name="ToolStrip" DockPanel.Dock="Top" Height="31" >
             <Button x:Name="ToolStripAdd" Style="{StaticResource ToolBarButton}" IsEnabled="{Binding IsArchiveSaveAllowed}" Command="{Binding CommandTryAddEntries}">
-                <Button.Background>
+                <Button.Foreground>
                     <ImageBrush ImageSource="{Binding Mode=OneWay, Source={StaticResource AddIcon}}"/>
-                </Button.Background>
+                </Button.Foreground>
             </Button>
             <Button x:Name="ToolStripRemove" Style="{StaticResource ToolBarButton}" BorderBrush="Black" IsEnabled="{Binding IsArchiveSaveAllowed}" Command="{Binding CommandTryRemoveSelectedEntries}">
-                <Button.Background>
+                <Button.Foreground>
                     <ImageBrush ImageSource="{Binding Mode=OneWay, Source={StaticResource RemoveIcon}}"/>
-                </Button.Background>
+                </Button.Foreground>
             </Button>
             <Separator/>
             <Button x:Name="ToolStripExtractSelection" Style="{StaticResource ToolBarButton}" IsEnabled="{Binding IsArchiveOpened}" Command="{Binding CommandTryExtractSelection}">
-                <Button.Background>
+                <Button.Foreground>
                     <ImageBrush ImageSource="{Binding Mode=OneWay, Source={StaticResource ExtractSelection}}"/>
-                </Button.Background>
+                </Button.Foreground>
             </Button>
             <Button x:Name="ToolStripExtractAll" Style="{StaticResource ToolBarButton}" IsEnabled="{Binding IsArchiveOpened}" Command="{Binding CommandTryExtractAll}">
-                <Button.Background>
+                <Button.Foreground>
                     <ImageBrush ImageSource="{Binding Mode=OneWay, Source={StaticResource ExtractAllIcon}}"/>
-                </Button.Background>
+                </Button.Foreground>
             </Button>
         </ToolBar>
-        <DockPanel x:Name="StatusStrip" DockPanel.Dock="Bottom" Height="27" Background="{DynamicResource {x:Static SystemColors.ControlLightBrushKey}}">
-            <TextBlock x:Name="StatusStripTotalItemsNo" Width="80" Height="17" Text="{Binding Path=Status.TotalItems, StringFormat={}{0} items}" Margin="2" >
-                <TextBlock.Foreground>
-                    <SolidColorBrush Color="{DynamicResource {x:Static SystemColors.ActiveCaptionTextColorKey}}"/>
-                </TextBlock.Foreground>
-                <TextBlock.Background>
-                    <SolidColorBrush Color="#FFF0F0F0"/>
-                </TextBlock.Background>
-            </TextBlock>
-            <TextBlock x:Name="StatusStripSelectedItemsNo" Width="140" Height="17" Text="{Binding Path=Status.ItemsSelected, StringFormat={}{0} items selected}" Margin="2" >
-                <TextBlock.Background>
-                    <SolidColorBrush Color="{DynamicResource {x:Static SystemColors.ControlColorKey}}"/>
-                </TextBlock.Background>
-            </TextBlock>
-            <ProgressBar x:Name="StatusStripProgressBar" DockPanel.Dock="Right" Width="100" Height="17" Value="{Binding Path=Status.Progress.Value}" Margin="2" />
-            <TextBlock x:Name="StatusStripMessage" Text="{Binding Path=Status.Log.Message}" Foreground="{Binding Path=Status.Log.Color}" Margin="2" Height="17" >
-                <TextBlock.Background>
-                    <SolidColorBrush Color="{DynamicResource {x:Static SystemColors.ControlColorKey}}"/>
-                </TextBlock.Background>
-            </TextBlock>
+        <DockPanel x:Name="StatusStrip" DockPanel.Dock="Bottom" Height="27" Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}">
+            <Border BorderThickness="1" Width="80" Height="19" Padding="0" Margin="1">
+                <Border.BorderBrush>
+                    <SolidColorBrush Color="{DynamicResource {x:Static SystemColors.ActiveBorderColorKey}}"/>
+                </Border.BorderBrush>
+                <TextBlock x:Name="StatusStripTotalItemsNo"  Text="{Binding Path=Status.TotalItems, StringFormat={}{0} items}" >
+                </TextBlock>
+            </Border>
+            <Border BorderThickness="1" Width="140" Height="19" Padding="0" Margin="1" >
+                <Border.BorderBrush>
+                    <SolidColorBrush Color="{DynamicResource {x:Static SystemColors.ActiveBorderColorKey}}"/>
+                </Border.BorderBrush>
+                <TextBlock x:Name="StatusStripSelectedItemsNo" Text="{Binding Path=Status.ItemsSelected, StringFormat={}{0} items selected}" >
+                </TextBlock>
+            </Border>
+            <Border BorderThickness="1" Width="100" Height="19" Padding="0" Margin="1"  DockPanel.Dock="Right">
+                <Border.BorderBrush>
+                    <SolidColorBrush Color="{DynamicResource {x:Static SystemColors.ActiveBorderColorKey}}"/>
+                </Border.BorderBrush>
+                <ProgressBar x:Name="StatusStripProgressBar"  Value="{Binding Path=Status.Progress.Value}" Visibility="{Binding Status.Progress.Visible, Converter={StaticResource VisibilityConverter}}" />
+            </Border>
+            <Border BorderThickness="1" Height="19" Padding="0" Margin="1">
+                <Border.BorderBrush>
+                    <SolidColorBrush Color="{DynamicResource {x:Static SystemColors.ActiveBorderColorKey}}"/>
+                </Border.BorderBrush>
+                <TextBlock x:Name="StatusStripMessage" Text="{Binding Path=Status.Log.Message}" Foreground="{Binding Status.Log.Color, Converter={StaticResource ColorConverter}, Mode=OneWay}" Height="17" />
+            </Border>
         </DockPanel>
         <Controls:EPFArchiveEntityListCtrl x:Name="EntityList" />
     </DockPanel>

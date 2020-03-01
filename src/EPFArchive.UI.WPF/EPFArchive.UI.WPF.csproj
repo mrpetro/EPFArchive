@@ -72,7 +72,9 @@
     <Compile Include="Controls\EPFArchiveEntityListCtrl.xaml.cs">
       <DependentUpon>EPFArchiveEntityListCtrl.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Converters\ColorConverter.cs" />
     <Compile Include="Converters\InverseBooleanConverter.cs" />
+    <Compile Include="Converters\VisibilityConverter.cs" />
     <Compile Include="DialogProvider.cs" />
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
