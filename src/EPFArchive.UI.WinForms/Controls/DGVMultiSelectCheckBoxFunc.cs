@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace EPF.UI.WinForms.Controls
+namespace EPF.UI.Controls
 {
     /// <summary>
     /// This class adds multiselection of checkboxes (in DataGridViewCheckBox columns) function to DataGridView.

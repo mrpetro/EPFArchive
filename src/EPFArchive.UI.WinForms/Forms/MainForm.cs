@@ -1,9 +1,9 @@
-﻿using EPF.UI.ViewModel;
+﻿using EPF.VM;
 using System;
 using System.Windows.Forms;
 using System.Windows.Threading;
 
-namespace EPF.UI.WinForms.Forms
+namespace EPF.UI.Forms
 {
     public partial class MainForm : Form
     {

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Data;
 
-namespace EPFArchive.UI.WPF.Converters
+namespace EPFArchive.UI.Converters
 {
     public class VisibilityConverter : IValueConverter
     {

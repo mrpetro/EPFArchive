@@ -1,4 +1,4 @@
-﻿namespace EPF.UI.ViewModel
+﻿namespace EPF.VM
 {
     public class StatusViewModel : BaseViewModel
     {

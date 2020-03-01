@@ -7,8 +7,8 @@
     <ProjectGuid>{04B5DDF4-509C-4E32-9AA2-B8A8E143E7E6}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>EPF.UI</RootNamespace>
-    <AssemblyName>EPFArchive.UI</AssemblyName>
+    <RootNamespace>EPF.VM</RootNamespace>
+    <AssemblyName>EPFArchive.VM</AssemblyName>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -44,14 +44,13 @@
   <ItemGroup>
     <Compile Include="CommandRelay.cs" />
     <Compile Include="IDialogProvider.cs" />
-    <Compile Include="ViewModel\BaseViewModel.cs" />
-    <Compile Include="ViewModel\EPFArchiveItemViewModel.cs" />
-    <Compile Include="ViewModel\EPFArchiveViewModel.cs" />
+    <Compile Include="BaseViewModel.cs" />
+    <Compile Include="EPFArchiveItemViewModel.cs" />
+    <Compile Include="EPFArchiveViewModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ViewModel\LogViewModel.cs" />
-    <Compile Include="ViewModel\ProgressViewModel.cs" />
-    <Compile Include="ViewModel\PropertyHelper.cs" />
-    <Compile Include="ViewModel\StatusViewModel.cs" />
+    <Compile Include="LogViewModel.cs" />
+    <Compile Include="ProgressViewModel.cs" />
+    <Compile Include="StatusViewModel.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\EPFArchive\EPFArchive.csproj">

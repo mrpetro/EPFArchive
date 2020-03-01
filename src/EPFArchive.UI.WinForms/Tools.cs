@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace EPF.UI.WinForms
+namespace EPF.UI
 {
     public static class Tools
     {

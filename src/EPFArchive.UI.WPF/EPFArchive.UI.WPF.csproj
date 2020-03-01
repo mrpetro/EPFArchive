@@ -6,7 +6,7 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{BF4D9B2D-2A66-425D-AB94-6C26F2C1A93C}</ProjectGuid>
     <OutputType>WinExe</OutputType>
-    <RootNamespace>EPFArchive.UI.WPF</RootNamespace>
+    <RootNamespace>EPFArchive.UI</RootNamespace>
     <AssemblyName>EPFArchive.UI.WPF</AssemblyName>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
@@ -61,7 +61,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="MainWindow.xaml">
+    <Page Include="Forms\MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
@@ -76,7 +76,7 @@
     <Compile Include="Converters\InverseBooleanConverter.cs" />
     <Compile Include="Converters\VisibilityConverter.cs" />
     <Compile Include="DialogProvider.cs" />
-    <Compile Include="MainWindow.xaml.cs">
+    <Compile Include="Forms\MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
@@ -103,13 +103,11 @@
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
-    <Folder Include="Forms\" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\EPFArchive.UI\EPFArchive.UI.csproj">
+    <ProjectReference Include="..\EPFArchive.UI\EPFArchive.VM.csproj">
       <Project>{04b5ddf4-509c-4e32-9aa2-b8a8e143e7e6}</Project>
-      <Name>EPFArchive.UI</Name>
+      <Name>EPFArchive.VM</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

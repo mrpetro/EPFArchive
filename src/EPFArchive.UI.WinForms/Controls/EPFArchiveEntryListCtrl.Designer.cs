@@ -1,4 +1,4 @@
-﻿namespace EPF.UI.WinForms.Controls
+﻿namespace EPF.UI.Controls
 {
     partial class EPFArchiveEntryListCtrl
     {

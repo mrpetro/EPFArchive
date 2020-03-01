@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
 
-namespace EPF.UI
+namespace EPF.VM
 {
     public class CommandRelay : ICommand
     {

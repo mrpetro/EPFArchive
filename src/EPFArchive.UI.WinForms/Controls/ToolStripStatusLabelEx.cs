@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace EPF.UI.WinForms.Controls
+namespace EPF.UI.Controls
 {
     /// <summary>
     /// This class extends ToolStripStatusLabel control with usage of DataBindings features

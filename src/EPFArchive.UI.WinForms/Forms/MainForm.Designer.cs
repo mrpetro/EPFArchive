@@ -1,4 +1,4 @@
-﻿namespace EPF.UI.WinForms.Forms
+﻿namespace EPF.UI.Forms
 {
     partial class MainForm
     {
@@ -29,40 +29,40 @@
         private void InitializeComponent()
         {
             this.MenuMain = new System.Windows.Forms.MenuStrip();
-            this.MenuItemFile = new EPF.UI.WinForms.Controls.ToolStripMenuItemEx();
+            this.MenuItemFile = new EPF.UI.Controls.ToolStripMenuItemEx();
             this.MenuItemFileNew = new System.Windows.Forms.ToolStripMenuItem();
             this.MenuItemFileOpenReadOnly = new System.Windows.Forms.ToolStripMenuItem();
-            this.MenuItemFileOpen = new EPF.UI.WinForms.Controls.ToolStripMenuItemEx();
-            this.MenuItemFileSave = new EPF.UI.WinForms.Controls.ToolStripMenuItemEx();
-            this.MenuItemFileSaveAs = new EPF.UI.WinForms.Controls.ToolStripMenuItemEx();
+            this.MenuItemFileOpen = new EPF.UI.Controls.ToolStripMenuItemEx();
+            this.MenuItemFileSave = new EPF.UI.Controls.ToolStripMenuItemEx();
+            this.MenuItemFileSaveAs = new EPF.UI.Controls.ToolStripMenuItemEx();
             this.toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
-            this.MenuItemFileClose = new EPF.UI.WinForms.Controls.ToolStripMenuItemEx();
+            this.MenuItemFileClose = new EPF.UI.Controls.ToolStripMenuItemEx();
             this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
-            this.MenuItemExtractAll = new EPF.UI.WinForms.Controls.ToolStripMenuItemEx();
-            this.MenuItemExtractSelection = new EPF.UI.WinForms.Controls.ToolStripMenuItemEx();
+            this.MenuItemExtractAll = new EPF.UI.Controls.ToolStripMenuItemEx();
+            this.MenuItemExtractSelection = new EPF.UI.Controls.ToolStripMenuItemEx();
             this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
-            this.MenuItemExit = new EPF.UI.WinForms.Controls.ToolStripMenuItemEx();
-            this.MenuItemEdit = new EPF.UI.WinForms.Controls.ToolStripMenuItemEx();
-            this.MenuItemSelectAll = new EPF.UI.WinForms.Controls.ToolStripMenuItemEx();
-            this.MenuItemDeselectAll = new EPF.UI.WinForms.Controls.ToolStripMenuItemEx();
-            this.MenuItemInvertSelection = new EPF.UI.WinForms.Controls.ToolStripMenuItemEx();
+            this.MenuItemExit = new EPF.UI.Controls.ToolStripMenuItemEx();
+            this.MenuItemEdit = new EPF.UI.Controls.ToolStripMenuItemEx();
+            this.MenuItemSelectAll = new EPF.UI.Controls.ToolStripMenuItemEx();
+            this.MenuItemDeselectAll = new EPF.UI.Controls.ToolStripMenuItemEx();
+            this.MenuItemInvertSelection = new EPF.UI.Controls.ToolStripMenuItemEx();
             this.toolStripSeparator5 = new System.Windows.Forms.ToolStripSeparator();
-            this.MenuItemHiddenData = new EPF.UI.WinForms.Controls.ToolStripMenuItemEx();
-            this.MenuItemHiddenDataExtract = new EPF.UI.WinForms.Controls.ToolStripMenuItemEx();
-            this.MenuItemHiddenDataAdd = new EPF.UI.WinForms.Controls.ToolStripMenuItemEx();
-            this.MenuItemHiddenDataRemove = new EPF.UI.WinForms.Controls.ToolStripMenuItemEx();
+            this.MenuItemHiddenData = new EPF.UI.Controls.ToolStripMenuItemEx();
+            this.MenuItemHiddenDataExtract = new EPF.UI.Controls.ToolStripMenuItemEx();
+            this.MenuItemHiddenDataAdd = new EPF.UI.Controls.ToolStripMenuItemEx();
+            this.MenuItemHiddenDataRemove = new EPF.UI.Controls.ToolStripMenuItemEx();
             this.StatusStrip = new System.Windows.Forms.StatusStrip();
-            this.StatusStripTotalItemsNo = new EPF.UI.WinForms.Controls.ToolStripStatusLabelEx();
-            this.StatusStripSelectedItemsNo = new EPF.UI.WinForms.Controls.ToolStripStatusLabelEx();
-            this.StatusStripMessage = new EPF.UI.WinForms.Controls.ToolStripStatusLabelEx();
-            this.StatusStripProgressBar = new EPF.UI.WinForms.Controls.ToolStripProgressBarEx();
+            this.StatusStripTotalItemsNo = new EPF.UI.Controls.ToolStripStatusLabelEx();
+            this.StatusStripSelectedItemsNo = new EPF.UI.Controls.ToolStripStatusLabelEx();
+            this.StatusStripMessage = new EPF.UI.Controls.ToolStripStatusLabelEx();
+            this.StatusStripProgressBar = new EPF.UI.Controls.ToolStripProgressBarEx();
             this.ToolStrip = new System.Windows.Forms.ToolStrip();
-            this.ToolStripAdd = new EPF.UI.WinForms.Controls.ToolStripButtonEx();
-            this.ToolStripRemove = new EPF.UI.WinForms.Controls.ToolStripButtonEx();
+            this.ToolStripAdd = new EPF.UI.Controls.ToolStripButtonEx();
+            this.ToolStripRemove = new EPF.UI.Controls.ToolStripButtonEx();
             this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
-            this.ToolStripExtractSelection = new EPF.UI.WinForms.Controls.ToolStripButtonEx();
-            this.ToolStripExtractAll = new EPF.UI.WinForms.Controls.ToolStripButtonEx();
-            this.EntryList = new EPF.UI.WinForms.Controls.EPFArchiveEntryListCtrl();
+            this.ToolStripExtractSelection = new EPF.UI.Controls.ToolStripButtonEx();
+            this.ToolStripExtractAll = new EPF.UI.Controls.ToolStripButtonEx();
+            this.EntryList = new EPF.UI.Controls.EPFArchiveEntryListCtrl();
             this.MenuMain.SuspendLayout();
             this.StatusStrip.SuspendLayout();
             this.ToolStrip.SuspendLayout();
@@ -313,7 +313,7 @@
             // ToolStripAdd
             // 
             this.ToolStripAdd.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.ToolStripAdd.Image = global::EPF.UI.WinForms.Properties.Resources.Add;
+            this.ToolStripAdd.Image = global::EPF.UI.Properties.Resources.Add;
             this.ToolStripAdd.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.ToolStripAdd.Name = "ToolStripAdd";
             this.ToolStripAdd.Size = new System.Drawing.Size(23, 22);
@@ -323,7 +323,7 @@
             // ToolStripRemove
             // 
             this.ToolStripRemove.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.ToolStripRemove.Image = global::EPF.UI.WinForms.Properties.Resources.Remove;
+            this.ToolStripRemove.Image = global::EPF.UI.Properties.Resources.Remove;
             this.ToolStripRemove.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.ToolStripRemove.Name = "ToolStripRemove";
             this.ToolStripRemove.Size = new System.Drawing.Size(23, 22);
@@ -338,7 +338,7 @@
             // ToolStripExtractSelection
             // 
             this.ToolStripExtractSelection.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.ToolStripExtractSelection.Image = global::EPF.UI.WinForms.Properties.Resources.ExtractSelection;
+            this.ToolStripExtractSelection.Image = global::EPF.UI.Properties.Resources.ExtractSelection;
             this.ToolStripExtractSelection.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.ToolStripExtractSelection.Name = "ToolStripExtractSelection";
             this.ToolStripExtractSelection.Size = new System.Drawing.Size(23, 22);
@@ -348,7 +348,7 @@
             // ToolStripExtractAll
             // 
             this.ToolStripExtractAll.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.ToolStripExtractAll.Image = global::EPF.UI.WinForms.Properties.Resources.ExtractAll;
+            this.ToolStripExtractAll.Image = global::EPF.UI.Properties.Resources.ExtractAll;
             this.ToolStripExtractAll.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.ToolStripExtractAll.Name = "ToolStripExtractAll";
             this.ToolStripExtractAll.Size = new System.Drawing.Size(23, 22);

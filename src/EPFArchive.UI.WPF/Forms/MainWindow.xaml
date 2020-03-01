@@ -3,17 +3,17 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:EPFArchive.UI.WPF"
-        xmlns:Converters="clr-namespace:EPFArchive.UI.WPF.Converters"
-        xmlns:Controls="clr-namespace:EPFArchive.UI.WPF.Controls"
-        x:Class="EPFArchive.UI.WPF.MainWindow"
+        xmlns:local="clr-namespace:EPFArchive.UI"
+        xmlns:Converters="clr-namespace:EPFArchive.UI.Converters"
+        xmlns:Controls="clr-namespace:EPFArchive.UI.Controls"
+        x:Class="EPFArchive.UI.Forms.MainWindow"
         mc:Ignorable="d"
         Title="{Binding AppLabel}" Height="450" Width="800" >
     <Window.Resources>
-        <BitmapImage x:Key="AddIcon" UriSource="Resources\Add.png" />
-        <BitmapImage x:Key="ExtractAllIcon" UriSource="Resources\ExtractAll.png" />
-        <BitmapImage x:Key="ExtractSelection" UriSource="Resources\ExtractSelection.png" />
-        <BitmapImage x:Key="RemoveIcon" UriSource="Resources\Remove.png" />
+        <BitmapImage x:Key="AddIcon" UriSource="..\Resources\Add.png" />
+        <BitmapImage x:Key="ExtractAllIcon" UriSource="..\Resources\ExtractAll.png" />
+        <BitmapImage x:Key="ExtractSelection" UriSource="..\Resources\ExtractSelection.png" />
+        <BitmapImage x:Key="RemoveIcon" UriSource="..\Resources\Remove.png" />
         <Converters:InverseBooleanConverter x:Key="InverseBooleanConverter" />
         <Converters:ColorConverter x:Key="ColorConverter" />
         <Converters:VisibilityConverter x:Key="VisibilityConverter" />

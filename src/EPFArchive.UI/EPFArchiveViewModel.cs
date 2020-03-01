@@ -7,7 +7,7 @@ using System.Threading;
 using System.Windows.Input;
 using System.Windows.Threading;
 
-namespace EPF.UI.ViewModel
+namespace EPF.VM
 {
     public delegate void ClearEntries();
 

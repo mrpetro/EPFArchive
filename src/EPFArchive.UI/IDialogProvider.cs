@@ -1,6 +1,6 @@
 ﻿using System.Linq;
 
-namespace EPF.UI
+namespace EPF.VM
 {
     public enum DialogAnswer
     {

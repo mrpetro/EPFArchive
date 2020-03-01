@@ -1,10 +1,10 @@
-﻿using EPF.UI.ViewModel;
+﻿using EPF.VM;
 using System;
 using System.ComponentModel;
 using System.Globalization;
 using System.Windows.Forms;
 
-namespace EPF.UI.WinForms.Controls
+namespace EPF.UI.Controls
 {
     public partial class EPFArchiveEntryListCtrl : UserControl
     {

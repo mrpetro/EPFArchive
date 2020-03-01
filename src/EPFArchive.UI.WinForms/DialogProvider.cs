@@ -1,11 +1,12 @@
-﻿using System;
+﻿using EPF.VM;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace EPF.UI.WinForms
+namespace EPF.UI
 {
     public class DialogProvider : IDialogProvider
     {

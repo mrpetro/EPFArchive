@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using System.Windows.Data;
 using System.Windows.Media;
 
-namespace EPFArchive.UI.WPF.Converters
+namespace EPFArchive.UI.Converters
 {
     public class ColorConverter : IValueConverter
     {

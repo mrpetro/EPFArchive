@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel;
 using System.Windows.Forms;
 
-namespace EPF.UI.WinForms.Controls
+namespace EPF.UI.Controls
 {
     public class ToolStripMenuItemEx : ToolStripMenuItem, IBindableComponent
     {

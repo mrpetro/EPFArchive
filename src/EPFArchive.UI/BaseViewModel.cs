@@ -2,7 +2,7 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
-namespace EPF.UI.ViewModel
+namespace EPF.VM
 {
     public class BaseViewModel : INotifyPropertyChanged
     {

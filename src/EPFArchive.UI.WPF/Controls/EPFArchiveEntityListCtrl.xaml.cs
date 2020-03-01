@@ -13,7 +13,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace EPFArchive.UI.WPF.Controls
+namespace EPFArchive.UI.Controls
 {
     /// <summary>
     /// Interaction logic for EPFArchiveEntityListCtrl.xaml

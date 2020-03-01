@@ -1,4 +1,4 @@
-﻿using EPF.UI;
+﻿using EPF.VM;
 using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Forms;
 
-namespace EPFArchive.UI.WPF
+namespace EPFArchive.UI
 {
     public class DialogProvider : IDialogProvider
     {

@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace EPF.UI.ViewModel
+namespace EPF.VM
 {
     public class LogViewModel : BaseViewModel
     {

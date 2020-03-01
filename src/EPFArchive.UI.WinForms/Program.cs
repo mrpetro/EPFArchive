@@ -1,12 +1,12 @@
-﻿using EPF.UI.ViewModel;
-using EPF.UI.WinForms.Forms;
+﻿using EPF.VM;
+using EPF.UI.Forms;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace EPF.UI.WinForms
+namespace EPF.UI
 {
     static class Program
     {
