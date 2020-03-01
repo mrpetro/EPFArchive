@@ -50,9 +50,6 @@ namespace EPF.UI.WinForms.Controls
             DGV.PreviewKeyDown += DGV_PreviewKeyDown;
             DGV.CellFormatting += DGV_CellFormatting;
             DGV.RowStateChanged += DGV_RowStateChanged;
-
-            _viewModel.ClearEntriesCallback = ClearEntries;
-            _viewModel.RefreshEntriesCallback = RefreshEntries;
         }
 
         private void DGV_RowStateChanged(object sender, DataGridViewRowStateChangedEventArgs e)
@@ -78,11 +75,6 @@ namespace EPF.UI.WinForms.Controls
             }
         }
 
-        private void ClearEntries()
-        {
-            this.Invoke(new Action(() => { _viewModel.ClearEntries(); }));
-        }
-
         private void DGV_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
         {
             if (e.RowIndex < 0 || e.ColumnIndex < 0)
@@ -103,11 +95,6 @@ namespace EPF.UI.WinForms.Controls
         {
             if (e.KeyCode == Keys.Delete)
                 _viewModel.TryRemoveSelectedEntries();
-        }
-
-        private void RefreshEntries()
-        {
-            this.Invoke(new Action(() => { _viewModel.RefreshEntries(); }));
         }
 
         #endregion Private Methods

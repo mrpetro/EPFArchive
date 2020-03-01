@@ -1,6 +1,7 @@
 ﻿using EPF.UI.ViewModel;
 using System;
 using System.Windows.Forms;
+using System.Windows.Threading;
 
 namespace EPF.UI.WinForms.Forms
 {
@@ -8,18 +9,18 @@ namespace EPF.UI.WinForms.Forms
     {
         #region Private Fields
 
-        private bool _locked;
-        private EPFArchiveViewModel _viewModel;
+        private bool locked;
+        private EPFArchiveViewModel vm;
 
         #endregion Private Fields
 
         #region Public Constructors
 
-        public MainForm(EPFArchiveViewModel viewModel)
+        public MainForm()
         {
             InitializeComponent();
 
-            Initialize(viewModel);
+            Initialize(new EPFArchiveViewModel(new DialogProvider(), Dispatcher.CurrentDispatcher));
         }
 
         #endregion Public Constructors
@@ -56,19 +57,19 @@ namespace EPF.UI.WinForms.Forms
         {
             get
             {
-                return _locked;
+                return locked;
             }
 
             set
             {
                 this.InvokeIfRequired(() =>
                 {
-                    if (_locked == value)
+                    if (locked == value)
                         return;
 
                     MainMenuStrip.Enabled = !value;
                     EntryList.Enabled = !value;
-                    _locked = value;
+                    locked = value;
                 });
             }
         }
@@ -82,41 +83,40 @@ namespace EPF.UI.WinForms.Forms
             if (viewModel == null)
                 throw new ArgumentNullException(nameof(viewModel));
 
-            _viewModel = viewModel;
+            vm = viewModel;
 
-            EntryList.Initialize(_viewModel);
+            EntryList.Initialize(vm);
 
-            DataBindings.Add("Locked", _viewModel, nameof(_viewModel.Locked), false, DataSourceUpdateMode.OnPropertyChanged);
-            DataBindings.Add("Text", _viewModel, nameof(_viewModel.AppLabel), false, DataSourceUpdateMode.OnPropertyChanged);
+            DataBindings.Add("Locked", vm, nameof(vm.Locked), false, DataSourceUpdateMode.OnPropertyChanged);
+            DataBindings.Add("Text", vm, nameof(vm.AppLabel), false, DataSourceUpdateMode.OnPropertyChanged);
 
-            StatusStripTotalItemsNo.DataBindings.Add("Text", _viewModel.Status, nameof(_viewModel.Status.TotalItems), true, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged, "0", "0 items");
-            StatusStripSelectedItemsNo.DataBindings.Add("Text", _viewModel.Status, nameof(_viewModel.Status.ItemsSelected), true, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged, "0", "0 items selected");
-            StatusStripMessage.DataBindings.Add("Text", _viewModel.Status.Log, nameof(_viewModel.Status.Log.Message), false, DataSourceUpdateMode.OnPropertyChanged);
-            StatusStripMessage.DataBindings.Add("ForeColor", _viewModel.Status.Log, nameof(_viewModel.Status.Log.Color), false, DataSourceUpdateMode.OnPropertyChanged);
-            StatusStripProgressBar.DataBindings.Add("Value", _viewModel.Status.Progress, nameof(_viewModel.Status.Progress.Value), false, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged);
-            StatusStripProgressBar.DataBindings.Add("Visible", _viewModel.Status.Progress, nameof(_viewModel.Status.Progress.Visible), false, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged);
+            StatusStripTotalItemsNo.DataBindings.Add("Text", vm.Status, nameof(vm.Status.TotalItems), true, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged, "0", "0 items");
+            StatusStripSelectedItemsNo.DataBindings.Add("Text", vm.Status, nameof(vm.Status.ItemsSelected), true, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged, "0", "0 items selected");
+            StatusStripMessage.DataBindings.Add("Text", vm.Status.Log, nameof(vm.Status.Log.Message), false, DataSourceUpdateMode.OnPropertyChanged);
+            StatusStripMessage.DataBindings.Add("ForeColor", vm.Status.Log, nameof(vm.Status.Log.Color), false, DataSourceUpdateMode.OnPropertyChanged);
+            StatusStripProgressBar.DataBindings.Add("Value", vm.Status.Progress, nameof(vm.Status.Progress.Value), false, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged);
+            StatusStripProgressBar.DataBindings.Add("Visible", vm.Status.Progress, nameof(vm.Status.Progress.Visible), false, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged);
 
-            MenuItemDeselectAll.DataBindings.Add("Enabled", _viewModel, nameof(_viewModel.IsArchiveOpened), false, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged);
-            MenuItemSelectAll.DataBindings.Add("Enabled", _viewModel, nameof(_viewModel.IsArchiveOpened), false, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged);
-            MenuItemInvertSelection.DataBindings.Add("Enabled", _viewModel, nameof(_viewModel.IsArchiveOpened), false, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged);
-            MenuItemFileClose.DataBindings.Add("Enabled", _viewModel, nameof(_viewModel.IsArchiveOpened), false, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged);
-            MenuItemExtractAll.DataBindings.Add("Enabled", _viewModel, nameof(_viewModel.IsArchiveOpened), false, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged);
-            MenuItemExtractSelection.DataBindings.Add("Enabled", _viewModel, nameof(_viewModel.IsArchiveOpened), false, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged);
+            MenuItemDeselectAll.DataBindings.Add("Enabled", vm, nameof(vm.IsArchiveOpened), false, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged);
+            MenuItemSelectAll.DataBindings.Add("Enabled", vm, nameof(vm.IsArchiveOpened), false, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged);
+            MenuItemInvertSelection.DataBindings.Add("Enabled", vm, nameof(vm.IsArchiveOpened), false, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged);
+            MenuItemFileClose.DataBindings.Add("Enabled", vm, nameof(vm.IsArchiveOpened), false, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged);
+            MenuItemExtractAll.DataBindings.Add("Enabled", vm, nameof(vm.IsArchiveOpened), false, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged);
+            MenuItemExtractSelection.DataBindings.Add("Enabled", vm, nameof(vm.IsArchiveOpened), false, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged);
 
-            MenuItemFileSave.DataBindings.Add("Enabled", _viewModel, nameof(_viewModel.IsArchiveModified), false, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged);
-            MenuItemFileSaveAs.DataBindings.Add("Enabled", _viewModel, nameof(_viewModel.IsArchiveSaveAllowed), false, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged);
+            MenuItemFileSave.DataBindings.Add("Enabled", vm, nameof(vm.IsArchiveModified), false, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged);
+            MenuItemFileSaveAs.DataBindings.Add("Enabled", vm, nameof(vm.IsArchiveSaveAllowed), false, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged);
 
-            ToolStripAdd.DataBindings.Add("Enabled", _viewModel, nameof(_viewModel.IsArchiveSaveAllowed), false, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged);
-            ToolStripRemove.DataBindings.Add("Enabled", _viewModel, nameof(_viewModel.IsArchiveSaveAllowed), false, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged);
+            ToolStripAdd.DataBindings.Add("Enabled", vm, nameof(vm.IsArchiveSaveAllowed), false, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged);
+            ToolStripRemove.DataBindings.Add("Enabled", vm, nameof(vm.IsArchiveSaveAllowed), false, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged);
 
-            ToolStripExtractAll.DataBindings.Add("Enabled", _viewModel, nameof(_viewModel.IsArchiveOpened), false, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged);
-            ToolStripExtractSelection.DataBindings.Add("Enabled", _viewModel, nameof(_viewModel.IsArchiveOpened), false, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged);
+            ToolStripExtractAll.DataBindings.Add("Enabled", vm, nameof(vm.IsArchiveOpened), false, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged);
+            ToolStripExtractSelection.DataBindings.Add("Enabled", vm, nameof(vm.IsArchiveOpened), false, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged);
 
-            MenuItemHiddenData.DataBindings.Add("Enabled", _viewModel, nameof(_viewModel.IsArchiveOpened), false, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged);
-            MenuItemHiddenDataAdd.DataBindings.Add("Enabled", _viewModel, nameof(_viewModel.IsArchiveSaveAllowed), false, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged);
-            MenuItemHiddenDataExtract.DataBindings.Add("Enabled", _viewModel, nameof(_viewModel.HasHiddenData), false, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged);
-            MenuItemHiddenDataRemove.DataBindings.Add("Enabled", _viewModel, nameof(_viewModel.HasHiddenData), false, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged);
-
+            MenuItemHiddenData.DataBindings.Add("Enabled", vm, nameof(vm.IsArchiveOpened), false, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged);
+            MenuItemHiddenDataAdd.DataBindings.Add("Enabled", vm, nameof(vm.IsArchiveSaveAllowed), false, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged);
+            MenuItemHiddenDataExtract.DataBindings.Add("Enabled", vm, nameof(vm.HasHiddenData), false, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged);
+            MenuItemHiddenDataRemove.DataBindings.Add("Enabled", vm, nameof(vm.HasHiddenData), false, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged);
         }
 
         #endregion Public Methods
@@ -126,107 +126,107 @@ namespace EPF.UI.WinForms.Forms
         private void DGV_PreviewKeyDown(object sender, PreviewKeyDownEventArgs e)
         {
             if (e.KeyCode == Keys.Delete)
-                _viewModel.TryRemoveSelectedEntries();
+                vm.TryRemoveSelectedEntries();
         }
 
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
-            _viewModel.TryCloseArchive();
+            vm.TryCloseArchive();
         }
 
         private void MenuItemArchiveClose_Click(object sender, EventArgs e)
         {
-            _viewModel.TryCloseArchive();
+            vm.TryCloseArchive();
         }
 
         private void MenuItemArchiveOpen_Click(object sender, EventArgs e)
         {
-            this.Invoke(new Action(() => { _viewModel.CommandTryOpenArchive.Execute(null); }));
+            this.Invoke(new Action(() => { vm.CommandTryOpenArchive.Execute(null); }));
         }
 
         private void MenuItemArchiveOpenReadOnly_Click(object sender, EventArgs e)
         {
-            _viewModel.TryOpenArchiveReadOnly();
+            vm.TryOpenArchiveReadOnly();
         }
 
         private void MenuItemArchiveSave_Click(object sender, EventArgs e)
         {
-            _viewModel.TrySaveArchive();
+            vm.TrySaveArchive();
         }
 
         private void MenuItemArchiveSaveAs_Click(object sender, EventArgs e)
         {
-            _viewModel.TrySaveArchiveAs();
+            vm.TrySaveArchiveAs();
         }
 
         private void MenuItemDeselectAll_Click(object sender, EventArgs e)
         {
-            _viewModel.DeselectAll();
+            vm.DeselectAll();
         }
 
         private void MenuItemExit_Click(object sender, EventArgs e)
         {
-            _viewModel.TryCloseArchive();
+            vm.TryCloseArchive();
         }
 
         private void MenuItemExtractAll_Click(object sender, EventArgs e)
         {
-            _viewModel.TryExtractAll();
+            vm.TryExtractAll();
         }
 
         private void MenuItemExtractSelection_Click(object sender, EventArgs e)
         {
-            _viewModel.TryExtractSelection();
+            vm.TryExtractSelection();
         }
 
         private void MenuItemFileNew_Click(object sender, EventArgs e)
         {
-            _viewModel.TryCreateArchive();
+            vm.TryCreateArchive();
         }
 
         private void MenuItemInvertSelection_Click(object sender, EventArgs e)
         {
-            _viewModel.InvertSelection();
+            vm.InvertSelection();
         }
 
         private void MenuItemSelectAll_Click(object sender, EventArgs e)
         {
-            _viewModel.SelectAll();
+            vm.SelectAll();
         }
 
         private void ToolStripAdd_Click(object sender, EventArgs e)
         {
-            _viewModel.TryAddEntries();
+            vm.TryAddEntries();
         }
 
         private void ToolStripExtractAll_Click(object sender, EventArgs e)
         {
-            _viewModel.TryExtractAll();
+            vm.TryExtractAll();
         }
 
         private void ToolStripExtractSelection_Click(object sender, EventArgs e)
         {
-            _viewModel.TryExtractSelection();
+            vm.TryExtractSelection();
         }
 
         private void ToolStripRemove_Click(object sender, EventArgs e)
         {
-            _viewModel.TryRemoveSelectedEntries();
+            vm.TryRemoveSelectedEntries();
         }
 
         private void MenuItemHiddenDataExtract_Click(object sender, EventArgs e)
         {
-            _viewModel.TryExtractHiddenData();
+            vm.TryExtractHiddenData();
         }
 
         private void MenuItemHiddenDataAdd_Click(object sender, EventArgs e)
         {
-            _viewModel.TryUpdateHiddenData();
+            vm.TryUpdateHiddenData();
         }
 
         private void MenuItemHiddenDataRemove_Click(object sender, EventArgs e)
         {
-            _viewModel.TryRemoveHiddenData();
+            vm.TryRemoveHiddenData();
         }
 
         #endregion Private Methods

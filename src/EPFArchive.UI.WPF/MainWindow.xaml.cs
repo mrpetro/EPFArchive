@@ -25,7 +25,7 @@ namespace EPFArchive.UI.WPF
         {
             InitializeComponent();
 
-            this.DataContext = new EPFArchiveViewModel(new DialogProvider());
+            this.DataContext = new EPFArchiveViewModel(new DialogProvider(), Dispatcher);
         }
 
         public void Initialize(EPFArchiveViewModel dataContext)

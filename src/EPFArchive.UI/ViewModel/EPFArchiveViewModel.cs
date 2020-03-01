@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Windows.Input;
+using System.Windows.Threading;
 
 namespace EPF.UI.ViewModel
 {
@@ -27,16 +28,19 @@ namespace EPF.UI.ViewModel
         private bool _isReadOnly;
         private bool _locked;
 
+        private Dispatcher dispatcher;
+
         #endregion Private Fields
 
         #region Public Constructors
 
-        public EPFArchiveViewModel(IDialogProvider dialogProvider)
+        public EPFArchiveViewModel(IDialogProvider dialogProvider, Dispatcher dispatcher)
         {
             if (dialogProvider == null)
                 throw new ArgumentNullException(nameof(dialogProvider));
 
             DialogProvider = dialogProvider;
+            this.dispatcher = dispatcher;
 
             Status = new StatusViewModel();
             Entries = new BindingList<EPFArchiveItemViewModel>();
@@ -110,7 +114,6 @@ namespace EPF.UI.ViewModel
             internal set { SetProperty(ref _archiveFilePath, value); }
         }
 
-        public ClearEntries ClearEntriesCallback { get; set; }
         public BindingList<EPFArchiveItemViewModel> Entries { get; private set; }
 
         public bool IsArchiveModified
@@ -160,8 +163,6 @@ namespace EPF.UI.ViewModel
             get { return _locked; }
             internal set { SetProperty(ref _locked, value); }
         }
-
-        public RefreshEntries RefreshEntriesCallback { get; set; }
 
         public StatusViewModel Status { get; private set; }
 
@@ -722,7 +723,7 @@ namespace EPF.UI.ViewModel
             _epfArchive.Dispose();
             _epfArchive = null;
 
-            ClearEntriesCallback?.Invoke();
+            dispatcher.Invoke(ClearEntries);
 
             Status.Log.Success($"Archive '{ Path.GetFileName(ArchiveFilePath)}' closed.");
             ArchiveFilePath = null;
@@ -742,7 +743,7 @@ namespace EPF.UI.ViewModel
                 _epfArchive.EntryChanged += _epfArchive_EntryChanged;
                 _epfArchive.PropertyChanged += _epfArchive_PropertyChanged;
 
-                RefreshEntriesCallback.Invoke();
+                dispatcher.Invoke(RefreshEntries);
 
                 ArchiveFilePath = null;
                 AppLabel = $"{APP_NAME} - New archive";
@@ -859,10 +860,7 @@ namespace EPF.UI.ViewModel
                 _epfArchive.EntryChanged += _epfArchive_EntryChanged;
                 _epfArchive.PropertyChanged += _epfArchive_PropertyChanged;
 
-                if (RefreshEntriesCallback == null)
-                    RefreshEntries();
-                else
-                    RefreshEntriesCallback.Invoke();
+                dispatcher.Invoke(RefreshEntries);
 
                 ArchiveFilePath = archiveFilePath;
                 AppLabel = $"{APP_NAME} - {ArchiveFilePath}";
@@ -885,10 +883,7 @@ namespace EPF.UI.ViewModel
                 var fileStream = File.Open(archiveFilePath, FileMode.Open, FileAccess.Read);
                 _epfArchive = EPFArchive.ToExtract(fileStream);
 
-                if (RefreshEntriesCallback == null)
-                    RefreshEntries();
-                else
-                    RefreshEntriesCallback.Invoke();
+                dispatcher.Invoke(RefreshEntries);
 
                 ArchiveFilePath = archiveFilePath;
                 AppLabel = $"{APP_NAME} - {ArchiveFilePath} (Read-Only)";
