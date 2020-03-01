@@ -13,8 +13,8 @@ http://www.shikadi.net/moddingwiki/EPF_Format
 - Closing archives with saving changes
 - Adding/updating/removing hidden data in archive
 
-**Current EPF Archive UI functionality:**
-- WinForms are used as UI front-end
+**Current EPF Archive Manager functionality:**
+- WinForms or WPF are used as UI front-end
 - Creating new EPF archives for saving
 - Opening EPF archives in read-only mode, extracting selected or all entries
 - Opening EPF archives in read-write mode, extracting, adding, removing entries
@@ -22,4 +22,3 @@ http://www.shikadi.net/moddingwiki/EPF_Format
 
 **EPF Archive UI functionality to add/improve:**
 - [Feature] Add better icons
-- [Feature] Add WPF as a optional UI front-end
