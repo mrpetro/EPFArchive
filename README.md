@@ -4,7 +4,12 @@ EPF Archive (East Point File System developed by East Point Software) Manager, c
 More information about EPF File format and games it was used in can be found on following site:
 http://www.shikadi.net/moddingwiki/EPF_Format
 
-**Current EPF Archive class functionality:**
+## Is this working? 
+**Yeah!**
+
+## What is ready?
+
+### EPFArchive class functionality
 - Opening archives
 - Creating new archives
 - Reading archive entries data using streams
@@ -13,7 +18,7 @@ http://www.shikadi.net/moddingwiki/EPF_Format
 - Closing archives with saving changes
 - Adding/updating/removing hidden data in archive
 
-**Current EPF Archive Manager functionality:**
+### EPF Archive Manager functionality
 - WinForms or WPF are used as UI front-end
 - Creating new EPF archives for saving
 - Opening EPF archives in read-only mode, extracting selected or all entries
@@ -21,5 +26,13 @@ http://www.shikadi.net/moddingwiki/EPF_Format
 - Showing compression ratio on each entry
 - Adding/updating/removing hidden data in archive
 
-**EPF Archive UI functionality to add/improve:**
-- [Feature] Add better icons
+## What is in current development? 
+**Nothing**
+
+## What could be changed/improved? 
+- Add better looking icons in UI
+- Improving packing/unpacking performance
+
+
+## Development stuff
+
