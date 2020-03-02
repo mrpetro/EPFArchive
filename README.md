@@ -35,4 +35,20 @@ http://www.shikadi.net/moddingwiki/EPF_Format
 
 
 ## Development stuff
+### Source code language
+**C#**
+
+### Platform
+**.NET 4.6.1/4.7.2** for now
+
+### DevEnv
+**MSVS 2017** (Community or compatible)
+
+### Design architecture
+**MVVM(Model-View-Viewmodel)
+
+### Libraries
+* **WinForms/WPF - used for implementing views for EPF Archive Manager UI
+
+
 
