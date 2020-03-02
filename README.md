@@ -45,10 +45,10 @@ http://www.shikadi.net/moddingwiki/EPF_Format
 **MSVS 2017** (Community or compatible)
 
 ### Design architecture
-**MVVM(Model-View-Viewmodel)
+**MVVM**(Model-View-Viewmodel)
 
 ### Libraries
-* **WinForms/WPF** - used for implementing views for EPF Archive Manager UI
+* **WinForms/WPF** - used for implementing views in EPF Archive Manager UI
 
 
 
