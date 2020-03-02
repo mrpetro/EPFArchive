@@ -48,7 +48,7 @@ http://www.shikadi.net/moddingwiki/EPF_Format
 **MVVM(Model-View-Viewmodel)
 
 ### Libraries
-* **WinForms/WPF - used for implementing views for EPF Archive Manager UI
+* **WinForms/WPF** - used for implementing views for EPF Archive Manager UI
 
 
 
