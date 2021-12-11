@@ -54,7 +54,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\EPFArchive\EPFArchive.csproj">
-      <Project>{52249c4e-eaf8-45ce-a757-aaa3c3c125d4}</Project>
+      <Project>{f2c9211c-2971-4236-924d-3361dbd6440a}</Project>
       <Name>EPFArchive</Name>
     </ProjectReference>
   </ItemGroup>

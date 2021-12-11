@@ -62,12 +62,6 @@
     <EmbeddedResource Include="Resources\ValidArchive.epf" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\EPFArchive\EPFArchive.csproj">
-      <Project>{52249c4e-eaf8-45ce-a757-aaa3c3c125d4}</Project>
-      <Name>EPFArchive</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
     <EmbeddedResource Include="Resources\TFile1.txt" />
     <EmbeddedResource Include="Resources\TFile2.png" />
   </ItemGroup>
@@ -76,6 +70,12 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources\InvalidArchive.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\EPFArchive\EPFArchive.csproj">
+      <Project>{f2c9211c-2971-4236-924d-3361dbd6440a}</Project>
+      <Name>EPFArchive</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets" Condition="Exists('$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets')" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
