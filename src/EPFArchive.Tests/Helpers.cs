@@ -33,7 +33,7 @@ namespace EPFArchiveTests
             try
             {
                 var asm = Assembly.GetExecutingAssembly();
-                var resource = string.Format("EPFArchiveTests.Resources.{0}", resourceName);
+                var resource = string.Format("EPFArchive.Tests.Resources.{0}", resourceName);
                 using (var stream = asm.GetManifestResourceStream(resource))
                 {
                     using (var outStream = File.Create(outFilePath))

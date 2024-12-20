@@ -1,0 +1,31 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<TargetFramework>net8.0-windows</TargetFramework>
+		<Platforms>AnyCPU;x64</Platforms>
+	</PropertyGroup>
+	<ItemGroup>
+	  <None Remove="Resources\InvalidArchive.txt" />
+	  <None Remove="Resources\TFile1.txt" />
+	  <None Remove="Resources\TFile2.png" />
+	  <None Remove="Resources\ValidArchive.epf" />
+	  <None Remove="Resources\ValidEntry.png" />
+	</ItemGroup>
+	<ItemGroup>
+	  <EmbeddedResource Include="Resources\InvalidArchive.txt" />
+	  <EmbeddedResource Include="Resources\TFile1.txt" />
+	  <EmbeddedResource Include="Resources\TFile2.png" />
+	  <EmbeddedResource Include="Resources\ValidArchive.epf" />
+	  <EmbeddedResource Include="Resources\ValidEntry.png" />
+	</ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="MSTest" Version="3.2.0" />
+		<PackageReference Include="Microsoft.Testing.Extensions.CodeCoverage" Version="17.10.1" />
+	</ItemGroup>
+	<ItemGroup>
+	  <Folder Include="Properties\" />
+	</ItemGroup>
+	<ItemGroup>
+	  <ProjectReference Include="..\EPFArchive\EPFArchive.csproj" />
+	</ItemGroup>
+</Project>
