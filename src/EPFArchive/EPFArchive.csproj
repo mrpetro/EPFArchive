@@ -1,8 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFramework>netstandard2.0</TargetFramework>
-		<Platforms>AnyCPU;x64</Platforms>
+		<TargetFrameworks>netstandard2.0;netstandard2.1</TargetFrameworks>
+		<Platforms>AnyCPU</Platforms>
 		<PackAsTool>false</PackAsTool>
 		<AssemblyVersion>1.0.0</AssemblyVersion>
 		<FileVersion>1.0.0</FileVersion>
@@ -11,15 +11,22 @@
 		<Copyright>Copyright 2023, Piotr Wesoły</Copyright>
 		<Authors>mrpetro</Authors>
 		<Description>
-			EPF Archive (East Point File System developed by East Point Software) library, capable of packing/unpacking various DOS games content.
+			EPF Archive (East Point File System developed by East Point Software) library, capable of packing/unpacking assets from various old DOS games.
 		</Description>
 		<RepositoryUrl>https://github.com/mrpetro/EPFArchive</RepositoryUrl>
 		<RepositoryType>git</RepositoryType>
 		<NeutralLanguage>en</NeutralLanguage>
 		<PackageProjectUrl>https://github.com/mrpetro/EPFArchive</PackageProjectUrl>
-		<PackageTags>EPF;EPFS;Archive</PackageTags>
+		<PackageTags>EPF;EPFS;Archive;DOS</PackageTags>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
+		<PackageReadmeFile>readme.md</PackageReadmeFile>
+		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>	
 	</PropertyGroup>
-
+	<ItemGroup>
+		<Content Include="readme.md">
+			<Pack>true</Pack>
+			<PackagePath>\</PackagePath>
+		</Content>
+	</ItemGroup>
 </Project>
