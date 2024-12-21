@@ -8,7 +8,7 @@
 		<FileVersion>1.0.0</FileVersion>
 		<VersionPrefix>$(AssemblyVersion)</VersionPrefix>
 		<Title>EPF Archive</Title>
-		<Copyright>Copyright 2023, Piotr Wesoły</Copyright>
+		<Copyright>Copyright (c) 2024, Piotr Wesoły</Copyright>
 		<Authors>mrpetro</Authors>
 		<Description>
 			EPF Archive (East Point File System developed by East Point Software) library, capable of packing/unpacking assets from various old DOS games.
