@@ -1,0 +1,37 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<OutputType>Exe</OutputType>
+		<TargetFramework>net8.0-windows</TargetFramework>
+		<Platforms>AnyCPU;x64</Platforms>
+		<UseWPF>true</UseWPF>
+		<UseWindowsForms>true</UseWindowsForms>
+		<AssemblyVersion>1.0.0</AssemblyVersion>
+		<FileVersion>1.0.0</FileVersion>
+		<VersionPrefix>$(AssemblyVersion)</VersionPrefix>
+		<Title>EPF Archive</Title>
+		<Copyright>Copyright 2023, Piotr Wesoły</Copyright>
+		<Authors>mrpetro</Authors>
+		<Description>
+			EPF Archive (East Point File System developed by East Point Software) Manager application.
+		</Description>
+		<RepositoryUrl>https://github.com/mrpetro/EPFArchive</RepositoryUrl>
+		<RepositoryType>git</RepositoryType>
+		<NeutralLanguage>en</NeutralLanguage>
+  </PropertyGroup>
+	<ItemGroup>
+	  <None Remove="Resources\Add.png" />
+	  <None Remove="Resources\ExtractAll.png" />
+	  <None Remove="Resources\ExtractSelection.png" />
+	  <None Remove="Resources\Remove.png" />
+	</ItemGroup>
+	<ItemGroup>
+	  <ProjectReference Include="..\EPFArchive.Manager.VM\EPFArchive.Manager.VM.csproj" />
+	</ItemGroup>
+	<ItemGroup>
+	  <Resource Include="Resources\Add.png" />
+	  <Resource Include="Resources\ExtractAll.png" />
+	  <Resource Include="Resources\ExtractSelection.png" />
+	  <Resource Include="Resources\Remove.png" />
+	</ItemGroup>
+</Project>

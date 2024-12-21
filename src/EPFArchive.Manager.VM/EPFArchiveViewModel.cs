@@ -17,7 +17,7 @@ namespace EPF.VM
     {
         #region Private Fields
 
-        private const string APP_NAME = "EPF Archive";
+        private const string APP_NAME = "EPF Archive Manager";
         private string _appLabel = APP_NAME;
         private string _archiveFilePath;
         private EPFArchive _epfArchive;
